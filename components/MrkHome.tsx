@@ -10,6 +10,7 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
+import gsap from "gsap";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import ProductStackSection from "./ProductStack";
@@ -18,6 +19,256 @@ import FaqAccordion from "./FaqAccordion";
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
+
+function ParticleWordmark({ text }: { text: string }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId = 0;
+    let particles: Array<{
+      x: number;
+      y: number;
+      hx: number;
+      hy: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+    }> = [];
+    const mouse = { x: -9999, y: -9999 };
+
+    const initCanvas = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(Math.floor(rect.width), 1);
+      const height = Math.max(Math.floor(rect.height), 1);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const offscreen = document.createElement("canvas");
+      offscreen.width = width;
+      offscreen.height = height;
+      const offscreenCtx = offscreen.getContext("2d");
+      if (!offscreenCtx) return;
+
+      let fontSize = height * 0.65;
+      offscreenCtx.font = `800 ${fontSize}px "Plus Jakarta Sans", sans-serif`;
+      while (offscreenCtx.measureText(text).width > width * 0.92 && fontSize > 12) {
+        fontSize -= 2;
+        offscreenCtx.font = `800 ${fontSize}px "Plus Jakarta Sans", sans-serif`;
+      }
+      offscreenCtx.textAlign = "center";
+      offscreenCtx.textBaseline = "middle";
+      offscreenCtx.fillStyle = "#ffffff";
+      offscreenCtx.fillText(text, width / 2, height / 2);
+
+      const imageData = offscreenCtx.getImageData(0, 0, width, height).data;
+      const gap = width < 520 ? 4 : 3;
+      const points: Array<{ x: number; y: number }> = [];
+
+      for (let y = 0; y < height; y += gap) {
+        for (let x = 0; x < width; x += gap) {
+          if (imageData[(y * width + x) * 4 + 3] > 128) {
+            points.push({ x, y });
+          }
+        }
+      }
+
+      const colorA = [30, 51, 201];
+      const colorB = [77, 124, 255];
+      particles = points.map((point) => {
+        const ratio = point.x / width;
+        const r = Math.round(colorA[0] + (colorB[0] - colorA[0]) * ratio);
+        const g = Math.round(colorA[1] + (colorB[1] - colorA[1]) * ratio);
+        const b = Math.round(colorA[2] + (colorB[2] - colorA[2]) * ratio);
+
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height + (Math.random() < 0.5 ? -height : height),
+          hx: point.x,
+          hy: point.y,
+          vx: 0,
+          vy: 0,
+          size: 1.35 * (0.75 + Math.random() * 0.55),
+          color: `rgb(${r},${g},${b})`,
+        };
+      });
+
+      particles.forEach((particle) => {
+        gsap.to(particle, {
+          x: particle.hx,
+          y: particle.hy,
+          duration: 1.8 + Math.random() * 0.8,
+          ease: "power3.out",
+        });
+      });
+    };
+
+    const handlePointerMove = (event: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = event.clientX - rect.left;
+      mouse.y = event.clientY - rect.top;
+    };
+
+    const handlePointerLeave = () => {
+      mouse.x = -9999;
+      mouse.y = -9999;
+    };
+
+    const render = () => {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        const dx = particle.x - mouse.x;
+        const dy = particle.y - mouse.y;
+        const distSq = dx * dx + dy * dy;
+        const radius = 60;
+
+        if (distSq < radius * radius) {
+          const distance = Math.sqrt(distSq) || 1;
+          const force = (1 - distance / radius) * 2.2;
+          particle.vx += (dx / distance) * force;
+          particle.vy += (dy / distance) * force;
+        }
+
+        particle.vx += (particle.hx - particle.x) * 0.08;
+        particle.vy += (particle.hy - particle.y) * 0.08;
+        particle.vx *= 0.82;
+        particle.vy *= 0.82;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        ctx.beginPath();
+        ctx.fillStyle = particle.color;
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    initCanvas();
+    render();
+
+    canvas.addEventListener("mousemove", handlePointerMove);
+    canvas.addEventListener("mouseleave", handlePointerLeave);
+    window.addEventListener("resize", initCanvas);
+
+    return () => {
+      canvas.removeEventListener("mousemove", handlePointerMove);
+      canvas.removeEventListener("mouseleave", handlePointerLeave);
+      window.removeEventListener("resize", initCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [text]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="relative z-10 my-3 h-[116px] w-full max-w-[980px] sm:h-[150px] md:h-[190px] lg:h-[210px]"
+    />
+  );
+}
+
+function DealerParticleSection() {
+  return (
+    <section
+      id={"dealer"}
+      className="relative overflow-hidden bg-[#f7f9ff] px-4 py-16 text-center sm:px-6 md:px-16 md:py-20"
+    >
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_70%_55%_at_50%_40%,rgba(77,124,255,0.12),transparent_75%)]" />
+      <div className="absolute inset-0 pointer-events-none opacity-35 bg-[linear-gradient(to_right,rgba(46,75,239,0.10)_1px,transparent_1px),linear-gradient(to_bottom,rgba(46,75,239,0.10)_1px,transparent_1px)] bg-[size:48px_48px]" />
+
+      <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, y: -18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#4d7cff]/25 bg-[#eef3ff] px-4 py-1.5 text-xs font-semibold tracking-wide text-[#1e33c9] md:text-sm"
+        >
+          <svg className="h-4 w-4 text-[#2e4bef]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3l1.4 5.2L19 7l-4.2 3.8L17 16l-5-2.8L7 16l2.2-5.2L5 7l5.6 1.2L12 3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          </svg>
+          Pump-starter dealership network
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.65, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+          className="flex w-full justify-center"
+        >
+          <ParticleWordmark text="MRKTradex" />
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-[#5A6178] sm:text-lg md:text-xl"
+        >
+          Build your business with a complete pump-starter range covering
+          single-phase, three-phase and smart water-level products.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.6, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-7 flex flex-wrap items-center justify-center gap-4"
+        >
+          <motion.a
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            href="#contact"
+            className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#1E33C9,#4D7CFF)] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(46,75,239,0.28)] transition-shadow hover:shadow-[0_18px_42px_rgba(46,75,239,0.34)] md:text-base"
+          >
+            Apply for dealership
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </motion.a>
+        </motion.div>
+
+        <div className="mt-14 grid w-full max-w-4xl grid-cols-3 gap-4 border-t border-[#0d559b]/10 pt-8">
+          {[
+            ["1,000+", "Dealers"],
+            ["500+", "Cities"],
+            ["20+", "States"],
+          ].map(([value, label], index) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.35 }}
+              transition={{ duration: 0.55, delay: 0.32 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-center"
+            >
+              <div className="bg-[linear-gradient(135deg,#0d559b,#1e9be0)] bg-clip-text text-3xl font-extrabold tracking-[-0.04em] text-transparent md:text-4xl">
+                {value}
+              </div>
+              <div className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#536b80] md:text-xs">
+                {label}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function formatIndian(value: number) {
   const rounded = Math.round(value).toString();
@@ -856,7 +1107,7 @@ export default function MrkHome() {
         </section>
         <section
           id="range"
-          className="relative h-[100svh] overflow-hidden bg-[#f3f7fb]"
+          className="relative min-h-[100svh] overflow-hidden bg-[#f3f7fb] lg:h-[100svh]"
         >
           {/* Background decoration */}
           <div
@@ -872,9 +1123,11 @@ export default function MrkHome() {
           {/* Main viewport-height wrapper */}
           <div
             className="
-              relative z-10 mx-auto flex h-full w-full max-w-[1720px] flex-col
-              px-4 py-5
+              relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1720px] flex-col
+              px-4 pb-8 pt-9
               sm:px-6 sm:py-6
+              md:py-8
+              lg:h-full lg:min-h-0
               lg:px-10 lg:py-7
               xl:px-16 xl:py-8
               2xl:px-20
@@ -883,9 +1136,10 @@ export default function MrkHome() {
             {/* Heading */}
             <div
               className="
-                mb-[clamp(28px,5vh,64px)]
+                mb-6
                 flex shrink-0 flex-col gap-4
                 sm:flex-row sm:items-start sm:justify-between
+                md:mb-[clamp(28px,5vh,64px)]
               "
             >
               <motion.div
@@ -911,10 +1165,11 @@ export default function MrkHome() {
                 <h2
                   className="
                     max-w-[1050px]
-                    text-[clamp(1.75rem,3.4vw,3.6rem)]
+                    text-[clamp(1.45rem,8vw,1.9rem)]
                     font-extrabold leading-[1.02]
                     tracking-[-0.04em] text-[#071d33]
 
+                    sm:text-[clamp(1.75rem,3.4vw,3.6rem)]
                     [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)]
                     [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]
                   "
@@ -967,7 +1222,7 @@ export default function MrkHome() {
             </div>
 
             {/* Cards available-height wrapper */}
-            <div className="min-h-0 flex-1 overflow-hidden">
+            <div className="min-h-[430px] flex-1 overflow-hidden sm:min-h-[480px] lg:min-h-0">
               {/* 
                 Mobile/tablet:
                 - Horizontal card scrolling
@@ -1263,6 +1518,7 @@ export default function MrkHome() {
         <ProductStackSection />
        
          <CurvedVideoReel />
+        <DealerParticleSection />
         <section className={cn('secti s channels vertical general it centers a professionally, as doingon container', tw['section'], tw['container'])} id={"why"}>
           <div className={cn('section-head', tw['section-head'])}>
             <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"MRK मानक"}>The MRK standard</span>
@@ -1372,47 +1628,6 @@ export default function MrkHome() {
             </div>
           </div>
         </section>
-       
-        <section className={cn('deal', tw['deal'])} id={"dealer"}>
-          <div className={cn('deal-bubbles', tw['deal-bubbles'])} aria-hidden={"true"}>
-            <span className={cn("bub", tw.bub, "bottom-[18%] left-[12%] h-[14px] w-[14px] [animation-delay:0s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[8%] left-[28%] h-[22px] w-[22px] [animation-delay:1.6s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[22%] left-[66%] h-3 w-3 [animation-delay:.8s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[12%] left-[82%] h-[18px] w-[18px] [animation-delay:2.4s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[30%] left-[48%] h-[10px] w-[10px] [animation-delay:3.2s]")}></span>
-          </div>
-          <div className={cn('container section', tw['container'], tw['section'])}>
-            <div className={cn('inner', tw['inner'])}>
-              <div className={cn('reveal', tw['reveal'])}>
-                <span className={cn("eyebrow", tw.eyebrow, "!text-splash")} data-hi={"डीलर बनें"}>Become a dealer</span>
-                <h2>Build your business with a complete pump-starter range.</h2>
-                <p>
-                  Single-phase, three-phase and smart plugs under one name, so one relationship covers every customer. Dependable margins, full-range demand, and marketing support.
-                </p>
-                <a className={cn('btn btn-light', tw['btn'], tw['btn-light'])} href={"#contact"} data-hi={"डीलरशिप के लिए आवेदन करें"}>
-                  Apply for dealership
-                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"}>
-                    <path d={"M5 12h14M13 6l6 6-6 6"}></path>
-                  </svg>
-                </a>
-              </div>
-              <div className={cn('dstats reveal d1', tw['dstats'], tw['reveal'])}>
-                <div>
-                  <b>1,000+</b>
-                  <span>Dealers</span>
-                </div>
-                <div>
-                  <b>500+</b>
-                  <span>Cities</span>
-                </div>
-                <div>
-                  <b>20+</b>
-                  <span>States</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
          <section className={cn('section container tsec', tw['section'], tw['container'], tw['tsec'])}>
           <div className={cn('thead', tw['thead'])}>
             <div className={cn('section-head', tw['section-head'])}>
@@ -1486,6 +1701,7 @@ export default function MrkHome() {
         {/* ── Curved Product Reel ── */}
 
         <FaqAccordion />
+
       </main>
       <footer className={cn('foot', tw['foot'])} id={"contact"}>
         <div className={cn('container', tw['container'])}>
