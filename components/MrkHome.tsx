@@ -120,7 +120,7 @@ const testimonials = [
 
 const rangeProducts = [
   {
-    title: "I-Phase Starters",
+    title: "I-Phase Starter Panels",
     description:
       "For homes and small farms, up to 7.5 HP. Manual and fully-digital.",
     image: "/images/single-phase-starter.png",
@@ -129,7 +129,7 @@ const rangeProducts = [
     dark: false,
   },
   {
-    title: "III-Phase Panels",
+    title: "III-Phase Starter Panels",
     description:
       "DOL and Star-Delta panels for agriculture, industry and housing.",
     image: "/images/three-phase-panel.png",
