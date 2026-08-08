@@ -7,20 +7,21 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
-// the site header is fixed at the top, so this section's own tab bar has to sit
-// below it rather than at viewport 0 or the two would overlap.
+// The site header is fixed at the top, so the sticky product stage sits below it.
 const SITE_NAV_HEIGHT = 68;
 
 type PanelData = {
   no: string;
   category: string;
   title: string;
-  description: string;
+  description: ReactNode;
+  copy?: ReactNode;
   image: string;
   alt: string;
   features: string[];
+  featureList?: string[];
   buttonText: string;
   href: string;
 };
@@ -28,16 +29,20 @@ type PanelData = {
 const PANELS: PanelData[] = [
   {
     no: "01",
-    category: "MRG Auto-Timer Series",
-    title: "The tank that never overflows.",
-    description:
-      "Set the time on the display; the pump stops automatically.",
+    category: "MRG Series",
+    title: "Starter with Built-in Auto-Off Timer",
+    description: (
+      <>
+        Set how long you want the pump to run, and the starter switches it{" "}
+        <strong>OFF automatically</strong> when the time is over.
+      </>
+    ),
     image: "/images/mrg-dpt-2-auto-timer.jpg",
     alt: "MRG DPT-2 auto-timer panel",
     features: [
-      "Automatic pump control",
-      "Timer-based operation",
-      "Simple digital display",
+      "Helps prevent overhead tank overflow",
+      "No separate WLC required",
+      "No additional sensor wiring needed",
     ],
     buttonText: "Explore MRG",
     href: "#mrg",
@@ -45,28 +50,40 @@ const PANELS: PanelData[] = [
   {
     no: "02",
     category: "WLC Smart Plug",
-    title: "Water-level control, reduced to a single plug.",
+    title: "Smart Water-Level Control for Your Pump",
     description:
       "Route the pump’s supply through it and run the pump automatically.",
     // /images/wlc-smart-plug.png does not exist — this is the real file on disk
     image: "/images/MRK WEBSITE/WLC Smart Plug/DOC-20260802-WA0063_.jpg",
     alt: "MRK WLC Smart Plug",
+    copy:
+      "Connect your Tullu or submersible pump through the smart plug. Its tank sensor detects the water level and automatically controls the pump.",
+    featureList: [
+      "Automatically manages pump ON/OFF",
+      "Helps prevent tank overflow",
+      "LED display shows the tank water level",
+    ],
     features: ["SSO · up to 1.5 HP", "ISO · Tullu", "Wi-Fi model"],
     buttonText: "Explore WLC",
     href: "#wlc",
   },
   {
     no: "03",
-    category: "MRX-HD Three-Phase Panel",
-    title: "The panel that tells you why it stopped.",
-    description: "Fully digital, with live voltage-and-current monitoring.",
+    category: "MRX-HD : III-Phase Digital Starter Panel",
+    title: "Smarter Protection for III-Phase Pumps",
+    description: (
+      <>
+        A fully digital starter panel for{" "}
+        <strong>agriculture, industry and housing</strong>, designed to monitor
+        and protect your pump automatically.
+      </>
+    ),
     image: "/images/three-phase-panel.png",
     alt: "MRX-HD three-phase panel",
     features: [
-      "Error-code display",
-      "Single-phasing protection",
-      "Live voltage monitoring",
-      "Live current monitoring",
+      "Displays voltage and current load",
+      "Protects against phase failure and voltage fluctuations",
+      "Error codes make faults easier to identify",
     ],
     buttonText: "Explore MRX-HD",
     href: "#mrx-hd",
@@ -97,14 +114,17 @@ function PanelVisual({ panel }: { panel: PanelData }) {
 // the product shot on the left, its copy and feature list on the right. the
 // vh-linked gaps keep the text column inside the sticky stage on short viewports.
 function PanelBody({ panel }: { panel: PanelData }) {
+  const copy = panel.copy ?? panel.description;
+  const features = panel.featureList ?? panel.features;
+
   return (
-    <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-10 xl:gap-14">
+    <div className="grid h-full items-center gap-6 lg:grid-cols-2 lg:gap-10 xl:gap-14">
       <motion.div
         initial={{ opacity: 0, y: 22 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.25 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative h-[240px] overflow-hidden rounded-[6px] border border-[#dce3ed] shadow-[0_8px_20px_rgba(20,35,57,0.055)] sm:h-[300px] xl:h-[min(430px,calc(100svh_-_330px))]"
+        className="relative h-[300px] overflow-hidden rounded-[6px] border border-[#dce3ed] shadow-[0_8px_20px_rgba(20,35,57,0.055)] sm:h-[420px] xl:h-[min(560px,calc(100svh_-_160px))]"
       >
         <PanelVisual panel={panel} />
       </motion.div>
@@ -116,12 +136,26 @@ function PanelBody({ panel }: { panel: PanelData }) {
         transition={{ duration: 0.5, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col gap-[clamp(10px,1.7vh,18px)]"
       >
-        <p className="text-[15px] leading-[1.6] text-muted xl:text-[16px]">
-          {panel.description}
+        <header className="mb-2">
+          <div className="mb-4 flex items-center gap-4">
+            <span className="font-mono text-[13px] font-semibold text-aqua">
+              {panel.no}
+            </span>
+            <p className="text-[16px] font-semibold text-aqua xl:text-[18px]">
+              {panel.category}
+            </p>
+          </div>
+          <h2 className="text-[26px] font-semibold leading-[1.06] tracking-[-0.035em] text-ink lg:whitespace-nowrap xl:text-[36px]">
+            {panel.title}
+          </h2>
+        </header>
+
+        <p className="max-w-[48ch] text-[15px] leading-[1.65] text-muted xl:text-[16px] [&_strong]:font-semibold [&_strong]:text-ink">
+          {copy}
         </p>
 
         <ul className="flex flex-col gap-[clamp(8px,1.4vh,14px)]">
-          {panel.features.map((feature) => (
+          {features.map((feature) => (
             <li
               key={feature}
               className="flex items-start gap-3 border-b border-[#eef2f7] pb-[clamp(8px,1.4vh,14px)] last:border-0 last:pb-0"
@@ -172,16 +206,7 @@ function PanelBody({ panel }: { panel: PanelData }) {
 function Panel({ panel }: { panel: PanelData }) {
   return (
     <div className="h-full overflow-hidden rounded-[5px] border border-[#edf1f5] bg-white shadow-[0_15px_38px_rgba(20,31,50,0.09)]">
-      <div className="px-5 pb-5 pt-6 sm:px-7 sm:pt-8 xl:px-10 xl:pt-9 [@media(max-height:720px)]:pb-3 [@media(max-height:720px)]:pt-5">
-        <header className="mb-5 flex items-center gap-4 xl:mb-7 [@media(max-height:720px)]:mb-3">
-          <span className="font-mono text-[13px] font-semibold text-aqua">
-            {panel.no}
-          </span>
-          <h2 className="text-[22px] font-semibold tracking-[-0.045em] text-ink xl:text-[29px]">
-            {panel.title}
-          </h2>
-        </header>
-
+      <div className="flex h-full items-center px-5 py-6 sm:px-7 sm:py-8 xl:px-10 xl:py-9 [@media(max-height:720px)]:py-5">
         <PanelBody panel={panel} />
       </div>
     </div>
@@ -279,67 +304,13 @@ function StackingStage({
 }
 
 export default function ProductStackSection() {
-  const navRef = useRef<HTMLElement>(null);
-  const [navHeight, setNavHeight] = useState(72);
   const [activeIndex, setActiveIndex] = useState(0);
-
-  useLayoutEffect(() => {
-    const node = navRef.current;
-    if (!node) return undefined;
-    const measure = () => setNavHeight(node.getBoundingClientRect().height);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  const stageOffset = SITE_NAV_HEIGHT + navHeight;
-
-  const scrollToPanel = (index: number) => {
-    const track = document.getElementById("stack-track");
-    if (!track) return;
-    const stageHeight = Math.max(window.innerHeight - stageOffset - 12, 1);
-    const targetY =
-      track.getBoundingClientRect().top + window.scrollY + index * stageHeight;
-    window.scrollTo({ top: targetY, behavior: "smooth" });
-  };
 
   return (
     <section id="solutions" className="min-h-screen bg-[#f5f8fc] text-ink">
-      <header
-        ref={navRef}
-        className="sticky z-40 border-b border-[#edf1f6] bg-[#f5f8fc]/95 backdrop-blur-md"
-        style={{ top: SITE_NAV_HEIGHT }}
-      >
-        <div className="mx-auto flex max-w-[1500px] items-center gap-6 px-4 py-3 sm:px-7">
-          <nav className="flex flex-1 gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {PANELS.map((panel, index) => (
-              <button
-                key={panel.no}
-                type="button"
-                onClick={() => scrollToPanel(index)}
-                className={`relative shrink-0 py-3 text-[14px] font-semibold transition-colors lg:text-[16px] ${
-                  activeIndex === index ? "text-ink" : "text-[#7890aa]"
-                }`}
-              >
-                {panel.category}
-                {activeIndex === index && (
-                  <motion.span
-                    layoutId="stack-active-tab"
-                    className="absolute inset-x-0 -bottom-[13px] h-[3px] bg-aqua"
-                  />
-                )}
-              </button>
-            ))}
-          </nav>
-
-        
-        </div>
-      </header>
-
       <div className="mx-auto max-w-[1500px] px-3 pb-[clamp(3rem,6vw,5.5rem)] pt-4 sm:px-6">
         <StackingStage
-          topOffset={stageOffset}
+          topOffset={SITE_NAV_HEIGHT}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
         />
