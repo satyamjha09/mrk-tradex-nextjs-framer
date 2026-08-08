@@ -305,7 +305,7 @@ const tw: Record<string, string> = {
   "hero-photo": "pointer-events-none absolute inset-0 bg-[url('/images/intro1.png')] bg-cover bg-[center_top_15px] max-[900px]:hidden",
   "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[50%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.72)_38%,rgba(255,255,255,.86)_100%)] max-[900px]:hidden",
   "hero-inner": "relative z-10 w-full pl-[59%] pr-[4%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-6 max-[900px]:text-center",
-  "hero-copy": "max-w-[620px]",
+  "hero-copy": "max-w-[620px] translate-y-4",
   "hero-title": "text-[clamp(1.9rem,3.5vw,3.75rem)] font-extrabold leading-[1.14] tracking-[-0.02em]",
   "hero-title-lead": "block text-ink",
   "hero-title-rest": "block bg-[linear-gradient(180deg,rgb(var(--marine)),rgb(var(--aqua)))] bg-clip-text text-transparent",
