@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import ProductStackSection from "./ProductStack";
 import CurvedVideoReel from "./CurvedVideoReel";
+import FaqAccordion from "./FaqAccordion";
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
@@ -283,11 +284,6 @@ const tw: Record<string, string> = {
   title: "font-sans text-[clamp(2rem,4.6vw,3.4rem)] font-bold leading-[1.04] tracking-[-0.01em] text-ink",
   "section-head": "mb-[clamp(2.4rem,5vw,3.6rem)] max-w-[60ch]",
 
-  preview: "fixed bottom-4 left-4 z-50 rounded-[0.875rem] border border-line bg-white/95 p-4 font-mono shadow-[0_16px_40px_rgba(11,31,51,.16)] backdrop-blur transition-transform hover:scale-100 max-[720px]:origin-bottom-left max-[720px]:scale-90",
-  "pv-close": "absolute -right-2 -top-2 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-sm text-muted",
-  "pv-lbl": "mb-2 text-[0.56rem] uppercase tracking-[0.14em] text-muted",
-  "pv-row": "mb-2 flex items-center gap-2 last:mb-0",
-  seg: "inline-flex overflow-hidden rounded-xl border border-line [&>button]:bg-white [&>button]:px-3 [&>button]:py-1 [&>button]:font-mono [&>button]:text-[0.64rem] [&>button]:text-ink [&>button+button]:border-l [&>button+button]:border-line [&>button.active]:bg-ink [&>button.active]:text-white",
 
   nav: "fixed inset-x-0 top-0 z-[60] flex items-center justify-between px-8 sm:px-12 py-4 transition-all duration-300 ease-[cubic-bezier(.2,.7,.2,1)] [&.scrolled]:bg-paper/85 [&.scrolled]:py-3 [&.scrolled]:shadow-[0_1px_0_rgb(var(--line))] [&.scrolled]:backdrop-blur-md",
   brand: "flex items-center gap-2 font-semibold ml-2 sm:ml-6",
@@ -403,13 +399,6 @@ const tw: Record<string, string> = {
   "foot-bottom": "flex flex-wrap justify-between gap-4 border-t border-white/15 pt-4 text-sm text-white/70 [&_a]:mx-1",
 };
 
-const setAccentTheme = (amber: boolean) => {
-  const root = document.documentElement.style;
-  root.setProperty("--aqua", amber ? "232 163 61" : "30 155 224");
-  root.setProperty("--marine", amber ? "199 126 30" : "14 107 176");
-  root.setProperty("--splash", amber ? "244 196 102" : "95 198 236");
-};
-
 const delayByClass: Record<string, number> = {
   d1: 0.08,
   d2: 0.16,
@@ -504,34 +493,6 @@ export default function MrkHome() {
     const cleanups: Array<() => void> = [];
     const animations: Array<{ stop: () => void }> = [];
 
-    const preview = root.querySelector<HTMLElement>("#preview");
-    if (preview) {
-      preview.querySelectorAll<HTMLButtonElement>(".seg button").forEach((button) => {
-        const onClick = () => {
-          const segment = button.parentElement;
-          if (!segment) return;
-          segment
-            .querySelectorAll("button")
-            .forEach((item) => item.classList.remove("active"));
-          button.classList.add("active");
-
-          if (segment.dataset.group === "accent") {
-            setAccentTheme(button.dataset.val === "amber");
-          }
-        };
-        button.addEventListener("click", onClick);
-        cleanups.push(() => button.removeEventListener("click", onClick));
-      });
-
-      const close = preview.querySelector<HTMLButtonElement>(".pv-close");
-      if (close) {
-        const onClose = () => {
-          preview.style.display = "none";
-        };
-        close.addEventListener("click", onClose);
-        cleanups.push(() => close.removeEventListener("click", onClose));
-      }
-    }
 
     const burger = root.querySelector<HTMLButtonElement>(".nav-toggle");
     const links = root.querySelector<HTMLElement>(".nav-links");
@@ -668,7 +629,6 @@ export default function MrkHome() {
     return () => {
       cleanups.forEach((cleanup) => cleanup());
       animations.forEach((control) => control.stop());
-      setAccentTheme(false);
       document.body.classList.remove("reduced");
     };
   }, [introProgress, prefersReducedMotion, scrollY]);
@@ -783,17 +743,6 @@ export default function MrkHome() {
           </symbol>
         </defs>
       </svg>
-      <div className={cn('preview', tw['preview'])} id={"preview"}>
-        <button className={cn('pv-close', tw['pv-close'])} title={"Hide"} aria-label={"Hide preview controls"}>×</button>
-        <div className={cn('pv-lbl', tw['pv-lbl'])}>Preview</div>
-        <div className={cn('pv-row', tw['pv-row'])}>
-          <span>Accent</span>
-          <div className={cn('seg', tw['seg'])} data-group={"accent"}>
-            <button data-val={"blue"} className={"active"}>Water-blue</button>
-            <button data-val={"amber"}>Amber</button>
-          </div>
-        </div>
-      </div>
       <header className={cn('nav', tw['nav'])}>
         <a className={cn('brand', tw['brand'])} href={"#top"} aria-label={"MRK Tradex home"}>
           <img className={cn('logo', tw['logo'])} src={"/images/mrk-logo.png"} alt={"MRK"} />
@@ -1536,6 +1485,7 @@ export default function MrkHome() {
 
         {/* ── Curved Product Reel ── */}
 
+        <FaqAccordion />
       </main>
       <footer className={cn('foot', tw['foot'])} id={"contact"}>
         <div className={cn('container', tw['container'])}>
