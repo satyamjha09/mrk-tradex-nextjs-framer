@@ -12,6 +12,9 @@ import {
 } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import ProductStackSection from "./ProductStack";
+import CurvedVideoReel from "./CurvedVideoReel";
+
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
@@ -25,7 +28,16 @@ function formatIndian(value: number) {
   return `${rest},${lastThree}`;
 }
 
-const starIdeas = [
+const starIdeas: {
+  no: string;
+  title: string;
+  copy: string;
+  img: string;
+  alt: string;
+  chips: string[];
+  link: string;
+  icon?: string;
+}[] = [
   {
     no: "01 · MRG Auto-Timer Series",
     title: "The tank that never overflows.",
@@ -107,7 +119,7 @@ const testimonials = [
 
 const rangeProducts = [
   {
-    title: "Single-Phase Starters",
+    title: "I-Phase Starters",
     description:
       "For homes and small farms, up to 7.5 HP. Manual and fully-digital.",
     image: "/images/single-phase-starter.png",
@@ -116,7 +128,7 @@ const rangeProducts = [
     dark: false,
   },
   {
-    title: "Three-Phase Panels",
+    title: "III-Phase Panels",
     description:
       "DOL and Star-Delta panels for agriculture, industry and housing.",
     image: "/images/three-phase-panel.png",
@@ -139,7 +151,7 @@ const rangeProducts = [
     dark: false,
   },
   {
-    title: "Cables & Accessories",
+    title: "Switch Gears",
     description:
       "Submersible cables and fittings, built and tested to the same standard.",
     image: "/images/panel-components.png",
@@ -148,6 +160,68 @@ const rangeProducts = [
     dark: true,
   },
 ] as const;
+
+const showcaseSlides = [
+  { src: "/images/single-phase-starter.png", alt: "MRK single-phase starter" },
+  { src: "/images/three-phase-panel.png", alt: "MRK three-phase control panel" },
+  { src: "/images/panel-components.png", alt: "MRK panel components" },
+  { src: "/images/mrg-dpt-2-auto-timer.png", alt: "MRK MRG auto-timer" },
+  { src: "/images/intro-panels-wave.jpg", alt: "MRK starters and panels" },
+  { src: "/images/intro-products.jpg", alt: "The MRK product range" },
+  { src: "/images/farmers.jpeg", alt: "A farmer at a pump running on MRK protection" },
+] as const;
+
+const showcaseStats = [
+  { label: "In service since", value: "2005" },
+  { label: "Based in", value: "India" },
+  { label: "Dealers", value: "1000+" },
+] as const;
+
+const VISIBLE_SLIDES = 4;
+
+// an autoplaying four-up image rail. the window of visible slides walks forward
+// every 3s and wraps, so the strip reads as continuous without cloning nodes.
+function ProductShowcase() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const reducedMotion = useReducedMotion();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopAutoplay = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  }, []);
+
+  const startAutoplay = useCallback(() => {
+    stopAutoplay();
+    if (reducedMotion) return;
+    intervalRef.current = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % showcaseSlides.length);
+    }, 3000);
+  }, [reducedMotion, stopAutoplay]);
+
+  useEffect(() => {
+    startAutoplay();
+    return stopAutoplay;
+  }, [startAutoplay, stopAutoplay]);
+
+  // stepping restarts the timer so a manual move always gets a full 3s to be read.
+  const step = useCallback(
+    (delta: number) => {
+      setCurrentSlide(
+        (prev) => (prev + delta + showcaseSlides.length) % showcaseSlides.length,
+      );
+      startAutoplay();
+    },
+    [startAutoplay],
+  );
+
+  const visibleSlides = Array.from(
+    { length: VISIBLE_SLIDES },
+    (_, offset) => (currentSlide + offset) % showcaseSlides.length,
+  );
+
+ 
+}
 
 // a horizontal card rail driven by prev/next buttons. native smooth scrolling gets
 // cancelled by the page's scroll-driven animations, so the scroll is tweened by hand.
@@ -201,7 +275,7 @@ const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
 const tw: Record<string, string> = {
-  root: "min-h-screen bg-paper text-ink [&_a]:text-inherit [&_a]:no-underline [&_img]:block [&_img]:max-w-full [&_:focus-visible]:rounded-sm [&_:focus-visible]:outline [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-[3px] [&_:focus-visible]:outline-aqua",
+  root: "min-h-screen bg-paper text-ink [&_a]:no-underline [&_img]:block [&_img]:max-w-full [&_:focus-visible]:rounded-sm [&_:focus-visible]:outline [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-[3px] [&_:focus-visible]:outline-aqua",
   container: "mx-auto w-full max-w-[1200px] px-6",
   section: "py-[clamp(4.5rem,9vw,8rem)]",
   reveal: "translate-y-[26px] opacity-0 [&.in]:translate-y-0 [&.in]:opacity-100 motion-reduce:translate-y-0 motion-reduce:opacity-100",
@@ -215,9 +289,9 @@ const tw: Record<string, string> = {
   "pv-row": "mb-2 flex items-center gap-2 last:mb-0",
   seg: "inline-flex overflow-hidden rounded-xl border border-line [&>button]:bg-white [&>button]:px-3 [&>button]:py-1 [&>button]:font-mono [&>button]:text-[0.64rem] [&>button]:text-ink [&>button+button]:border-l [&>button+button]:border-line [&>button.active]:bg-ink [&>button.active]:text-white",
 
-  nav: "fixed inset-x-0 top-0 z-[60] flex items-center justify-between px-6 py-4 transition-all duration-300 ease-[cubic-bezier(.2,.7,.2,1)] [&.scrolled]:bg-paper/85 [&.scrolled]:py-3 [&.scrolled]:shadow-[0_1px_0_rgb(var(--line))] [&.scrolled]:backdrop-blur-md",
-  brand: "flex items-center gap-2 font-semibold",
-  logo: "h-[30px] w-auto max-w-none",
+  nav: "fixed inset-x-0 top-0 z-[60] flex items-center justify-between px-8 sm:px-12 py-4 transition-all duration-300 ease-[cubic-bezier(.2,.7,.2,1)] [&.scrolled]:bg-paper/85 [&.scrolled]:py-3 [&.scrolled]:shadow-[0_1px_0_rgb(var(--line))] [&.scrolled]:backdrop-blur-md",
+  brand: "flex items-center gap-2 font-semibold ml-2 sm:ml-6",
+  logo: "h-[36px] sm:h-[39px] w-auto max-w-none transition-all duration-300",
   "nav-links": "flex items-center gap-8 max-[720px]:fixed max-[720px]:right-0 max-[720px]:top-0 max-[720px]:z-50 max-[720px]:h-screen max-[720px]:w-[min(78vw,320px)] max-[720px]:translate-x-full max-[720px]:flex-col max-[720px]:items-start max-[720px]:justify-center max-[720px]:gap-6 max-[720px]:bg-white max-[720px]:p-8 max-[720px]:shadow-[-20px_0_60px_rgba(11,31,51,.16)] max-[720px]:transition-transform max-[720px]:duration-300 max-[720px]:ease-[cubic-bezier(.2,.7,.2,1)] max-[720px]:[&.open]:translate-x-0 [&>a]:relative [&>a]:pb-1 [&>a]:text-sm [&>a]:font-semibold [&>a]:after:absolute [&>a]:after:-bottom-[3px] [&>a]:after:left-0 [&>a]:after:h-0.5 [&>a]:after:w-0 [&>a]:after:bg-aqua [&>a]:after:transition-[width] [&>a]:after:duration-300 [&>a:hover]:after:w-full max-[720px]:[&>a]:text-lg",
   "nav-right": "flex items-center gap-4",
   lang: "cursor-pointer rounded-full border border-line bg-white px-3 py-2 font-mono text-xs uppercase tracking-[0.04em] text-ink",
@@ -231,32 +305,34 @@ const tw: Record<string, string> = {
   "scroll-hint": "absolute bottom-9 left-1/2 -translate-x-1/2 text-center font-mono text-[0.68rem] uppercase tracking-[0.22em] text-muted",
   chev: "mx-auto mb-2 block h-5 w-5 animate-cue fill-none stroke-current opacity-70 [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2] motion-reduce:animate-none",
 
-  hero: "relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#fff_0%,#fff_42%,#EFF8FE_100%)] pt-28 text-center max-[720px]:min-h-[88vh] max-[720px]:pt-24",
-  "hero-bg": "pointer-events-none absolute inset-0 overflow-hidden",
-  "hero-photo": "absolute inset-0 bg-[url('/images/farmers.jpeg')] bg-cover bg-center",
-  "hero-scrim": "absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.62)_0%,rgba(255,255,255,.72)_30%,rgba(255,255,255,.58)_62%,rgba(255,255,255,.18)_100%)]",
-  "hero-glow": "absolute left-1/2 top-[12%] aspect-square w-[min(760px,82%)] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(30,155,224,.14),transparent_66%)]",
-  bub2: "absolute bottom-[20%] animate-rise2 rounded-full border border-[rgba(120,200,235,.45)] bg-[radial-gradient(circle_at_32%_30%,rgba(255,255,255,.95),rgba(120,200,235,.4))] motion-reduce:animate-none",
-  "hero-inner": "relative z-10 mx-auto max-w-[920px] pb-24 max-[720px]:pb-28",
-  "hero-eyebrow": "mb-6 inline-block font-mono text-xs uppercase tracking-[0.24em] text-aqua",
-  "hero-title": "mx-auto mb-6 max-w-[min(920px,100%)] text-[clamp(2.5rem,6.6vw,5.2rem)] font-extrabold leading-[1.04] tracking-[-0.025em] text-ink",
+  hero: "relative flex min-h-[max(540px,min(100svh,64vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:pb-14 max-[900px]:pt-28",
+  "hero-photo": "pointer-events-none absolute inset-0 bg-[url('/images/intro1.png')] bg-cover bg-[center_top_15px] max-[900px]:hidden",
+  "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[50%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.72)_38%,rgba(255,255,255,.86)_100%)] max-[900px]:hidden",
+  "hero-inner": "relative z-10 w-full pl-[59%] pr-[4%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-6 max-[900px]:text-center",
+  "hero-copy": "max-w-[620px]",
+  "hero-title": "text-[clamp(1.9rem,3.5vw,3.75rem)] font-extrabold leading-[1.14] tracking-[-0.02em]",
+  "hero-title-lead": "block text-ink",
+  "hero-title-rest": "block bg-[linear-gradient(180deg,rgb(var(--marine)),rgb(var(--aqua)))] bg-clip-text text-transparent",
+  "hero-rule": "mt-7 block h-[3px] w-[74px] rounded-full bg-aqua max-[900px]:mx-auto",
+  "hero-sub": "mt-7 max-w-[46ch] text-[clamp(0.98rem,1.15vw,1.12rem)] leading-[1.85] text-muted max-[900px]:mx-auto",
+  "hero-actions": "mt-9 flex flex-wrap items-center gap-4 max-[900px]:justify-center",
+
   aq: "text-aqua",
-  "hero-sub": "mx-auto mb-10 max-w-[54ch] text-[clamp(1.05rem,1.55vw,1.28rem)] text-muted",
-  "hero-actions": "flex flex-wrap justify-center gap-4",
   btn: "relative isolate inline-flex items-center gap-2 overflow-hidden rounded-full border border-transparent px-[1.6rem] py-[0.95rem] text-sm font-semibold transition duration-300 ease-[cubic-bezier(.2,.7,.2,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-[101%] before:content-[''] before:transition-transform before:duration-[450ms] before:ease-[cubic-bezier(.2,.7,.2,1)] hover:before:translate-y-0 [&>svg]:h-4 [&>svg]:w-4",
   "btn-primary": "bg-aqua text-white before:bg-gradient-to-b before:from-marine before:to-deep",
   "btn-light": "bg-white text-ink before:bg-gradient-to-b before:from-splash before:to-aqua hover:text-white",
-  "hero-waves": "absolute inset-x-0 bottom-0 z-0 h-[32%] min-h-[170px] max-[720px]:h-[26%] max-[720px]:min-h-[130px] [&>svg]:h-full [&>svg]:w-full",
-  w1: "fill-[#EAF6FD]",
-  w2: "fill-[#C9E7F8]",
-  w3: "fill-[#A0D6F1]",
 
-  stats: "relative bg-ink text-white",
-  "stat-grid": "grid grid-cols-5 gap-8 max-[1000px]:grid-cols-2",
-  stat: "border-t border-white/15 py-6",
-  num: "text-[clamp(1.6rem,3.1vw,2.4rem)] font-bold leading-none tracking-[-0.01em]",
+  stats:
+    "relative overflow-hidden bg-[linear-gradient(115deg,rgb(var(--deep))_0%,#0f4485_45%,#0b4d97_100%)] text-white",
+  // items size to their own content and the leftover width is split evenly, so the
+  // gaps between figures read as equal. below 1100px that would cramp, so it falls
+  // back to an even grid.
+  "stat-grid":
+    "flex justify-between gap-x-8 gap-y-10 max-[1100px]:grid max-[1100px]:grid-cols-3 max-[640px]:grid-cols-2",
+  stat: "border-t border-white/20 pt-5",
+  num: "text-[clamp(1.65rem,3.1vw,2.35rem)] font-bold leading-none tracking-[-0.015em] tabular-nums",
   plus: "text-splash",
-  lbl: "mt-2 font-mono text-xs uppercase tracking-[0.08em] text-white/70",
+  lbl: "mt-3 font-mono text-[0.68rem] uppercase leading-[1.5] tracking-[0.12em] text-white/65",
 
   range: "max-[1000px]:[&_.section-head]:px-6 max-[720px]:[&_.section-head]:px-4",
   "range-inner": "mx-auto flex w-full max-w-[1520px] flex-col",
@@ -318,7 +394,7 @@ const tw: Record<string, string> = {
   dic: "flex h-[52px] w-[52px] flex-none items-center justify-center rounded-[0.8rem] bg-mist [&>svg]:h-[26px] [&>svg]:w-[26px] [&>svg]:fill-none [&>svg]:stroke-aqua [&>svg]:stroke-[1.6] [&>svg]:[stroke-linecap:round] [&>svg]:[stroke-linejoin:round]",
   arr: "ml-auto text-aqua",
 
-  foot: "relative bg-ink pb-8 text-white [&>.wave-top]:h-14 [&>.wave-top_path]:fill-paper [&_address]:not-italic [&_address]:text-sm [&_address]:leading-7 [&_address]:text-white/70 [&_h5]:mb-3 [&_h5]:font-mono [&_h5]:text-[0.72rem] [&_h5]:uppercase [&_h5]:tracking-[0.14em] [&_h5]:text-white/60 [&_ul]:grid [&_ul]:list-none [&_ul]:gap-2.5 [&_ul]:p-0 [&_ul_a]:text-sm [&_ul_a]:text-white/75 [&_ul_a:hover]:text-white",
+  foot: "relative bg-ink pt-8 pb-8 text-white border-t-2 border-aqua/30 [&_address]:not-italic [&_address]:text-sm [&_address]:leading-7 [&_address]:text-white/70 [&_h5]:mb-3 [&_h5]:font-mono [&_h5]:text-[0.72rem] [&_h5]:uppercase [&_h5]:tracking-[0.14em] [&_h5]:text-white/60 [&_ul]:grid [&_ul]:list-none [&_ul]:gap-2.5 [&_ul]:p-0 [&_ul_a]:text-sm [&_ul_a]:text-white/75 [&_ul_a:hover]:text-white",
   "foot-main": "grid grid-cols-[1.4fr_1fr_1fr_1.1fr] gap-8 py-[clamp(3.5rem,7vw,5rem)] pb-10 max-[1000px]:grid-cols-2 max-[720px]:grid-cols-1",
   fbrand: "mb-3 flex items-center gap-2 font-sans text-[1.4rem] font-semibold",
   flogo: "h-[34px] w-auto",
@@ -740,7 +816,7 @@ export default function MrkHome() {
       </header>
       <span id={"top"}></span>
       <main>
-        <section className={cn('intro', tw['intro'])} aria-label={"MRK Tradex"}>
+        {/* <section className={cn('intro', tw['intro'])} aria-label={"MRK Tradex"}>
           <div className={cn('intro-stage', tw['intro-stage'])}>
             <img className={cn('reveal-photo', tw['reveal-photo'])} src={"/images/intro-panels-wave.jpg"} alt={"MRK submersible starters and control panels"} />
             <svg className={cn('reveal-cover', tw['reveal-cover'])} viewBox={"0 0 1200 700"} preserveAspectRatio={"xMidYMid slice"} aria-hidden={"true"}>
@@ -759,44 +835,38 @@ export default function MrkHome() {
               Scroll
             </div>
           </div>
-        </section>
+        </section> */}
         <section className={cn('hero', tw['hero'])} id={"hero"}>
-          <div className={cn('hero-bg', tw['hero-bg'])} aria-hidden={"true"}>
-            <div className={cn('hero-photo', tw['hero-photo'])}></div>
-            <div className={cn('hero-scrim', tw['hero-scrim'])}></div>
-            <div className={cn('hero-glow', tw['hero-glow'])}></div>
-            <span className={cn("bub2", tw.bub2, "left-[16%] h-[13px] w-[13px] [animation-delay:0s]")}></span>
-            <span className={cn("bub2", tw.bub2, "left-[29%] h-[9px] w-[9px] [animation-delay:2.4s]")}></span>
-            <span className={cn("bub2", tw.bub2, "left-[67%] h-4 w-4 [animation-delay:1.2s]")}></span>
-            <span className={cn("bub2", tw.bub2, "left-[82%] h-[10px] w-[10px] [animation-delay:3.4s]")}></span>
-            <span className={cn("bub2", tw.bub2, "left-[49%] h-2 w-2 [animation-delay:4.6s]")}></span>
-          </div>
-          <div className={cn('hero-inner container', tw['hero-inner'], tw['container'])}>
-            <span className={cn('hero-eyebrow', tw['hero-eyebrow'])} data-hi={"सबमर्सिबल स्टार्टर और पैनल · 2005 से"}>Submersible starters & panels</span>
-            <h1 className={cn('hero-title', tw['hero-title'])}>
-              <span className={cn('aq', tw['aq'])}>Water</span>{" "}
-              is life, and we fill
-              <br />
-              your life with{" "}
-              <span className={cn('aq', tw['aq'])}>water</span>
-              .
-            </h1>
-            <p className={cn('hero-sub', tw['hero-sub'])} data-hi={"MRK सबमर्सिबल स्टार्टर और पैनल हर उस पंप की रक्षा करते हैं जो भारत तक पानी पहुँचाता है, घर, खेत और उद्योग के लिए, सिंगल-फेज़ और थ्री-फेज़ दोनों में।"}>
-              MRK submersible starters and panels protect every pump that brings India its water, for homes, farms and industry, across single-phase and three-phase.
-            </p>
-            <div className={cn('hero-actions', tw['hero-actions'])}>
-              <a className={cn('btn btn-primary', tw['btn'], tw['btn-primary'])} href={"#range"} data-hi={"रेंज देखें"}>
-                Explore the range
-                <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"}>
-                  <path d={"M5 12h14M13 6l6 6-6 6"}></path>
-                </svg>
-              </a>
+          <div className={cn('hero-photo', tw['hero-photo'])} aria-hidden={"true"}></div>
+          <div className={cn('hero-scrim', tw['hero-scrim'])} aria-hidden={"true"}></div>
+          <div className={cn('hero-inner', tw['hero-inner'])}>
+            <div className={cn('hero-copy', tw['hero-copy'])}>
+              <h1 className={cn('hero-title', tw['hero-title'])}>
+                <span className={cn('hero-title-lead', tw['hero-title-lead'])} data-hi={"पानी ही जीवन है,"}>Water is life,</span>
+                <span className={cn('hero-title-rest', tw['hero-title-rest'])} data-hi={"और हम आपके जीवन को पानी से भरते हैं।"}>and we fill your life with water.</span>
+              </h1>
+              <span className={cn('hero-rule', tw['hero-rule'])} aria-hidden={"true"}></span>
+              <p className={cn('hero-sub', tw['hero-sub'])} data-hi={"MRK सबमर्सिबल स्टार्टर और पैनल हर उस पंप की रक्षा करते हैं जो भारत तक पानी पहुँचाता है, घर, खेत और उद्योग के लिए, सिंगल-फेज़ और थ्री-फेज़ दोनों में।"}>
+                MRK submersible starters and panels protect every pump that brings India its water, for homes, farms and industry, across single-phase and three-phase.
+              </p>
+              <div className={cn('hero-actions', tw['hero-actions'])}>
+                <a className={cn('btn btn-primary', tw['btn'], tw['btn-primary'])} href={"#range"} data-hi={"सभी देखें"}>
+                  Explore all
+                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"}>
+                    <path d={"M5 12h14M13 6l6 6-6 6"}></path>
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
-          
         </section>
+        
         <section className={cn('stats', tw['stats'])}>
-          <div className={cn("container", tw.container, "pb-14 pt-10")}>
+          <div
+            aria-hidden={"true"}
+            className="pointer-events-none absolute -right-32 -top-48 h-[560px] w-[560px] rounded-full bg-[#3aa0e6]/20 blur-[150px]"
+          />
+          <div className={cn("container", tw.container, "relative z-10 py-[clamp(2.5rem,5vw,4rem)]")}>
             <div className={cn('stat-grid', tw['stat-grid'])}>
               <div className={cn('stat reveal', tw['stat'], tw['reveal'])}>
                 <div className={cn('num', tw['num'])}>
@@ -864,7 +934,7 @@ export default function MrkHome() {
             {/* Heading */}
             <div
               className="
-                mb-[clamp(14px,2.4vh,30px)]
+                mb-[clamp(28px,5vh,64px)]
                 flex shrink-0 flex-col gap-4
                 sm:flex-row sm:items-start sm:justify-between
               "
@@ -892,17 +962,15 @@ export default function MrkHome() {
                 <h2
                   className="
                     max-w-[1050px]
-                    text-[clamp(2rem,4.5vw,4.8rem)]
-                    font-extrabold leading-[0.96]
-                    tracking-[-0.045em] text-[#071d33]
+                    text-[clamp(1.75rem,3.4vw,3.6rem)]
+                    font-extrabold leading-[1.02]
+                    tracking-[-0.04em] text-[#071d33]
 
-                    [@media(max-height:760px)]:text-[clamp(1.8rem,4vw,3.8rem)]
-                    [@media(max-height:650px)]:text-[clamp(1.6rem,3.5vw,3.1rem)]
+                    [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)]
+                    [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]
                   "
                 >
-                  Whatever your pump,
-                  <br className="hidden lg:block" />{" "}
-                  we make the panel that runs it.
+                  Every pump. The right panel.
                 </h2>
               </motion.div>
 
@@ -1243,97 +1311,10 @@ export default function MrkHome() {
             </a>
           </div>
         </section>
-        <section className="pt-[clamp(4.5rem,9vw,8rem)]">
-          <div className={cn('swrap', tw['swrap'])}>
-            <div
-              className={cn('sslider', tw['sslider'])}
-              onMouseEnter={() => setSliderPaused(true)}
-              onMouseLeave={() => setSliderPaused(false)}
-              onFocusCapture={() => setSliderPaused(true)}
-              onBlurCapture={() => setSliderPaused(false)}
-            >
-              <button
-                type={"button"}
-                className={cn('sarrow prev', tw['sarrow'])}
-                aria-label={"Previous idea"}
-                onClick={() => goToSlide(slide - 1, -1)}
-              >
-                <svg viewBox={"0 0 24 24"} aria-hidden={"true"}>
-                  <path d={"M15 5l-7 7 7 7"}></path>
-                </svg>
-              </button>
-              <div className={cn('sviewport', tw['sviewport'])}>
-                <AnimatePresence initial={false} custom={slideDir}>
-                  <motion.article
-                    key={slide}
-                    className={cn('sslide', tw['sslide'])}
-                    custom={slideDir}
-                    variants={slideVariants}
-                    initial={"enter"}
-                    animate={"center"}
-                    exit={"exit"}
-                    transition={
-                      prefersReducedMotion
-                        ? { duration: 0 }
-                        : { x: { duration: 0.55, ease: [0.2, 0.7, 0.2, 1] }, opacity: { duration: 0.3 } }
-                    }
-                  >
-                    <div className={cn(
-                        "sslide-media",
-                        starIdeas[slide].img && "photo",
-                        tw["sslide-media"],
-                        starIdeas[slide].img && tw.photo,
-                      )}>
-                      {starIdeas[slide].img ? (
-                        <img src={starIdeas[slide].img} alt={starIdeas[slide].alt} />
-                      ) : (
-                        <svg viewBox={"0 0 200 260"}>
-                          <use href={starIdeas[slide].icon}></use>
-                        </svg>
-                      )}
-                    </div>
-                    <div className={cn('sslide-body', tw['sslide-body'])}>
-                      <span className={cn('no', tw['no'])}>{starIdeas[slide].no}</span>
-                      <h3>{starIdeas[slide].title}</h3>
-                      <p>{starIdeas[slide].copy}</p>
-                      {starIdeas[slide].chips.length > 0 && (
-                        <div className={cn('chips', tw['chips'])}>
-                          {starIdeas[slide].chips.map((chip) => (
-                            <span className={cn('chip', tw['chip'])} key={chip}>{chip}</span>
-                          ))}
-                        </div>
-                      )}
-                      <a className={cn('slink', tw['slink'])} href={"#range"}>{starIdeas[slide].link}</a>
-                    </div>
-                  </motion.article>
-                </AnimatePresence>
-              </div>
-              <button
-                type={"button"}
-                className={cn('sarrow next', tw['sarrow'])}
-                aria-label={"Next idea"}
-                onClick={() => goToSlide(slide + 1, 1)}
-              >
-                <svg viewBox={"0 0 24 24"} aria-hidden={"true"}>
-                  <path d={"M9 5l7 7-7 7"}></path>
-                </svg>
-              </button>
-              <div className={cn('sdots', tw['sdots'])}>
-                {starIdeas.map((idea, index) => (
-                  <button
-                    type={"button"}
-                    key={idea.no}
-                    className={cn("sdot", index === slide && "on", tw.sdot)}
-                    aria-label={`Show idea ${index + 1}`}
-                    aria-current={index === slide || undefined}
-                    onClick={() => goToSlide(index, index > slide ? 1 : -1)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-        <section className={cn('section container', tw['section'], tw['container'])} id={"why"}>
+        <ProductStackSection />
+       
+         <CurvedVideoReel />
+        <section className={cn('secti s channels vertical general it centers a professionally, as doingon container', tw['section'], tw['container'])} id={"why"}>
           <div className={cn('section-head', tw['section-head'])}>
             <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"MRK मानक"}>The MRK standard</span>
             <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Why India chooses MRK.</h2>
@@ -1442,7 +1423,48 @@ export default function MrkHome() {
             </div>
           </div>
         </section>
-        <section className={cn('section container tsec', tw['section'], tw['container'], tw['tsec'])}>
+       
+        <section className={cn('deal', tw['deal'])} id={"dealer"}>
+          <div className={cn('deal-bubbles', tw['deal-bubbles'])} aria-hidden={"true"}>
+            <span className={cn("bub", tw.bub, "bottom-[18%] left-[12%] h-[14px] w-[14px] [animation-delay:0s]")}></span>
+            <span className={cn("bub", tw.bub, "bottom-[8%] left-[28%] h-[22px] w-[22px] [animation-delay:1.6s]")}></span>
+            <span className={cn("bub", tw.bub, "bottom-[22%] left-[66%] h-3 w-3 [animation-delay:.8s]")}></span>
+            <span className={cn("bub", tw.bub, "bottom-[12%] left-[82%] h-[18px] w-[18px] [animation-delay:2.4s]")}></span>
+            <span className={cn("bub", tw.bub, "bottom-[30%] left-[48%] h-[10px] w-[10px] [animation-delay:3.2s]")}></span>
+          </div>
+          <div className={cn('container section', tw['container'], tw['section'])}>
+            <div className={cn('inner', tw['inner'])}>
+              <div className={cn('reveal', tw['reveal'])}>
+                <span className={cn("eyebrow", tw.eyebrow, "!text-splash")} data-hi={"डीलर बनें"}>Become a dealer</span>
+                <h2>Build your business with a complete pump-starter range.</h2>
+                <p>
+                  Single-phase, three-phase and smart plugs under one name, so one relationship covers every customer. Dependable margins, full-range demand, and marketing support.
+                </p>
+                <a className={cn('btn btn-light', tw['btn'], tw['btn-light'])} href={"#contact"} data-hi={"डीलरशिप के लिए आवेदन करें"}>
+                  Apply for dealership
+                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"}>
+                    <path d={"M5 12h14M13 6l6 6-6 6"}></path>
+                  </svg>
+                </a>
+              </div>
+              <div className={cn('dstats reveal d1', tw['dstats'], tw['reveal'])}>
+                <div>
+                  <b>1,000+</b>
+                  <span>Dealers</span>
+                </div>
+                <div>
+                  <b>500+</b>
+                  <span>Cities</span>
+                </div>
+                <div>
+                  <b>20+</b>
+                  <span>States</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+         <section className={cn('section container tsec', tw['section'], tw['container'], tw['tsec'])}>
           <div className={cn('thead', tw['thead'])}>
             <div className={cn('section-head', tw['section-head'])}>
               <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"ग्राहकों की ज़ुबानी"}>In their words</span>
@@ -1511,89 +1533,11 @@ export default function MrkHome() {
           </div>
           <p className={cn('ph-note', tw['ph-note'])}>▲ Send 5 real quotes with name + city to replace these.</p>
         </section>
-        <section className={cn('deal', tw['deal'])} id={"dealer"}>
-          <svg className={cn('wave-top', tw['wave-top'])} viewBox={"0 0 1200 60"} preserveAspectRatio={"none"} aria-hidden={"true"}>
-            <path d={"M0,30 C200,55 400,5 600,26 C800,48 1000,8 1200,30 L1200,0 L0,0 Z"}></path>
-          </svg>
-          <div className={cn('deal-bubbles', tw['deal-bubbles'])} aria-hidden={"true"}>
-            <span className={cn("bub", tw.bub, "bottom-[18%] left-[12%] h-[14px] w-[14px] [animation-delay:0s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[8%] left-[28%] h-[22px] w-[22px] [animation-delay:1.6s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[22%] left-[66%] h-3 w-3 [animation-delay:.8s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[12%] left-[82%] h-[18px] w-[18px] [animation-delay:2.4s]")}></span>
-            <span className={cn("bub", tw.bub, "bottom-[30%] left-[48%] h-[10px] w-[10px] [animation-delay:3.2s]")}></span>
-          </div>
-          <div className={cn('container section', tw['container'], tw['section'])}>
-            <div className={cn('inner', tw['inner'])}>
-              <div className={cn('reveal', tw['reveal'])}>
-                <span className={cn("eyebrow", tw.eyebrow, "!text-splash")} data-hi={"डीलर बनें"}>Become a dealer</span>
-                <h2>Build your business with a complete pump-starter range.</h2>
-                <p>
-                  Single-phase, three-phase and smart plugs under one name, so one relationship covers every customer. Dependable margins, full-range demand, and marketing support.
-                </p>
-                <a className={cn('btn btn-light', tw['btn'], tw['btn-light'])} href={"#contact"} data-hi={"डीलरशिप के लिए आवेदन करें"}>
-                  Apply for dealership
-                  <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"}>
-                    <path d={"M5 12h14M13 6l6 6-6 6"}></path>
-                  </svg>
-                </a>
-              </div>
-              <div className={cn('dstats reveal d1', tw['dstats'], tw['reveal'])}>
-                <div>
-                  <b>1,000+</b>
-                  <span>Dealers</span>
-                </div>
-                <div>
-                  <b>500+</b>
-                  <span>Cities</span>
-                </div>
-                <div>
-                  <b>20+</b>
-                  <span>States</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section className={cn('section container', tw['section'], tw['container'])} id={"downloads"}>
-          <div className={cn('section-head', tw['section-head'])}>
-            <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"डाउनलोड"}>Downloads</span>
-            <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Everything you need, in one place.</h2>
-          </div>
-          <div className={cn('dl-grid', tw['dl-grid'])}>
-            <a className={cn('dl-card reveal', tw['dl-card'], tw['reveal'])} href={"#"}>
-              <span className={cn('dic', tw['dic'])}>
-                <svg viewBox={"0 0 24 24"}>
-                  <path d={"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"}></path>
-                  <path d={"M14 2v6h6"}></path>
-                  <path d={"M12 12v6m0 0l-2.5-2.5M12 18l2.5-2.5"}></path>
-                </svg>
-              </span>
-              <div>
-                <h4>Product Catalog</h4>
-                <p>PDF · full range</p>
-              </div>
-              <span className={cn('arr', tw['arr'])}>↓</span>
-            </a>
-            <a className={cn('dl-card reveal d1', tw['dl-card'], tw['reveal'])} href={"#"}>
-              <span className={cn('dic', tw['dic'])}>
-                <svg viewBox={"0 0 24 24"}>
-                  <path d={"M9 3h6l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"}></path>
-                  <path d={"M8 12h8M8 16h8M8 8h3"}></path>
-                </svg>
-              </span>
-              <div>
-                <h4>Current Price List</h4>
-                <p>PDF · updated pricing</p>
-              </div>
-              <span className={cn('arr', tw['arr'])}>↓</span>
-            </a>
-          </div>
-        </section>
+
+        {/* ── Curved Product Reel ── */}
+
       </main>
       <footer className={cn('foot', tw['foot'])} id={"contact"}>
-        <svg className={cn('wave-top', tw['wave-top'])} viewBox={"0 0 1200 56"} preserveAspectRatio={"none"} aria-hidden={"true"}>
-          <path d={"M0,28 C220,52 420,6 620,26 C820,46 1010,8 1200,30 L1200,0 L0,0 Z"}></path>
-        </svg>
         <div className={cn('container', tw['container'])}>
           <div className={cn('foot-main', tw['foot-main'])}>
             <div>
@@ -1626,7 +1570,7 @@ export default function MrkHome() {
                   <a href={"#range"}>WLC Smart Plugs</a>
                 </li>
                 <li>
-                  <a href={"#range"}>Cables & Accessories</a>
+                  <a href={"#range"}>Switch Gears</a>
                 </li>
               </ul>
             </div>
