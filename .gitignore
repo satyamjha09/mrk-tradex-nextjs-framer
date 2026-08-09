@@ -6,7 +6,7 @@ apps/**/node_modules/
 apps/**/.next/
 apps/**/dist/
 apps/**/*.log
-apps/**/logs/
+apps/ecommerce/server/logs/
 apps/**/.env
 apps/**/.env.*
 !apps/**/.env.example
@@ -20,7 +20,7 @@ clean-dev.log
 api-dev.log
 api-dev-fixed.log
 api-direct.log
-logs/
+/logs/
 .local-postgres/
 apps/ecommerce/server/uploads/
 .DS_Store
