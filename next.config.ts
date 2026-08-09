@@ -1,15 +1,16 @@
 import type { NextConfig } from "next";
 
+const vercelApiTraceIncludes = [
+  "./apps/ecommerce/server/dist/**/*",
+  "./apps/ecommerce/server/prisma/schema.prisma",
+  "./apps/ecommerce/server/package.json",
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: process.cwd(),
   outputFileTracingIncludes: {
-    "/api/v1/[...path]": [
-      "./apps/ecommerce/server/dist/**/*",
-      "./apps/ecommerce/server/node_modules/**/*",
-      "./apps/ecommerce/server/prisma/**/*",
-      "./apps/ecommerce/server/package.json",
-    ],
+    "/api/v1/**": vercelApiTraceIncludes,
   },
   eslint: {
     ignoreDuringBuilds: true,
