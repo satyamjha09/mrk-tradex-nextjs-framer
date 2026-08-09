@@ -19,6 +19,11 @@ interface InputForm {
   password: string;
 }
 
+const ADMIN_ROLES = new Set(["ADMIN", "SUPERADMIN"]);
+
+const getPostSignInPath = (role?: string) =>
+  ADMIN_ROLES.has((role ?? "").toUpperCase()) ? "/dashboard" : "/";
+
 const SignIn = () => {
   const [signIn, { error, isLoading }] = useSignInMutation();
   const router = useRouter();
@@ -36,8 +41,8 @@ const SignIn = () => {
 
   const onSubmit = async (formData: InputForm) => {
     try {
-      await signIn(formData).unwrap();
-      router.push("/");
+      const response = await signIn(formData).unwrap();
+      router.push(getPostSignInPath(response.user?.role));
     } catch (error) {
       console.log("error: ", error);
     }
@@ -45,8 +50,8 @@ const SignIn = () => {
 
   const signInAsDemo = async (email: string) => {
     try {
-      await signIn({ email, password: "password123" }).unwrap();
-      router.push("/");
+      const response = await signIn({ email, password: "password123" }).unwrap();
+      router.push(getPostSignInPath(response.user?.role));
     } catch (error) {
       console.log("error: ", error);
     }
