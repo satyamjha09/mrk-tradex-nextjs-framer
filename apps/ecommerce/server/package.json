@@ -11,6 +11,7 @@
     "start": "node dist/server.js",
     "prisma": "prisma",
     "seed": "ts-node seeds/mrk-seed.ts",
+    "seed:prod": "ts-node seeds/prod-seed.ts",
     "seed:demo": "ts-node seeds/seed.ts",
     "seed:mrk": "ts-node seeds/mrk-seed.ts",
     "seed:mrk-panel": "ts-node seeds/upsert-mrk-three-phase-panel.ts"

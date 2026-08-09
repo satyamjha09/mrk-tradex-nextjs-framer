@@ -1,7 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-
 const images = [
   "/images/three-phase-panel.png",
   "/images/panel-components.png",
@@ -9,7 +7,7 @@ const images = [
   "/images/mrg-dpt-2-auto-timer.png",
 ];
 
-async function main() {
+export async function upsertMrkThreePhasePanel(prisma: PrismaClient) {
   const category = await prisma.category.upsert({
     where: { slug: "three-phase-panels" },
     update: {
@@ -160,11 +158,15 @@ async function main() {
   console.log("MRK three phase control panel is published for all users.");
 }
 
-main()
-  .catch((error) => {
-    console.error("Failed to upsert MRK three phase control panel:", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (require.main === module) {
+  const prisma = new PrismaClient();
+
+  upsertMrkThreePhasePanel(prisma)
+    .catch((error) => {
+      console.error("Failed to upsert MRK three phase control panel:", error);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
