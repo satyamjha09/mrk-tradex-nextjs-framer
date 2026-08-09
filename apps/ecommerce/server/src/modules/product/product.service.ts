@@ -65,6 +65,13 @@ const buildVariantCreateData = (variant: any) => {
   };
 };
 
+const normalizeVariantAttributes = (
+  attributes: { attributeId?: string; valueId?: string }[] = [],
+) =>
+  attributes.filter(
+    (attribute) => attribute?.attributeId && attribute?.valueId,
+  ) as { attributeId: string; valueId: string }[];
+
 export class ProductService {
   constructor(
     private productRepository: ProductRepository,
@@ -210,10 +217,14 @@ export class ProductService {
     if (!variants || variants.length === 0) {
       throw new AppError(400, "At least one variant is required");
     }
+    const sanitizedVariants = variants.map((variant) => ({
+      ...variant,
+      attributes: normalizeVariantAttributes(variant.attributes),
+    }));
 
     // Validate SKU format (alphanumeric with dashes, 3-50 characters)
     const skuRegex = /^[a-zA-Z0-9-]+$/;
-    variants.forEach((variant, index) => {
+    sanitizedVariants.forEach((variant, index) => {
       if (
         !variant.sku ||
         !skuRegex.test(variant.sku) ||
@@ -278,11 +289,15 @@ export class ProductService {
     // Validate attributes and values in one query
     const allAttributeIds = [
       ...new Set(
-        variants.flatMap((v) => v.attributes.map((a) => a.attributeId)),
+        sanitizedVariants.flatMap((v) =>
+          v.attributes.map((a) => a.attributeId),
+        ),
       ),
     ];
     const allValueIds = [
-      ...new Set(variants.flatMap((v) => v.attributes.map((a) => a.valueId))),
+      ...new Set(
+        sanitizedVariants.flatMap((v) => v.attributes.map((a) => a.valueId)),
+      ),
     ];
     const [existingAttributes, existingValues] = await Promise.all([
       prisma.attribute.findMany({
@@ -303,7 +318,7 @@ export class ProductService {
     }
 
     // Validate attribute-value pairs
-    variants.forEach((variant, index) => {
+    sanitizedVariants.forEach((variant, index) => {
       variant.attributes.forEach((attr, attrIndex) => {
         const value = existingValues.find((v) => v.id === attr.valueId);
         if (!value || value.attributeId !== attr.attributeId) {
@@ -317,7 +332,7 @@ export class ProductService {
 
     // Validate unique SKUs
     const existingSkus = await prisma.productVariant.findMany({
-      where: { sku: { in: variants.map((v) => v.sku) } },
+      where: { sku: { in: sanitizedVariants.map((v) => v.sku) } },
       select: { sku: true },
     });
     if (existingSkus.length > 0) {
@@ -328,18 +343,18 @@ export class ProductService {
     }
 
     // Validate unique attribute combinations
-    const comboKeys = variants.map((variant) =>
+    const comboKeys = sanitizedVariants.map((variant) =>
       variant.attributes
         .map((attr) => `${attr.attributeId}:${attr.valueId}`)
         .sort()
         .join("|"),
     );
-    if (new Set(comboKeys).size !== variants.length) {
+    if (new Set(comboKeys).size !== sanitizedVariants.length) {
       throw new AppError(400, "Duplicate attribute combinations detected");
     }
 
     // Validate required attributes
-    variants.forEach((variant, index) => {
+    sanitizedVariants.forEach((variant, index) => {
       const variantAttributeIds = variant.attributes.map(
         (attr) => attr.attributeId,
       );
@@ -361,7 +376,9 @@ export class ProductService {
         ...productData,
         slug: slugify(productData.name),
         variants: {
-          create: variants.map((variant) => buildVariantCreateData(variant)),
+          create: sanitizedVariants.map((variant) =>
+            buildVariantCreateData(variant),
+          ),
         },
       },
       include: productInclude,
@@ -474,14 +491,20 @@ export class ProductService {
       throw new AppError(400, "Category is required");
     }
 
+    let sanitizedVariants: typeof variants;
+
     // Validate variants if provided
     if (variants) {
       if (variants.length === 0) {
         throw new AppError(400, "At least one variant is required");
       }
+      sanitizedVariants = variants.map((variant) => ({
+        ...variant,
+        attributes: normalizeVariantAttributes(variant.attributes),
+      }));
 
       const skuRegex = /^[a-zA-Z0-9-]+$/;
-      variants.forEach((variant, index) => {
+      sanitizedVariants.forEach((variant, index) => {
         if (
           !variant.sku ||
           !skuRegex.test(variant.sku) ||
@@ -525,7 +548,9 @@ export class ProductService {
 
       const allAttributeIds = [
         ...new Set(
-          variants.flatMap((v) => v.attributes.map((a) => a.attributeId)),
+          sanitizedVariants.flatMap((v) =>
+            v.attributes.map((a) => a.attributeId),
+          ),
         ),
       ];
       const existingAttributes = await prisma.attribute.findMany({
@@ -536,7 +561,11 @@ export class ProductService {
       }
 
       const allValueIds = [
-        ...new Set(variants.flatMap((v) => v.attributes.map((a) => a.valueId))),
+        ...new Set(
+          sanitizedVariants.flatMap((v) =>
+            v.attributes.map((a) => a.valueId),
+          ),
+        ),
       ];
       const existingValues = await prisma.attributeValue.findMany({
         where: { id: { in: allValueIds } },
@@ -545,18 +574,18 @@ export class ProductService {
         throw new AppError(400, "One or more attribute values are invalid");
       }
 
-      const skuSet = new Set(variants.map((v) => v.sku));
-      if (skuSet.size !== variants.length) {
+      const skuSet = new Set(sanitizedVariants.map((v) => v.sku));
+      if (skuSet.size !== sanitizedVariants.length) {
         throw new AppError(400, "Duplicate SKUs detected");
       }
 
-      const comboKeys = variants.map((variant) =>
+      const comboKeys = sanitizedVariants.map((variant) =>
         variant.attributes
           .map((attr) => `${attr.attributeId}:${attr.valueId}`)
           .sort()
           .join("|"),
       );
-      if (new Set(comboKeys).size !== variants.length) {
+      if (new Set(comboKeys).size !== sanitizedVariants.length) {
         throw new AppError(400, "Duplicate attribute combinations detected");
       }
 
@@ -572,7 +601,7 @@ export class ProductService {
         );
       }
 
-      variants.forEach((variant, index) => {
+      sanitizedVariants.forEach((variant, index) => {
         const variantAttributeIds = variant.attributes.map(
           (attr) => attr.attributeId,
         );
@@ -600,9 +629,9 @@ export class ProductService {
           },
         });
 
-        if (variants) {
+        if (sanitizedVariants) {
           await tx.productVariant.deleteMany({ where: { productId } });
-          for (const variant of variants) {
+          for (const variant of sanitizedVariants) {
             await tx.productVariant.create({
               data: {
                 ...buildVariantCreateData(variant),

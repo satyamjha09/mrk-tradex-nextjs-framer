@@ -122,7 +122,11 @@ const appendVariantFields = (
   appendValue(
     payload,
     `variants[${index}][attributes]`,
-    JSON.stringify(variant.attributes || []),
+    JSON.stringify(
+      (variant.attributes || []).filter(
+        (attribute) => attribute?.attributeId && attribute?.valueId,
+      ),
+    ),
   );
 
   const existingImageUrls: string[] = [];

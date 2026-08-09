@@ -8,7 +8,7 @@ import { demoBaseQuery } from "@/app/lib/demo/demoBaseQuery";
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   credentials: "include",
-  timeout: 8000,
+  timeout: 30000,
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
