@@ -330,43 +330,27 @@ const slideVariants = {
 
 const SLIDE_INTERVAL = 5000;
 
-// Matches the Tailwind gap used by the product rail.
-const RAIL_GAP = 56;
-
-// Matches the Tailwind gap used by the testimonial rail.
-const TRAIL_GAP = 8;
-
 const testimonials = [
   {
-    quote: "Placeholder for a real dealer testimonial, margins, range, and how MRK moves off the shelf.",
-    name: "Dealer name",
-    role: "City, State",
-    initial: "D",
+    quote: "Read this MRK customer review directly on Google Maps.",
+    name: "Google Review",
+    role: "Actual customer feedback",
+    initial: "G",
+    href: "https://maps.app.goo.gl/vuo8G1zForLxoT1bA",
   },
   {
-    quote: "Placeholder for a real farmer testimonial, reliability and protection during the season.",
-    name: "Farmer name",
-    role: "City, State",
-    initial: "F",
+    quote: "Open the real Google review page for MRK ratings and feedback.",
+    name: "Google Review",
+    role: "MRK Tradex listing",
+    initial: "G",
+    href: "https://maps.app.goo.gl/vuo8G1zForLxoT1bA",
   },
   {
-    quote: "Placeholder for a real homeowner testimonial, no more overflow, no more worry.",
-    name: "Homeowner name",
-    role: "City, State",
-    initial: "H",
-  },
-  {
-    quote: "Placeholder for a real electrician testimonial, wiring, fault-finding and service calls.",
-    name: "Electrician name",
-    role: "City, State",
-    initial: "E",
-  },
-  {
-    video: true,
-    img: "/images/intro-panels-wave.jpg",
-    alt: "MRK panels installed on site",
-    name: "Video testimonial",
-    role: "City, State",
+    quote: "See customer feedback for MRK products on Google Maps.",
+    name: "Google Review",
+    role: "Google Maps review",
+    initial: "G",
+    href: "https://maps.app.goo.gl/PYwQUW2cXaqoGSrG6",
   },
 ];
 
@@ -623,9 +607,8 @@ const tw: Record<string, string> = {
 
   tsec: "[&_.section-head]:mb-0 [&_.section-head]:max-w-none [&_h2.title]:uppercase [&_h2.title]:leading-[.95] [&_h2.title]:tracking-[-.02em]",
   thead: "mb-10 flex items-end justify-between gap-8 max-[1000px]:mb-[2.4rem] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-6",
-  tnav: "flex gap-3 pb-1 max-[720px]:pb-0 [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:cursor-pointer [&>button]:items-center [&>button]:justify-center [&>button]:rounded-full [&>button]:border-0 [&>button]:bg-ink [&>button]:text-white [&>button]:transition [&>button]:duration-300 [&>button]:ease-in-out [&>button:hover:not(:disabled)]:scale-105 [&>button:hover:not(:disabled)]:bg-aqua [&>button:disabled]:pointer-events-none [&>button:disabled]:opacity-20 [&>button>svg]:h-5 [&>button>svg]:w-5 [&>button>svg]:fill-none [&>button>svg]:stroke-current [&>button>svg]:stroke-2",
-  tgrid: "flex gap-2 overflow-x-hidden overscroll-x-none [scrollbar-width:none] max-[720px]:snap-x max-[720px]:overflow-x-auto [&::-webkit-scrollbar]:hidden",
-  tcard: "relative flex min-h-[272px] w-[clamp(238px,23vw,282px)] flex-none flex-col rounded-xl bg-mist p-6 max-[720px]:w-[78vw] [&>p]:mb-0 [&>p]:text-sm [&>p]:leading-[1.62] [&>p]:text-muted",
+  tgrid: "grid grid-cols-3 gap-4 max-[1000px]:grid-cols-2 max-[640px]:grid-cols-1",
+  tcard: "group relative flex min-h-[250px] flex-col rounded-xl bg-mist p-6 text-left text-ink no-underline transition duration-300 ease-in-out hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_42px_rgba(11,31,51,.10)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua [&>p]:mb-0 [&>p]:text-sm [&>p]:leading-[1.62] [&>p]:text-muted",
   "tcard-top": "relative z-10 mb-6 flex items-center justify-between gap-2",
   stars5: "text-xs leading-none tracking-[0.2em] text-ink",
   tidx: "font-mono text-xs text-muted",
@@ -633,8 +616,6 @@ const tw: Record<string, string> = {
   av: "flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-aqua to-marine text-sm font-semibold text-white",
   "tcard-media": "overflow-hidden bg-ink after:absolute after:inset-0 after:bg-[linear-gradient(180deg,rgba(11,31,51,.30),rgba(11,31,51,.78))] after:content-[''] [&>img]:absolute [&>img]:inset-0 [&>img]:h-full [&>img]:w-full [&>img]:object-cover [&_.stars5]:text-white [&_.tidx]:text-white [&_.who_b]:text-white [&_.who_span]:text-white/80",
   tplay: "absolute left-1/2 top-1/2 z-20 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white transition duration-300 hover:scale-105 hover:bg-splash [&>svg]:ml-0.5 [&>svg]:h-5 [&>svg]:w-5 [&>svg]:fill-current [&>svg]:text-ink",
-  "ph-note": "mt-6 font-mono text-[0.7rem] uppercase tracking-[0.06em] text-aqua",
-
   deal: "relative overflow-hidden bg-[linear-gradient(135deg,rgb(var(--deep)),rgb(var(--ink))_60%,rgb(var(--marine)))] text-white [&>.wave-top]:h-[60px] [&>.wave-top_path]:fill-paper",
   "wave-top": "absolute -top-px left-0 right-0 w-full",
   "deal-bubbles": "pointer-events-none absolute inset-0",
@@ -701,9 +682,6 @@ export default function MrkHome() {
     );
     return () => clearTimeout(timer);
   }, [slide, sliderPaused, goToSlide]);
-
-  const RAIL_GAP = 56;
-  const testimonialRail = useRail(TRAIL_GAP, prefersReducedMotion);
 
   useMotionValueEvent(scrollY, "change", (currentScrollY) => {
     const root = rootRef.current;
@@ -1642,67 +1620,37 @@ export default function MrkHome() {
               <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"ग्राहकों की ज़ुबानी"}>In their words</span>
               <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Trusted where water matters most.</h2>
             </div>
-            <div className={cn('tnav reveal d1', tw['tnav'], tw['reveal'])}>
-              <button
-                type={"button"}
-                aria-label={"Previous testimonials"}
-                disabled={testimonialRail.atEnds[0]}
-                onClick={() => testimonialRail.nudge(-1)}
-              >
-                <svg viewBox={"0 0 24 24"} aria-hidden={"true"}>
-                  <path d={"M15 5l-7 7 7 7"}></path>
-                </svg>
-              </button>
-              <button
-                type={"button"}
-                aria-label={"Next testimonials"}
-                disabled={testimonialRail.atEnds[1]}
-                onClick={() => testimonialRail.nudge(1)}
-              >
-                <svg viewBox={"0 0 24 24"} aria-hidden={"true"}>
-                  <path d={"M9 5l7 7-7 7"}></path>
-                </svg>
-              </button>
-            </div>
           </div>
-          <div className={cn('tgrid', tw['tgrid'])} ref={testimonialRail.ref} onScroll={testimonialRail.sync}>
+          <div className={cn('tgrid', tw['tgrid'])}>
             {testimonials.map((item, index) => (
-              <article
-                className={cn(
-                  "tcard",
-                  item.video && "tcard-media",
-                  tw.tcard,
-                  item.video && tw["tcard-media"],
-                )}
-                key={item.name}
+              <a
+                className={cn("tcard", tw.tcard)}
+                href={item.href}
+                key={`${item.href}-${index}`}
+                rel={"noopener noreferrer"}
+                target={"_blank"}
               >
-                {item.video ? <img src={item.img} alt={item.alt} /> : null}
                 <div className={cn('tcard-top', tw['tcard-top'])}>
                   <span className={cn('stars5', tw['stars5'])} aria-label={"Rated 5 out of 5"}>★★★★★</span>
-                  <span className={cn('tidx', tw['tidx'])} aria-hidden={"true"}>
-                    {index + 1}/{testimonials.length}
-                  </span>
+                  <span className={cn('tidx', tw['tidx'])}>Google</span>
                 </div>
-                {item.video ? (
-                  <button className={cn('tplay', tw['tplay'])} type={"button"} aria-label={"Play video testimonial"}>
-                    <svg viewBox={"0 0 24 24"} aria-hidden={"true"}>
-                      <path d={"M8 5l11 7-11 7z"}></path>
-                    </svg>
-                  </button>
-                ) : (
-                  <p>{item.quote}</p>
-                )}
+                <p>{item.quote}</p>
                 <div className={cn('who', tw['who'])}>
-                  {item.video ? null : <div className={cn('av', tw['av'])}>{item.initial}</div>}
+                  <div className={cn('av', tw['av'])}>{item.initial}</div>
                   <div>
                     <b>{item.name}</b>
                     <span>{item.role}</span>
                   </div>
                 </div>
-              </article>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-aqua">
+                  Open Google review
+                  <svg viewBox={"0 0 24 24"} aria-hidden={"true"} className="h-4 w-4 fill-none stroke-current stroke-2">
+                    <path d={"M5 12h14M13 6l6 6-6 6"} strokeLinecap={"round"} strokeLinejoin={"round"}></path>
+                  </svg>
+                </span>
+              </a>
             ))}
           </div>
-          <p className={cn('ph-note', tw['ph-note'])}>▲ Send 5 real quotes with name + city to replace these.</p>
         </section>
 
         {/* ── Curved Product Reel ── */}
