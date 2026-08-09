@@ -330,26 +330,17 @@ const slideVariants = {
 
 const SLIDE_INTERVAL = 5000;
 
-const testimonials = [
+const googleReviewLinks = [
   {
-    quote: "Read this MRK customer review directly on Google Maps.",
-    name: "Google Review",
-    role: "Actual customer feedback",
-    initial: "G",
+    label: "Read Google reviews",
     href: "https://maps.app.goo.gl/vuo8G1zForLxoT1bA",
   },
   {
-    quote: "Open the real Google review page for MRK ratings and feedback.",
-    name: "Google Review",
-    role: "MRK Tradex listing",
-    initial: "G",
+    label: "Open Google listing",
     href: "https://maps.app.goo.gl/vuo8G1zForLxoT1bA",
   },
   {
-    quote: "See customer feedback for MRK products on Google Maps.",
-    name: "Google Review",
-    role: "Google Maps review",
-    initial: "G",
+    label: "View more feedback",
     href: "https://maps.app.goo.gl/PYwQUW2cXaqoGSrG6",
   },
 ];
@@ -1621,8 +1612,45 @@ export default function MrkHome() {
               <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Trusted where water matters most.</h2>
             </div>
           </div>
-          <div className={cn('tgrid', tw['tgrid'])}>
-            {testimonials.map((item, index) => (
+          <div className="rounded-[1.5rem] bg-mist p-6 shadow-[0_18px_42px_rgba(11,31,51,.06)] sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div className={cn('av', tw['av'])}>G</div>
+                <div>
+                  <div className={cn('stars5', tw['stars5'])} aria-label={"Google reviews rated 5 out of 5"}>★★★★★</div>
+                  <h3 className="mt-3 text-2xl font-bold tracking-normal text-ink">
+                    Read real MRK customer reviews on Google
+                  </h3>
+                  <p className="mt-3 max-w-[62ch] text-base leading-7 text-muted">
+                    Actual customer reviews are maintained on Google Maps. Open
+                    the Google listing to read the latest public feedback and
+                    ratings.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex rounded-full bg-white px-4 py-2 font-mono text-xs uppercase tracking-[0.08em] text-aqua">
+                Google reviews
+              </span>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-3">
+              {googleReviewLinks.map((item, index) => (
+                <a
+                  className="inline-flex items-center gap-2 rounded-full bg-aqua px-5 py-3 text-sm font-semibold text-white transition hover:bg-marine focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua"
+                  href={item.href}
+                  key={`${item.href}-${index}`}
+                  rel={"noopener noreferrer"}
+                  target={"_blank"}
+                >
+                  {item.label}
+                  <svg viewBox={"0 0 24 24"} aria-hidden={"true"} className="h-4 w-4 fill-none stroke-current stroke-2">
+                    <path d={"M5 12h14M13 6l6 6-6 6"} strokeLinecap={"round"} strokeLinejoin={"round"}></path>
+                  </svg>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="hidden">
+            {googleReviewLinks.slice(0, 0).map((item, index) => (
               <a
                 className={cn("tcard", tw.tcard)}
                 href={item.href}
