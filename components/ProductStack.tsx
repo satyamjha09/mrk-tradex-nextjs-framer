@@ -144,20 +144,20 @@ function PanelBody({ panel }: { panel: PanelData }) {
       >
         <header className="mb-1 sm:mb-2">
           <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 sm:mb-4">
-            <span className="font-mono text-[13px] font-semibold text-aqua">
+            <span className="font-mono text-[15px] font-semibold text-aqua sm:text-[16px] xl:text-[18px]">
               {panel.no}
             </span>
-            <p className="text-[14px] font-semibold text-aqua sm:text-[16px] xl:text-[18px]">
+            <p className="text-[18px] font-semibold text-aqua sm:text-[20px] xl:text-[24px]">
               {panel.category}
             </p>
           </div>
           {/* no nowrap: these titles are wider than the text column at lg/xl */}
-          <h2 className="text-[21px] font-semibold leading-[1.12] tracking-[-0.035em] text-ink sm:text-[26px] sm:leading-[1.06] xl:text-[36px]">
+          <h2 className="text-[20px] font-semibold leading-[1.12] tracking-[-0.025em] text-ink sm:text-[24px] sm:leading-[1.08] xl:text-[32px]">
             {panel.title}
           </h2>
         </header>
 
-        <p className="max-w-[48ch] text-[14px] leading-[1.6] text-muted sm:text-[15px] sm:leading-[1.65] xl:text-[16px] [&_strong]:font-semibold [&_strong]:text-ink">
+        <p className="max-w-[48ch] text-[13px] leading-[1.58] text-muted sm:text-[14px] sm:leading-[1.6] xl:text-[15px] [&_strong]:font-semibold [&_strong]:text-ink">
           {copy}
         </p>
 

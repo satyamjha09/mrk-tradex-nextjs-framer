@@ -1,6 +1,7 @@
-import stripe from "@/infra/payment/stripe";
+import { getStripe } from "@/infra/payment/stripe";
 import AppError from "@/shared/errors/AppError";
 import prisma from "@/infra/database/database.config";
+import { getClientUrl } from "@/config/publicUrl";
 
 const PLACEHOLDER_IMAGE = "https://via.placeholder.com/150";
 
@@ -43,12 +44,12 @@ export class CheckoutService {
       };
     });
 
-    const isProduction = process.env.NODE_ENV === "production";
+    const clientUrl = getClientUrl();
+    if (!clientUrl) {
+      throw new AppError(500, "Client URL is not configured");
+    }
 
-    const clientUrl = isProduction
-      ? process.env.CLIENT_URL_PROD
-      : process.env.CLIENT_URL_DEV;
-
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,

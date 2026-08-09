@@ -3,7 +3,7 @@ import asyncHandler from "@/shared/utils/asyncHandler";
 import sendResponse from "@/shared/utils/sendResponse";
 import { WebhookService } from "./webhook.service";
 import { makeLogsService } from "../logs/logs.factory";
-import stripe from "@/infra/payment/stripe";
+import { getStripe } from "@/infra/payment/stripe";
 import AppError from "@/shared/errors/AppError";
 
 export class WebhookController {
@@ -13,8 +13,12 @@ export class WebhookController {
   handleWebhook = asyncHandler(async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"];
     if (!sig) throw new AppError(400, "No Stripe signature");
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      throw new AppError(500, "STRIPE_WEBHOOK_SECRET is not configured");
+    }
 
     let event;
+    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,

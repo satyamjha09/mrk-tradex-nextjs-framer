@@ -15,6 +15,9 @@ const hasCloudinaryConfig = () =>
       process.env.CLOUDINARY_API_SECRET,
   );
 
+const requiresPersistentStorage = () =>
+  process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+
 const getLocalUploadBaseUrl = () =>
   process.env.API_PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`;
 
@@ -54,6 +57,12 @@ export const uploadToCloudinary = async (
   files: Express.Multer.File[],
 ): Promise<CloudinaryUploadResult[]> => {
   if (!hasCloudinaryConfig()) {
+    if (requiresPersistentStorage()) {
+      throw new Error(
+        "Cloudinary environment variables are required for image uploads in production.",
+      );
+    }
+
     return uploadToLocalStorage(files);
   }
 

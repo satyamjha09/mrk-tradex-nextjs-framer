@@ -5,13 +5,12 @@ import { cookieOptions } from "@/shared/constants";
 import { CartService } from "../cart/cart.service";
 import { CartRepository } from "../cart/cart.repository";
 import handleSocialLogin from "@/shared/utils/auth/handleSocialLogin";
+import { getClientUrl } from "@/config/publicUrl";
 
 const router = express.Router();
 const authController = makeAuthController();
 const cartService = new CartService(new CartRepository());
-const CLIENT_URL_DEV = process.env.CLIENT_URL_DEV;
-const CLIENT_URL_PROD = process.env.CLIENT_URL_PROD;
-const env = process.env.NODE_ENV;
+const clientUrl = getClientUrl();
 
 /**
  * @swagger
@@ -28,7 +27,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: env === "production" ? CLIENT_URL_PROD : CLIENT_URL_DEV,
+    failureRedirect: clientUrl,
   }),
   async (req: any, res: any) => {
     const user = req.user;
@@ -41,7 +40,7 @@ router.get(
     const sessionId = req.session.id;
     await cartService?.mergeCartsOnLogin(sessionId, userId);
 
-    res.redirect(env === "production" ? CLIENT_URL_PROD : CLIENT_URL_DEV);
+    res.redirect(clientUrl);
   }
 );
 /**
@@ -70,7 +69,7 @@ router.get(
   "/facebook/callback",
   passport.authenticate("facebook", {
     session: false,
-    failureRedirect: env === "production" ? CLIENT_URL_PROD : CLIENT_URL_DEV,
+    failureRedirect: clientUrl,
   }),
   async (req: any, res: any) => {
     const user = req.user;
@@ -83,7 +82,7 @@ router.get(
     const sessionId = req.session.id;
     await cartService?.mergeCartsOnLogin(sessionId, userId);
 
-    res.redirect(env === "production" ? CLIENT_URL_PROD : CLIENT_URL_DEV);
+    res.redirect(clientUrl);
   }
 );
 /**
@@ -118,9 +117,7 @@ router.get(
   "/twitter/callback",
   passport.authenticate("twitter", {
     session: false,
-    failureRedirect: `${
-      env === "production" ? CLIENT_URL_PROD : CLIENT_URL_DEV
-    }?error=auth_failed`,
+    failureRedirect: `${clientUrl}?error=auth_failed`,
   }),
   async (req: any, res: any) => {
     const user = req.user;
@@ -135,7 +132,7 @@ router.get(
     const sessionId = req.session.id;
     await cartService?.mergeCartsOnLogin(sessionId, userId);
 
-    res.redirect(env === "production" ? CLIENT_URL_PROD : CLIENT_URL_DEV);
+    res.redirect(clientUrl);
   }
 );
 /**

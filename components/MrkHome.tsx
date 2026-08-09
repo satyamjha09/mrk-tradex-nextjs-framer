@@ -624,7 +624,7 @@ const tw: Record<string, string> = {
   tsec: "[&_.section-head]:mb-0 [&_.section-head]:max-w-none [&_h2.title]:uppercase [&_h2.title]:leading-[.95] [&_h2.title]:tracking-[-.02em]",
   thead: "mb-10 flex items-end justify-between gap-8 max-[1000px]:mb-[2.4rem] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-6",
   tnav: "flex gap-3 pb-1 max-[720px]:pb-0 [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:cursor-pointer [&>button]:items-center [&>button]:justify-center [&>button]:rounded-full [&>button]:border-0 [&>button]:bg-ink [&>button]:text-white [&>button]:transition [&>button]:duration-300 [&>button]:ease-in-out [&>button:hover:not(:disabled)]:scale-105 [&>button:hover:not(:disabled)]:bg-aqua [&>button:disabled]:pointer-events-none [&>button:disabled]:opacity-20 [&>button>svg]:h-5 [&>button>svg]:w-5 [&>button>svg]:fill-none [&>button>svg]:stroke-current [&>button>svg]:stroke-2",
-  tgrid: "flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+  tgrid: "flex gap-2 overflow-x-hidden overscroll-x-none [scrollbar-width:none] max-[720px]:snap-x max-[720px]:overflow-x-auto [&::-webkit-scrollbar]:hidden",
   tcard: "relative flex min-h-[272px] w-[clamp(238px,23vw,282px)] flex-none flex-col rounded-xl bg-mist p-6 max-[720px]:w-[78vw] [&>p]:mb-0 [&>p]:text-sm [&>p]:leading-[1.62] [&>p]:text-muted",
   "tcard-top": "relative z-10 mb-6 flex items-center justify-between gap-2",
   stars5: "text-xs leading-none tracking-[0.2em] text-ink",
@@ -1669,10 +1669,9 @@ export default function MrkHome() {
             {testimonials.map((item, index) => (
               <article
                 className={cn(
-                  "tcard reveal",
+                  "tcard",
                   item.video && "tcard-media",
                   tw.tcard,
-                  tw.reveal,
                   item.video && tw["tcard-media"],
                 )}
                 key={item.name}

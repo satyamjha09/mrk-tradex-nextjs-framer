@@ -4,7 +4,7 @@ import {
   TRANSACTION_STATUS,
   CART_STATUS,
 } from "@prisma/client";
-import stripe from "@/infra/payment/stripe";
+import { getStripe } from "@/infra/payment/stripe";
 import AppError from "@/shared/errors/AppError";
 import redisClient from "@/infra/cache/redis";
 import { makeLogsService } from "../logs/logs.factory";
@@ -26,6 +26,7 @@ export class WebhookService {
   }
 
   async handleCheckoutCompletion(session: any) {
+    const stripe = getStripe();
     const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
       expand: ["customer_details", "line_items"],
     });

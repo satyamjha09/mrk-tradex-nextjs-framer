@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/prepare-vercel-api.cjs && next build",
+    "build:next": "next build",
+    "vercel:prepare-api": "node scripts/prepare-vercel-api.cjs",
     "start": "next start",
     "api:install": "cd apps/ecommerce/server && npm install",
     "api:dev": "cd apps/ecommerce/server && npm run dev",

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { SOCKET_BASE_URL } from "@/app/lib/constants/config";
+import { SOCKET_BASE_URL, SOCKETS_ENABLED } from "@/app/lib/constants/config";
 import { isDemoMode } from "@/app/lib/demo";
 
 export const useSocketConnection = (chatId: string) => {
@@ -9,7 +9,7 @@ export const useSocketConnection = (chatId: string) => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (isDemoMode()) return;
+    if (isDemoMode() || !SOCKETS_ENABLED || !SOCKET_BASE_URL) return;
     // Get server URL based on environment
     socketRef.current = io(SOCKET_BASE_URL);
 

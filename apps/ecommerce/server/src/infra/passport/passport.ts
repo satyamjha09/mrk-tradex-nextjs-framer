@@ -4,22 +4,35 @@ import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Strategy as TwitterStrategy } from "passport-twitter";
 import { Profile } from "passport";
 import prisma from "@/infra/database/database.config";
+import logger from "@/infra/winston/logger";
+import { getOAuthCallbackUrl } from "@/config/publicUrl";
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "@/shared/utils/auth/tokenUtils";
 
 export default function configurePassport() {
-  // Google Strategy (unchanged)
+  configureGoogleStrategy();
+  configureFacebookStrategy();
+  configureTwitterStrategy();
+}
+
+function configureGoogleStrategy() {
+  const clientID = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const callbackURL = getOAuthCallbackUrl("google");
+
+  if (!clientID || !clientSecret || !callbackURL) {
+    logger.warn("Google OAuth disabled because its environment variables are missing.");
+    return;
+  }
+
   passport.use(
     new GoogleStrategy(
       {
-        clientID: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        callbackURL:
-          process.env.NODE_ENV === "production"
-            ? process.env.GOOGLE_CALLBACK_URL_PROD!
-            : process.env.GOOGLE_CALLBACK_URL_DEV!,
+        clientID,
+        clientSecret,
+        callbackURL,
       },
       async (
         accessToken: string,
@@ -69,17 +82,24 @@ export default function configurePassport() {
       }
     )
   );
+}
 
-  // Facebook Strategy (unchanged, assuming it works)
+function configureFacebookStrategy() {
+  const clientID = process.env.FACEBOOK_APP_ID;
+  const clientSecret = process.env.FACEBOOK_APP_SECRET;
+  const callbackURL = getOAuthCallbackUrl("facebook");
+
+  if (!clientID || !clientSecret || !callbackURL) {
+    logger.warn("Facebook OAuth disabled because its environment variables are missing.");
+    return;
+  }
+
   passport.use(
     new FacebookStrategy(
       {
-        clientID: process.env.FACEBOOK_APP_ID!,
-        clientSecret: process.env.FACEBOOK_APP_SECRET!,
-        callbackURL:
-          process.env.NODE_ENV === "production"
-            ? process.env.FACEBOOK_CALLBACK_URL_PROD!
-            : process.env.FACEBOOK_CALLBACK_URL_DEV!,
+        clientID,
+        clientSecret,
+        callbackURL,
         profileFields: ["id", "emails", "name"],
       },
       async (
@@ -131,17 +151,24 @@ export default function configurePassport() {
       }
     )
   );
+}
 
-  // Twitter Strategy (standalone, without oauthUtils)
+function configureTwitterStrategy() {
+  const consumerKey = process.env.TWITTER_CONSUMER_KEY;
+  const consumerSecret = process.env.TWITTER_CONSUMER_SECRET;
+  const callbackURL = getOAuthCallbackUrl("twitter");
+
+  if (!consumerKey || !consumerSecret || !callbackURL) {
+    logger.warn("Twitter OAuth disabled because its environment variables are missing.");
+    return;
+  }
+
   passport.use(
     new TwitterStrategy(
       {
-        consumerKey: process.env.TWITTER_CONSUMER_KEY!,
-        consumerSecret: process.env.TWITTER_CONSUMER_SECRET!,
-        callbackURL:
-          process.env.NODE_ENV === "production"
-            ? process.env.TWITTER_CALLBACK_URL_PROD!
-            : process.env.TWITTER_CALLBACK_URL_DEV!,
+        consumerKey,
+        consumerSecret,
+        callbackURL,
         includeEmail: true,
       },
       async (
