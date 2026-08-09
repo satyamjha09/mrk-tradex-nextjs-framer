@@ -36,7 +36,7 @@ const buildVariantCreateData = (
     lowStockThreshold: variant.lowStockThreshold || 10,
     images: variant.images || [],
     attributes: {
-      create: attributes.map((attr) => ({
+      create: attributes.map((attr: any) => ({
         attributeId: attr.attributeId,
         valueId: attr.valueId,
       })),
