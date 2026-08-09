@@ -24,19 +24,40 @@ const productInclude = {
   },
 } as const;
 
-const buildVariantCreateData = (
-  productId: string | undefined,
-  variant: any,
-) => {
-  const { attributes, ...variantData } = variant;
-
+const buildVariantCreateData = (variant: any) => {
   return {
-    ...variantData,
-    ...(productId ? { productId } : {}),
+    sku: variant.sku,
+    price: variant.price,
+    stock: variant.stock,
+    priceVisible: variant.priceVisible,
+    stockVisible: variant.stockVisible,
     lowStockThreshold: variant.lowStockThreshold || 10,
+    barcode: variant.barcode,
+    warehouseLocation: variant.warehouseLocation,
+    hp: variant.hp,
+    hpMin: variant.hpMin,
+    hpMax: variant.hpMax,
+    phase: variant.phase,
+    variantType: variant.variantType,
+    maxLoadAmps: variant.maxLoadAmps,
+    boxType: variant.boxType,
+    bodyType: variant.bodyType,
+    meterType: variant.meterType,
+    meterDisplayType: variant.meterDisplayType,
+    meterSize: variant.meterSize,
+    startCapacitor: variant.startCapacitor,
+    runCapacitor: variant.runCapacitor,
+    mcbRelayOlp: variant.mcbRelayOlp,
+    warranty: variant.warranty,
+    protectionFeatures: variant.protectionFeatures,
+    installationInfo: variant.installationInfo,
+    manualUrl: variant.manualUrl,
+    videoUrl: variant.videoUrl,
+    isActive: variant.isActive,
+    sortOrder: variant.sortOrder,
     images: variant.images || [],
     attributes: {
-      create: attributes.map((attr: any) => ({
+      create: (variant.attributes || []).map((attr: any) => ({
         attributeId: attr.attributeId,
         valueId: attr.valueId,
       })),
@@ -340,9 +361,7 @@ export class ProductService {
         ...productData,
         slug: slugify(productData.name),
         variants: {
-          create: variants.map((variant) =>
-            buildVariantCreateData(undefined, variant),
-          ),
+          create: variants.map((variant) => buildVariantCreateData(variant)),
         },
       },
       include: productInclude,
@@ -585,7 +604,10 @@ export class ProductService {
           await tx.productVariant.deleteMany({ where: { productId } });
           for (const variant of variants) {
             await tx.productVariant.create({
-              data: buildVariantCreateData(productId, variant),
+              data: {
+                ...buildVariantCreateData(variant),
+                product: { connect: { id: productId } },
+              },
             });
           }
         }
