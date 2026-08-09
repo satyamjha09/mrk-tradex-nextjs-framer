@@ -10,6 +10,40 @@ import { VariantRepository } from "../variant/variant.repository";
 
 const MAX_VARIANT_IMAGES = 4;
 
+const productInclude = {
+  category: true,
+  variants: {
+    include: {
+      attributes: {
+        include: {
+          attribute: true,
+          value: true,
+        },
+      },
+    },
+  },
+} as const;
+
+const buildVariantCreateData = (
+  productId: string | undefined,
+  variant: any,
+) => {
+  const { attributes, ...variantData } = variant;
+
+  return {
+    ...variantData,
+    ...(productId ? { productId } : {}),
+    lowStockThreshold: variant.lowStockThreshold || 10,
+    images: variant.images || [],
+    attributes: {
+      create: attributes.map((attr) => ({
+        attributeId: attr.attributeId,
+        valueId: attr.valueId,
+      })),
+    },
+  };
+};
+
 export class ProductService {
   constructor(
     private productRepository: ProductRepository,
@@ -301,51 +335,17 @@ export class ProductService {
       }
     });
 
-    // Create product and variants in a transaction
-    return prisma.$transaction(async (tx) => {
-      const product = await this.productRepository.createProduct({
+    return prisma.product.create({
+      data: {
         ...productData,
         slug: slugify(productData.name),
-      });
-
-      for (const variant of variants) {
-        await this.variantRepository.createVariant({
-          productId: product.id,
-          sku: variant.sku,
-          price: variant.price,
-          stock: variant.stock,
-          priceVisible: variant.priceVisible,
-          stockVisible: variant.stockVisible,
-          lowStockThreshold: variant.lowStockThreshold || 10,
-          barcode: variant.barcode,
-          warehouseLocation: variant.warehouseLocation,
-          hp: variant.hp,
-          hpMin: variant.hpMin,
-          hpMax: variant.hpMax,
-          phase: variant.phase,
-          variantType: variant.variantType,
-          maxLoadAmps: variant.maxLoadAmps,
-          boxType: variant.boxType,
-          bodyType: variant.bodyType,
-          meterType: variant.meterType,
-          meterDisplayType: variant.meterDisplayType,
-          meterSize: variant.meterSize,
-          startCapacitor: variant.startCapacitor,
-          runCapacitor: variant.runCapacitor,
-          mcbRelayOlp: variant.mcbRelayOlp,
-          warranty: variant.warranty,
-          protectionFeatures: variant.protectionFeatures,
-          installationInfo: variant.installationInfo,
-          manualUrl: variant.manualUrl,
-          videoUrl: variant.videoUrl,
-          isActive: variant.isActive,
-          sortOrder: variant.sortOrder,
-          attributes: variant.attributes,
-          images: variant.images || [],
-        });
-      }
-
-      return this.productRepository.findProductById(product.id);
+        variants: {
+          create: variants.map((variant) =>
+            buildVariantCreateData(undefined, variant),
+          ),
+        },
+      },
+      include: productInclude,
     });
   }
 
@@ -571,57 +571,32 @@ export class ProductService {
       });
     }
 
-    return prisma.$transaction(async (tx) => {
-      const updatedProduct = await this.productRepository.updateProduct(
-        productId,
-        {
-          ...productData,
-          ...(productData.name && { slug: slugify(productData.name) }),
-        },
-      );
+    return prisma.$transaction(
+      async (tx) => {
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            ...productData,
+            ...(productData.name && { slug: slugify(productData.name) }),
+          },
+        });
 
-      if (variants) {
-        await prisma.productVariant.deleteMany({ where: { productId } });
-        for (const variant of variants) {
-          await this.variantRepository.createVariant({
-            productId,
-            sku: variant.sku,
-            price: variant.price,
-            stock: variant.stock,
-            priceVisible: variant.priceVisible,
-            stockVisible: variant.stockVisible,
-            lowStockThreshold: variant.lowStockThreshold || 10,
-            barcode: variant.barcode,
-            warehouseLocation: variant.warehouseLocation,
-            hp: variant.hp,
-            hpMin: variant.hpMin,
-            hpMax: variant.hpMax,
-            phase: variant.phase,
-            variantType: variant.variantType,
-            maxLoadAmps: variant.maxLoadAmps,
-            boxType: variant.boxType,
-            bodyType: variant.bodyType,
-            meterType: variant.meterType,
-            meterDisplayType: variant.meterDisplayType,
-            meterSize: variant.meterSize,
-            startCapacitor: variant.startCapacitor,
-            runCapacitor: variant.runCapacitor,
-            mcbRelayOlp: variant.mcbRelayOlp,
-            warranty: variant.warranty,
-            protectionFeatures: variant.protectionFeatures,
-            installationInfo: variant.installationInfo,
-            manualUrl: variant.manualUrl,
-            videoUrl: variant.videoUrl,
-            isActive: variant.isActive,
-            sortOrder: variant.sortOrder,
-            attributes: variant.attributes,
-            images: variant.images || [],
-          });
+        if (variants) {
+          await tx.productVariant.deleteMany({ where: { productId } });
+          for (const variant of variants) {
+            await tx.productVariant.create({
+              data: buildVariantCreateData(productId, variant),
+            });
+          }
         }
-      }
 
-      return this.productRepository.findProductById(productId);
-    });
+        return tx.product.findUnique({
+          where: { id: productId },
+          include: productInclude,
+        });
+      },
+      { timeout: 20000 },
+    );
   }
 
   async bulkCreateProducts(file: Express.Multer.File) {
