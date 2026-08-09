@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mrk-tradex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mrk_tradex
+      POSTGRES_USER: mrk
+      POSTGRES_PASSWORD: mrk_local_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - mrk_tradex_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mrk -d mrk_tradex"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mrk_tradex_postgres_data:

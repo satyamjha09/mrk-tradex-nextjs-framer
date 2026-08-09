@@ -7,7 +7,13 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 // The site header is fixed at the top, so the sticky product stage sits below it.
 const SITE_NAV_HEIGHT = 68;
@@ -98,7 +104,7 @@ function Dots() {
 
 function PanelVisual({ panel }: { panel: PanelData }) {
   return (
-    <div className="relative flex h-full items-center justify-center overflow-hidden bg-[#f2f4f7] px-6">
+    <div className="relative flex h-full items-center justify-center overflow-hidden bg-[#f2f4f7] px-4 sm:px-6">
       <Dots />
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-aqua via-aqua/70 to-transparent" />
       <img
@@ -118,13 +124,13 @@ function PanelBody({ panel }: { panel: PanelData }) {
   const features = panel.featureList ?? panel.features;
 
   return (
-    <div className="grid h-full items-center gap-6 lg:grid-cols-2 lg:gap-10 xl:gap-14">
+    <div className="grid h-full items-center gap-5 sm:gap-6 lg:grid-cols-2 lg:gap-10 xl:gap-14">
       <motion.div
         initial={{ opacity: 0, y: 22 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.25 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative h-[300px] overflow-hidden rounded-[6px] border border-[#dce3ed] shadow-[0_8px_20px_rgba(20,35,57,0.055)] sm:h-[420px] xl:h-[min(560px,calc(100svh_-_160px))]"
+        className="relative h-[230px] overflow-hidden rounded-[6px] border border-[#dce3ed] shadow-[0_8px_20px_rgba(20,35,57,0.055)] sm:h-[320px] md:h-[400px] lg:h-[min(460px,calc(100svh_-_210px))] xl:h-[min(560px,calc(100svh_-_160px))]"
       >
         <PanelVisual panel={panel} />
       </motion.div>
@@ -136,21 +142,22 @@ function PanelBody({ panel }: { panel: PanelData }) {
         transition={{ duration: 0.5, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col gap-[clamp(10px,1.7vh,18px)]"
       >
-        <header className="mb-2">
-          <div className="mb-4 flex items-center gap-4">
+        <header className="mb-1 sm:mb-2">
+          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 sm:mb-4">
             <span className="font-mono text-[13px] font-semibold text-aqua">
               {panel.no}
             </span>
-            <p className="text-[16px] font-semibold text-aqua xl:text-[18px]">
+            <p className="text-[14px] font-semibold text-aqua sm:text-[16px] xl:text-[18px]">
               {panel.category}
             </p>
           </div>
-          <h2 className="text-[26px] font-semibold leading-[1.06] tracking-[-0.035em] text-ink lg:whitespace-nowrap xl:text-[36px]">
+          {/* no nowrap: these titles are wider than the text column at lg/xl */}
+          <h2 className="text-[21px] font-semibold leading-[1.12] tracking-[-0.035em] text-ink sm:text-[26px] sm:leading-[1.06] xl:text-[36px]">
             {panel.title}
           </h2>
         </header>
 
-        <p className="max-w-[48ch] text-[15px] leading-[1.65] text-muted xl:text-[16px] [&_strong]:font-semibold [&_strong]:text-ink">
+        <p className="max-w-[48ch] text-[14px] leading-[1.6] text-muted sm:text-[15px] sm:leading-[1.65] xl:text-[16px] [&_strong]:font-semibold [&_strong]:text-ink">
           {copy}
         </p>
 
@@ -174,7 +181,7 @@ function PanelBody({ panel }: { panel: PanelData }) {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-[15px] font-medium tracking-[-0.01em] text-ink xl:text-[16px]">
+              <span className="text-[14px] font-medium tracking-[-0.01em] text-ink sm:text-[15px] xl:text-[16px]">
                 {feature}
               </span>
             </li>
@@ -206,11 +213,40 @@ function PanelBody({ panel }: { panel: PanelData }) {
 function Panel({ panel }: { panel: PanelData }) {
   return (
     <div className="h-full overflow-hidden rounded-[5px] border border-[#edf1f5] bg-white shadow-[0_15px_38px_rgba(20,31,50,0.09)]">
-      <div className="flex h-full items-center px-5 py-6 sm:px-7 sm:py-8 xl:px-10 xl:py-9 [@media(max-height:720px)]:py-5">
+      <div className="flex h-full items-center px-4 py-5 sm:px-7 sm:py-8 xl:px-10 xl:py-9 [@media(min-width:1024px)_and_(max-height:720px)]:py-5">
         <PanelBody panel={panel} />
       </div>
     </div>
   );
+}
+
+// Below lg the panels are laid out as ordinary cards. The sticky stack sizes
+// every panel to one viewport, which cannot hold this much copy on a phone —
+// the content ends up clipped by the stage's overflow-hidden.
+function StaticPanels() {
+  return (
+    <div className="flex flex-col gap-5 sm:gap-7">
+      {PANELS.map((panel) => (
+        <Panel key={panel.no} panel={panel} />
+      ))}
+    </div>
+  );
+}
+
+// `true` only once mounted and wide enough, so the server and the first client
+// render agree on the static layout.
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return isDesktop;
 }
 
 function EnteringPanel({
@@ -305,15 +341,20 @@ function StackingStage({
 
 export default function ProductStackSection() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const isDesktop = useIsDesktop();
 
   return (
-    <section id="solutions" className="min-h-screen bg-[#f5f8fc] text-ink">
-      <div className="mx-auto max-w-[1500px] px-3 pb-[clamp(3rem,6vw,5.5rem)] pt-4 sm:px-6">
-        <StackingStage
-          topOffset={SITE_NAV_HEIGHT}
-          activeIndex={activeIndex}
-          setActiveIndex={setActiveIndex}
-        />
+    <section id="solutions" className="bg-[#f5f8fc] text-ink lg:min-h-screen">
+      <div className="mx-auto max-w-[1500px] px-4 pb-[clamp(3rem,6vw,5.5rem)] pt-10 sm:px-6 sm:pt-14 lg:pt-4">
+        {isDesktop ? (
+          <StackingStage
+            topOffset={SITE_NAV_HEIGHT}
+            activeIndex={activeIndex}
+            setActiveIndex={setActiveIndex}
+          />
+        ) : (
+          <StaticPanels />
+        )}
       </div>
     </section>
   );

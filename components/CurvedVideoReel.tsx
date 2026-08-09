@@ -233,11 +233,42 @@ const CurvedVideoReel: React.FC = () => {
     ...MRK_VIDEOS,
   ];
 
+  // the reel is positioned by hand in px, so the card box has to be a number the
+  // transform maths and the DOM agree on. it is picked per breakpoint rather than
+  // via CSS, and `arcScale` flattens the 3D curve on narrow viewports where a
+  // card only a slot or two from centre would otherwise be rotated edge-on.
+  const [metrics, setMetrics] = useState({
+    cardWidth: 230,
+    cardGap: 20,
+    arcScale: 1,
+  });
+
+  useEffect(() => {
+    const update = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setMetrics({ cardWidth: 150, cardGap: 14, arcScale: 0.5 });
+      } else if (width < 1024) {
+        setMetrics({ cardWidth: 190, cardGap: 18, arcScale: 0.75 });
+      } else {
+        setMetrics({ cardWidth: 230, cardGap: 20, arcScale: 1 });
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   const scrollOffsetRef = useRef(0);
-  const cardWidth = 230;
-  const cardGap = 20;
+  const { cardWidth, cardGap, arcScale } = metrics;
+  // the card art is 230x340 at full size; keep that ratio at every width
+  const cardHeight = Math.round(cardWidth * (340 / 230));
   const totalItemWidth = cardWidth + cardGap;
   const singleLoopWidth = totalItemWidth * MRK_VIDEOS.length;
+  // top inset + card + the arc's vertical travel, so the track is never clipped
+  const stageHeight = Math.round(
+    24 + cardHeight + config.arcDepth * 0.8 * arcScale + 24,
+  );
 
   const dragStartRef = useRef(0);
   const dragScrollStartRef = useRef(0);
@@ -306,10 +337,10 @@ const CurvedVideoReel: React.FC = () => {
             const absDist = Math.abs(normalizedDist);
             translateY =
               (1 - Math.pow(Math.min(absDist, 1.4), 2)) *
-              (config.arcDepth * 0.8);
-            const translateZ = -Math.pow(absDist, 2) * 140;
-            rotateY = -normalizedDist * 30;
-            rotateZ = -normalizedDist * 4;
+              (config.arcDepth * 0.8 * arcScale);
+            const translateZ = -Math.pow(absDist, 2) * 140 * arcScale;
+            rotateY = -normalizedDist * 30 * arcScale;
+            rotateZ = -normalizedDist * 4 * arcScale;
             card.style.transform = `translate3d(${itemBaseX}px, ${translateY}px, ${translateZ}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`;
           } else if (config.layoutMode === "perspective") {
             // ── Parabolic Wave ──
@@ -329,7 +360,15 @@ const CurvedVideoReel: React.FC = () => {
 
     gsap.ticker.add(tickerCallback);
     return () => gsap.ticker.remove(tickerCallback);
-  }, [config, isDragging, isHovered, singleLoopWidth, totalItemWidth]);
+  }, [
+    config,
+    isDragging,
+    isHovered,
+    singleLoopWidth,
+    totalItemWidth,
+    cardWidth,
+    arcScale,
+  ]);
 
   // ── Drag handlers ─────────────────────────────────────────────────────────
   // isDragging is mirrored into a ref because the move handlers read it in the
@@ -387,10 +426,10 @@ const CurvedVideoReel: React.FC = () => {
   return (
     <section
       id="product-reel"
-      className="relative overflow-hidden bg-white text-ink py-20"
+      className="relative overflow-hidden bg-white text-ink py-12 sm:py-16 lg:py-20"
     >
       {/* ── Section Header ── */}
-      <div className="mx-auto mb-10 max-w-3xl px-6 text-center">
+      <div className="mx-auto mb-8 max-w-3xl px-5 text-center sm:mb-10 sm:px-6">
         <span className="mb-4 inline-block font-mono text-[0.67rem] uppercase tracking-[0.22em] text-marine font-semibold">
           Our full range · 2005 onwards
         </span>
@@ -405,7 +444,7 @@ const CurvedVideoReel: React.FC = () => {
       </div>
 
       {/* ── Curved Reel Track Wrapper ── */}
-      <div className="relative my-6 mx-auto w-full max-w-[1680px] px-4 sm:px-8 overflow-hidden">
+      <div className="relative my-4 mx-auto w-full max-w-[1680px] overflow-hidden px-2 sm:my-6 sm:px-8">
         <div
           ref={containerRef}
           onMouseEnter={() => setIsHovered(true)}
@@ -420,18 +459,21 @@ const CurvedVideoReel: React.FC = () => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleMouseUp}
-          className="relative h-[420px] w-full cursor-grab overflow-hidden py-8 select-none active:cursor-grabbing sm:h-[460px]"
+          // pan-y keeps a vertical swipe scrolling the page while a horizontal
+          // one drags the reel
+          style={{ height: stageHeight, touchAction: "pan-y" }}
+          className="relative w-full cursor-grab select-none overflow-hidden active:cursor-grabbing"
         >
           {/* 1680px Ocean Blue Edge Fade & Blur Overlay (Left & Right) */}
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-20 w-20 sm:w-36 md:w-52 backdrop-blur-[5px]"
+            className="pointer-events-none absolute inset-y-0 left-0 z-20 w-8 sm:w-24 md:w-36 lg:w-52 backdrop-blur-[5px]"
             style={{
               background:
                 "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.92) 45%, rgba(255,255,255,0.3) 80%, transparent 100%)",
             }}
           />
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-20 w-20 sm:w-36 md:w-52 backdrop-blur-[5px]"
+            className="pointer-events-none absolute inset-y-0 right-0 z-20 w-8 sm:w-24 md:w-36 lg:w-52 backdrop-blur-[5px]"
             style={{
               background:
                 "linear-gradient(to left, #ffffff 0%, rgba(255,255,255,0.92) 45%, rgba(255,255,255,0.3) 80%, transparent 100%)",
@@ -471,10 +513,12 @@ const CurvedVideoReel: React.FC = () => {
                       setActiveVideo(video);
                     }
                   }}
-                  className={`pointer-events-auto absolute top-0 left-0 w-[210px] sm:w-[230px] h-[340px] sm:h-[370px] rounded-[24px] overflow-hidden bg-black transition-shadow duration-300 group border border-white/20 transform-gpu ${
+                  className={`pointer-events-auto group absolute left-0 top-0 transform-gpu overflow-hidden rounded-[18px] border border-white/20 bg-black transition-shadow duration-300 sm:rounded-[24px] ${
                     video.youtubeId ? "cursor-pointer" : "cursor-grab"
                   }`}
                   style={{
+                    width: cardWidth,
+                    height: cardHeight,
                     boxShadow: isHoveredCard
                       ? "0 24px 60px rgba(10,60,110,0.28), 0 8px 20px rgba(10,60,110,0.18)"
                       : "0 8px 32px rgba(10,60,110,0.15)",
@@ -507,21 +551,22 @@ const CurvedVideoReel: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
 
                   {/* Top: category + views/badge */}
-                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-xs text-white z-10">
-                    <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-white/90 border border-white/10">
+                  <div className="absolute left-2 right-2 top-2 z-10 flex items-center justify-between gap-1 text-xs text-white sm:left-3 sm:right-3 sm:top-3">
+                    <span className="truncate rounded-full border border-white/10 bg-black/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/90 backdrop-blur-md sm:px-2.5 sm:py-1 sm:text-[10px]">
                       {video.category}
                     </span>
-                    <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full text-[11px] font-semibold text-amber-300">
-                      <Eye className="w-3 h-3" />
+                    <div className="flex shrink-0 items-center gap-1 rounded-full bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300 backdrop-blur-md sm:px-2 sm:py-1 sm:text-[11px]">
+                      <Eye className="h-3 w-3" />
                       <span>{video.views}</span>
                     </div>
                   </div>
 
                   {/* Center play button — only on cards that actually have a video.
                       a real button so there is one unambiguous hit target even
-                      where neighbouring cards overlap this one. */}
+                      where neighbouring cards overlap this one. on touch there is
+                      no hover to reveal it, so it stays put. */}
                   {video.youtubeId && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-30">
+                    <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
                       <button
                         type="button"
                         aria-label={`Play ${video.title}`}
@@ -529,33 +574,33 @@ const CurvedVideoReel: React.FC = () => {
                           e.stopPropagation();
                           handleCardClick(video);
                         }}
-                        className="w-12 h-12 rounded-full bg-[rgb(30,155,224)] text-white flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300 cursor-pointer"
+                        className="flex h-10 w-10 scale-75 transform cursor-pointer items-center justify-center rounded-full bg-[rgb(30,155,224)] text-white shadow-lg transition-transform duration-300 group-hover:scale-100 sm:h-12 sm:w-12 [@media(hover:none)]:scale-100"
                       >
-                        <Play className="w-5 h-5 fill-white ml-0.5" />
+                        <Play className="ml-0.5 h-4 w-4 fill-white sm:h-5 sm:w-5" />
                       </button>
                     </div>
                   )}
 
                   {/* Bottom card info */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white z-10">
-                    <div className="flex items-center gap-2 mb-1.5">
+                  <div className="absolute bottom-2 left-2 right-2 z-10 text-white sm:bottom-3 sm:left-3 sm:right-3">
+                    <div className="mb-1 flex items-center gap-1.5 sm:mb-1.5 sm:gap-2">
                       <img
                         src={video.creatorAvatar}
                         alt={video.creatorName}
-                        className="w-6 h-6 rounded-full object-cover border border-white/60 bg-white"
+                        className="h-5 w-5 shrink-0 rounded-full border border-white/60 bg-white object-cover sm:h-6 sm:w-6"
                       />
-                      <span className="text-xs font-bold truncate text-white/95">
+                      <span className="truncate text-[10px] font-bold text-white/95 sm:text-xs">
                         {video.creatorName}
                       </span>
                     </div>
-                    <h4 className="text-sm font-extrabold leading-snug line-clamp-2 text-white">
+                    <h4 className="line-clamp-2 text-[12px] font-extrabold leading-snug text-white sm:text-sm">
                       {video.title}
                     </h4>
-                    <div className="mt-2 flex items-center justify-between text-[11px] text-emerald-400 font-bold">
-                      <span className="bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+                    <div className="mt-1.5 flex items-center justify-between gap-1 text-[9px] font-bold text-emerald-400 sm:mt-2 sm:text-[11px]">
+                      <span className="truncate rounded border border-emerald-500/30 bg-emerald-500/20 px-1.5 py-0.5 sm:px-2">
                         {video.conversionBoost}
                       </span>
-                      <span className="text-white/80">{video.duration}</span>
+                      <span className="shrink-0 text-white/80">{video.duration}</span>
                     </div>
                   </div>
                 </div>
@@ -573,17 +618,19 @@ const CurvedVideoReel: React.FC = () => {
           aria-modal="true"
           aria-label={activeVideo.title}
           onClick={() => setActiveVideo(null)}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-3 backdrop-blur-sm sm:p-4"
         >
+          {/* the close button and caption are in flow, not offset above the
+              frame, so the dialog cannot run off a short or landscape screen */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative"
+            className="relative flex max-h-full flex-col items-center"
           >
             <button
               type="button"
               onClick={() => setActiveVideo(null)}
               aria-label="Close video"
-              className="absolute -top-12 right-0 flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-white/20"
+              className="mb-2 flex items-center gap-1.5 self-end rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-white/20"
             >
               <X className="h-4 w-4" />
               Close
@@ -594,8 +641,8 @@ const CurvedVideoReel: React.FC = () => {
             <div
               className={`relative overflow-hidden rounded-2xl bg-black shadow-2xl ${
                 activeVideo.aspect === "16/9"
-                  ? "aspect-video w-[min(1000px,92vw,calc(76vh_*_16_/_9))]"
-                  : "aspect-[9/16] w-[min(400px,88vw,calc(80vh_*_9_/_16))]"
+                  ? "aspect-video w-[min(1000px,92vw,calc(68vh_*_16_/_9))]"
+                  : "aspect-[9/16] w-[min(400px,86vw,calc(68vh_*_9_/_16))]"
               }`}
             >
               <iframe

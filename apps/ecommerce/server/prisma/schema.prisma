@@ -1,0 +1,833 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ROLE {
+  ADMIN
+  USER
+  SUPERADMIN
+}
+
+enum TRANSACTION_STATUS {
+  PENDING
+  PROCESSING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  CANCELED
+  RETURNED
+  REFUNDED
+}
+
+enum PAYMENT_STATUS {
+  PENDING
+  PAID
+  CANCELED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum CART_STATUS {
+  ACTIVE
+  ABANDONED
+  CONVERTED
+}
+
+enum CHAT_STATUS {
+  OPEN
+  RESOLVED
+}
+
+enum PRODUCT_CATEGORY_KIND {
+  SINGLE_PHASE_STARTER
+  THREE_PHASE_PANEL
+  WLC_SMART_PLUG
+  CABLE_ACCESSORY
+}
+
+enum PRODUCT_PHASE {
+  SINGLE_PHASE
+  THREE_PHASE
+  NOT_APPLICABLE
+}
+
+enum DOWNLOAD_TYPE {
+  CATALOG
+  PRICE_LIST
+  MANUAL
+  BROCHURE
+  CONNECTION_GUIDE
+  VIDEO
+  OTHER
+}
+
+enum LANGUAGE {
+  EN
+  HI
+}
+
+enum LEAD_STATUS {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CLOSED
+  SPAM
+}
+
+enum ENQUIRY_SOURCE {
+  PRODUCT
+  HOME
+  CONTACT
+  WHATSAPP
+  PHONE
+  DOWNLOAD
+}
+
+enum DEALER_APPLICATION_STATUS {
+  NEW
+  REVIEWING
+  APPROVED
+  REJECTED
+  ON_HOLD
+}
+
+enum METER_DISPLAY_TYPE {
+  ANALOG
+  DIGITAL
+  NOT_APPLICABLE
+}
+
+enum TESTIMONIAL_TYPE {
+  DEALER
+  FARMER
+  HOMEOWNER
+  OTHER
+}
+
+enum CONTACT_SUBMISSION_TYPE {
+  CONTACT
+  FEEDBACK
+}
+
+enum CONTENT_BLOCK_TYPE {
+  GLOBAL
+  PAGE
+  SECTION
+}
+
+model User {
+  id                          String              @id @default(uuid())
+  googleId                    String?
+  twitterId                   String?
+  facebookId                  String?
+  email                       String              @unique
+  password                    String?
+  name                        String
+  avatar                      String?
+  resetPasswordToken          String?
+  resetPasswordTokenExpiresAt DateTime?
+  role                        ROLE                @default(USER)
+  orders                      Order[]
+  payments                    Payment[]
+  addresses                   Address[]
+  interactions                Interaction[]
+  reports                     Report[]
+  reviews                     Review[]
+  carts                       Cart[]
+  cartEvents                  CartEvent[]
+  chats                       Chat[]              @relation("UserChats")
+  messages                    ChatMessage[]
+  assignedEnquiries           EnquiryLead[]       @relation("AssignedEnquiries")
+  assignedDealerApplications  DealerApplication[] @relation("AssignedDealerApplications")
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+  Restock                     Restock[]
+
+  @@index([email])
+}
+
+model Product {
+  id                 String           @id @default(uuid())
+  name               String           @unique
+  description        String?
+  shortDescription   String?
+  slug               String           @unique
+  modelNumber        String?
+  tagline            String?
+  productLine        String?
+  productSeries      String?
+  phase              PRODUCT_PHASE?
+  hp                 String?
+  boxType            String?
+  meterType          String?
+  startCapacitor     String?
+  runCapacitor       String?
+  capacitor          String?
+  maxLoad            String?
+  mcbRelayOlp        String?
+  warranty           String?
+  mrp                Decimal?         @db.Decimal(10, 2)
+  voltage            String?
+  ampRating          String?
+  suitableFor        String?
+  protectionFeatures String[]         @default([])
+  useCases           String[]         @default([])
+  specSheet          Json?
+  manualUrl          String?
+  videoUrl           String?
+  featuredVideoUrl   String?
+  seoTitle           String?
+  seoDescription     String?
+  translations       Json?
+  isActive           Boolean          @default(true)
+  isPublished        Boolean          @default(true)
+  isCatalogVisible   Boolean          @default(true)
+  enquiryEnabled     Boolean          @default(true)
+  sortOrder          Int              @default(0)
+  salesCount         Int              @default(0)
+  isNew              Boolean          @default(false)
+  isFeatured         Boolean          @default(false)
+  isTrending         Boolean          @default(false)
+  isBestSeller       Boolean          @default(false)
+  averageRating      Float            @default(0)
+  reviewCount        Int              @default(0)
+  category           Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId         String?
+  variants           ProductVariant[]
+  interactions       Interaction[]
+  reviews            Review[]
+  downloads          Download[]
+  downloadAssets     DownloadAsset[]
+  enquiryLeads       EnquiryLead[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([name, slug])
+  @@index([modelNumber])
+  @@index([categoryId, isCatalogVisible, sortOrder])
+  @@index([categoryId, isActive, isPublished, sortOrder])
+  @@index([productSeries])
+  @@index([phase])
+}
+
+model ProductVariant {
+  id                 String                    @id @default(uuid())
+  productId          String
+  product            Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku                String                    @unique
+  images             String[]                  @default([])
+  price              Float
+  priceVisible       Boolean                   @default(true)
+  stock              Int
+  stockVisible       Boolean                   @default(false)
+  lowStockThreshold  Int                       @default(10)
+  barcode            String?
+  warehouseLocation  String?
+  hp                 String?
+  hpMin              Float?
+  hpMax              Float?
+  phase              PRODUCT_PHASE?
+  variantType        String?
+  maxLoadAmps        Float?
+  boxType            String?
+  bodyType           String?
+  meterType          String?
+  meterDisplayType   METER_DISPLAY_TYPE?
+  meterSize          String?
+  startCapacitor     String?
+  runCapacitor       String?
+  mcbRelayOlp        String?
+  warranty           String?
+  protectionFeatures String[]                  @default([])
+  installationInfo   Json?
+  manualUrl          String?
+  videoUrl           String?
+  isActive           Boolean                   @default(true)
+  sortOrder          Int                       @default(0)
+  attributes         ProductVariantAttribute[]
+  orderItems         OrderItem[]
+  cartItems          CartItem[]
+  stockMovements     StockMovement[]
+  restocks           Restock[]
+  downloads          Download[]
+  enquiryLeads       EnquiryLead[]
+  downloadAssets     DownloadAsset[]
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  @@index([productId, sku])
+  @@index([productId, isActive, sortOrder])
+  @@index([phase])
+  @@index([hpMin, hpMax])
+}
+
+model Attribute {
+  id                String                    @id @default(uuid())
+  name              String                    @unique
+  slug              String                    @unique
+  values            AttributeValue[]
+  categories        CategoryAttribute[]
+  variantAttributes ProductVariantAttribute[]
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([name, slug])
+}
+
+model AttributeValue {
+  id                String                    @id @default(uuid())
+  attributeId       String
+  attribute         Attribute                 @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value             String
+  slug              String                    @unique
+  variantAttributes ProductVariantAttribute[]
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([attributeId, value])
+}
+
+model ProductVariantAttribute {
+  id          String         @id @default(uuid())
+  variantId   String
+  variant     ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  attributeId String
+  attribute   Attribute      @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  valueId     String
+  value       AttributeValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+
+  @@unique([variantId, attributeId, valueId])
+  @@index([variantId, attributeId])
+}
+
+model Category {
+  id           String                 @id @default(uuid())
+  slug         String                 @unique
+  name         String
+  description  String?
+  kind         PRODUCT_CATEGORY_KIND?
+  heroTitle    String?
+  heroSubtitle String?
+  translations Json?
+  images       String[]
+  isVisible    Boolean                @default(true)
+  sortOrder    Int                    @default(0)
+  products     Product[]
+  attributes   CategoryAttribute[]
+  downloads    Download[]
+  enquiryLeads EnquiryLead[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([name, slug])
+  @@index([kind, isVisible, sortOrder])
+}
+
+model CategoryAttribute {
+  id          String    @id @default(uuid())
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  attributeId String
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  isRequired  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([categoryId, attributeId])
+  @@index([categoryId, attributeId])
+}
+
+model StockMovement {
+  id        String         @id @default(uuid())
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+  reason    String
+  userId    String?
+  createdAt DateTime       @default(now())
+
+  @@index([variantId])
+}
+
+model Restock {
+  id        String         @id @default(uuid())
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+  notes     String?
+  userId    String?
+  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime       @default(now())
+
+  @@index([variantId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, userId])
+}
+
+model Order {
+  id          String       @id @default(uuid())
+  userId      String
+  amount      Float
+  orderDate   DateTime     @default(now())
+  status      String       @default("PENDING")
+  user        User         @relation(fields: [userId], references: [id])
+  orderItems  OrderItem[]
+  payment     Payment?     @relation("OrderPayment")
+  address     Address?     @relation("OrderAddress")
+  shipment    Shipment?    @relation("OrderShipment")
+  transaction Transaction? @relation("OrderTransaction")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String         @id @default(uuid())
+  orderId   String
+  variantId String
+  quantity  Int
+  price     Float
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([orderId, variantId])
+}
+
+model Payment {
+  id        String         @id @default(uuid())
+  method    String
+  amount    Float
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  order     Order?         @relation("OrderPayment", fields: [orderId], references: [id], onDelete: SetNull)
+  orderId   String?        @unique
+  status    PAYMENT_STATUS @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId, orderId])
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  city      String
+  state     String
+  country   String
+  zip       String
+  street    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  order     Order?   @relation("OrderAddress", fields: [orderId], references: [id], onDelete: SetNull)
+  orderId   String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, orderId])
+}
+
+model Shipment {
+  id             String    @id @default(uuid())
+  carrier        String
+  trackingNumber String
+  shippedDate    DateTime
+  deliveryDate   DateTime?
+  order          Order     @relation("OrderShipment", fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([orderId])
+}
+
+model Transaction {
+  id              String             @id @default(uuid())
+  order           Order              @relation("OrderTransaction", fields: [orderId], references: [id], onDelete: Cascade)
+  orderId         String             @unique
+  status          TRANSACTION_STATUS @default(PENDING)
+  transactionDate DateTime           @default(now())
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([orderId])
+}
+
+model Cart {
+  id         String      @id @default(uuid())
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId     String?
+  sessionId  String?     @unique
+  cartItems  CartItem[]
+  cartEvents CartEvent[]
+  status     CART_STATUS @default(ACTIVE)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([userId, sessionId])
+}
+
+model CartItem {
+  id        String         @id @default(uuid())
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int            @default(1)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([cartId, variantId])
+}
+
+enum CART_EVENT {
+  PENDING
+  ADD
+  CHECKOUT_STARTED
+  CHECKOUT_COMPLETED
+}
+
+model CartEvent {
+  id        String     @id @default(uuid())
+  cartId    String
+  userId    String?
+  sessionId String?
+  eventType CART_EVENT @default(PENDING)
+  timestamp DateTime   @default(now())
+  cart      Cart       @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now())
+}
+
+model Interaction {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String?
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([userId, sessionId, productId])
+}
+
+model Report {
+  id         String   @id @default(uuid())
+  type       String
+  format     String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  parameters Json
+  filePath   String?
+
+  @@index([userId])
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  level     String
+  message   String
+  context   Json?
+  createdAt DateTime @default(now())
+}
+
+enum SECTION_TYPE {
+  HERO
+  PROMOTIONAL
+  BENEFITS
+  NEW_ARRIVALS
+}
+
+model Section {
+  id             Int          @id @unique @default(autoincrement())
+  type           SECTION_TYPE @default(HERO)
+  title          String?
+  description    String?
+  images         String[]     @default([])
+  icons          String?
+  link           String?
+  ctaText        String?
+  isVisible      Boolean?     @default(false)
+  primaryColor   String?
+  secondaryColor String?
+}
+
+model Download {
+  id            String          @id @default(uuid())
+  title         String
+  slug          String          @unique
+  type          DOWNLOAD_TYPE
+  description   String?
+  fileUrl       String
+  thumbnailUrl  String?
+  language      LANGUAGE        @default(EN)
+  isPublic      Boolean         @default(true)
+  requiresLead  Boolean         @default(false)
+  isActive      Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  productId     String?
+  product       Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId     String?
+  variant       ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  categoryId    String?
+  category      Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  version       String?
+  effectiveDate DateTime?
+  translations  Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([type, language, isActive])
+  @@index([productId, variantId, categoryId])
+}
+
+model EnquiryLead {
+  id              String          @id @default(uuid())
+  name            String
+  phone           String
+  mobile          String?
+  whatsapp        String?
+  email           String?
+  city            String?
+  state           String?
+  pincode         String?
+  message         String?
+  source          String?
+  sourceType      ENQUIRY_SOURCE  @default(CONTACT)
+  status          LEAD_STATUS     @default(NEW)
+  preferredDealer String?
+  language        LANGUAGE        @default(EN)
+  productId       String?
+  product         Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId       String?
+  variant         ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  categoryId      String?
+  category        Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  assignedAdminId String?
+  assignedAdmin   User?           @relation("AssignedEnquiries", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  internalNotes   String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmTerm         String?
+  utmContent      String?
+  referrer        String?
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([status, createdAt])
+  @@index([phone])
+  @@index([sourceType, createdAt])
+  @@index([assignedAdminId])
+  @@index([productId, variantId, categoryId])
+  @@index([city, state])
+}
+
+model DealerApplication {
+  id                String                    @id @default(uuid())
+  name              String
+  businessName      String
+  address           String
+  city              String?
+  state             String?
+  pincode           String?
+  mobile            String
+  whatsapp          String?
+  email             String?
+  gstNumber         String?
+  currentBusiness   String?
+  productCategories String[]                  @default([])
+  experience        String?
+  message           String?
+  status            DEALER_APPLICATION_STATUS @default(NEW)
+  legacyLeadStatus  LEAD_STATUS?
+  assignedAdminId   String?
+  assignedAdmin     User?                     @relation("AssignedDealerApplications", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  internalNotes     String?
+  language          LANGUAGE                  @default(EN)
+  metadata          Json?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([assignedAdminId])
+  @@index([mobile])
+}
+
+model ContactSubmission {
+  id        String                  @id @default(uuid())
+  type      CONTACT_SUBMISSION_TYPE @default(CONTACT)
+  name      String
+  address   String?
+  phone     String?
+  mobile    String?
+  email     String?
+  subject   String?
+  message   String
+  city      String?
+  state     String?
+  status    LEAD_STATUS             @default(NEW)
+  language  LANGUAGE                @default(EN)
+  metadata  Json?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  @@index([type, status, createdAt])
+  @@index([email])
+  @@index([phone])
+  @@index([mobile])
+}
+
+model WebsiteContentBlock {
+  id           String             @id @default(uuid())
+  key          String
+  type         CONTENT_BLOCK_TYPE @default(SECTION)
+  page         String?
+  section      String?
+  title        String?
+  body         String?
+  ctaText      String?
+  ctaLink      String?
+  mediaUrl     String?
+  language     LANGUAGE           @default(EN)
+  translations Json?
+  isActive     Boolean            @default(true)
+  sortOrder    Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([key, language])
+  @@index([page, section, language, isActive])
+}
+
+model Dealer {
+  id            String   @id @default(uuid())
+  name          String
+  businessName  String?
+  contactPerson String?
+  phone         String
+  whatsapp      String?
+  email         String?
+  address       String
+  city          String
+  district      String?
+  state         String
+  pincode       String
+  latitude      Float?
+  longitude     Float?
+  active        Boolean  @default(true)
+  featured      Boolean  @default(false)
+  serviceAreas  String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active, featured])
+  @@index([city, state])
+  @@index([pincode])
+}
+
+model DownloadAsset {
+  id            String          @id @default(uuid())
+  title         String
+  slug          String          @unique
+  description   String?
+  type          DOWNLOAD_TYPE
+  fileUrl       String
+  thumbnailUrl  String?
+  productId     String?
+  product       Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variantId     String?
+  variant       ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  language      LANGUAGE        @default(EN)
+  active        Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  version       String?
+  effectiveDate DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([type, language, active])
+  @@index([productId, variantId])
+  @@index([active, sortOrder])
+}
+
+model Testimonial {
+  id        String           @id @default(uuid())
+  quote     String
+  name      String
+  city      String?
+  role      TESTIMONIAL_TYPE @default(OTHER)
+  active    Boolean          @default(true)
+  sortOrder Int              @default(0)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([role, active, sortOrder])
+}
+
+model SiteSetting {
+  id            String   @id @default(uuid())
+  key           String   @unique @default("global")
+  phone         String?
+  whatsapp      String?
+  email         String?
+  address       String?
+  gstNumber     String?
+  youtubeUrl    String?
+  businessHours Json?
+  statistics    Json?
+  seoDefaults   Json?
+  socialLinks   Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Chat {
+  id        String        @id @default(uuid())
+  userId    String
+  user      User          @relation("UserChats", fields: [userId], references: [id], onDelete: Cascade)
+  status    CHAT_STATUS   @default(OPEN)
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content   String?
+  type      String   @default("TEXT")
+  url       String?
+  createdAt DateTime @default(now())
+
+  @@index([chatId, senderId])
+}

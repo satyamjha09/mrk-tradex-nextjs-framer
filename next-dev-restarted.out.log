@@ -1,0 +1,81 @@
+
+> mrk-tradex-homepage@1.0.0 dev
+> next dev
+
+   ▲ Next.js 15.5.18
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.7:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 11.1s
+ ○ Compiling /shop ...
+ ✓ Compiled /shop in 15.9s (2239 modules)
+ GET /shop 200 in 20414ms
+ GET /shop 200 in 833ms
+ ○ Compiling /product/[slug] ...
+ ✓ Compiled /product/[slug] in 5.3s (2368 modules)
+ GET /shop 200 in 1265ms
+ GET /shop 200 in 662ms
+ GET /product/mrk-three-phase-control-panel-admin-demo 200 in 11505ms
+ GET /product/mrk-three-phase-control-panel-admin-demo 200 in 402ms
+ GET /shop 200 in 507ms
+ GET /shop 200 in 520ms
+ GET /product/mrk-three-phase-control-panel-admin-demo 200 in 438ms
+ GET /shop 200 in 1741ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 2061ms
+ ○ Compiling /sign-in ...
+ ✓ Compiled /sign-in in 7.1s (2373 modules)
+ GET /sign-in 200 in 10187ms
+ ○ Compiling /dashboard/products ...
+ ✓ Compiled /dashboard/products in 6.3s (2510 modules)
+ GET /dashboard/products 200 in 8771ms
+ GET /sign-in 200 in 261ms
+ GET /sign-in 200 in 7146ms
+ ○ Compiling / ...
+ ✓ Compiled /dashboard/products in 23.9s (2550 modules)
+ GET / 200 in 27724ms
+ GET /dashboard/products 200 in 18717ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 645ms
+ GET /product/mrk-three-phase-control-panel-admin-demo 200 in 312ms
+ GET /product/mrk-three-phase-control-panel-admin-demo 200 in 2036ms
+ GET /shop 200 in 1237ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 433ms
+ GET /shop 200 in 618ms
+ ✓ Compiled in 15.2s (2535 modules)
+ GET /shop 200 in 2201ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 3242ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 3176ms
+ GET /shop 200 in 2428ms
+ ✓ Compiled in 3.3s (2535 modules)
+ GET /shop 200 in 976ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 1366ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 1370ms
+ GET /shop 200 in 763ms
+ ✓ Compiled in 4.7s (2535 modules)
+ GET /shop 200 in 958ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 964ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 1074ms
+ GET /shop 200 in 622ms
+ ✓ Compiled in 5.2s (2535 modules)
+ GET /shop 200 in 1219ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 1321ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 1322ms
+ GET /shop 200 in 1075ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 9.6s (2868 modules)
+ GET /product/mrk-catalog-one-time-test-1786269085037 500 in 24290ms
+ GET /shop 200 in 7460ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 7207ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 7203ms
+ GET /shop 200 in 763ms
+ GET /product/mrk-db-upload-flow-test-1786268032515 200 in 957ms
+ GET /product/mrk-catalog-one-time-test-1786269085037 200 in 961ms
+ GET /shop 200 in 705ms
+ GET /shop 200 in 490ms
+ GET /shop 200 in 1777ms
+ GET /shop 200 in 876ms
+ GET /shop 200 in 380ms
+ GET /shop 200 in 774ms
+ GET /shop 200 in 407ms
+[?25h

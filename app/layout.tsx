@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { Metadata } from "next";
+import ClientProviders from "./ClientProviders";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,8 +35,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           rel="stylesheet"
         />
       </head>
-      <body className="overflow-x-hidden bg-paper font-sans leading-[1.65] text-ink antialiased">
-        {children}
+      {/* horizontal overflow is handled in globals.css with `overflow-x: clip`
+          (plus an @supports fallback). Do not add `overflow-x-hidden` here:
+          `hidden` makes body a scroll container, which silently disables
+          `position: sticky` for everything inside it — including the pinned
+          product-stack stage on the home page. */}
+      <body className="bg-paper font-sans leading-[1.65] text-ink antialiased">
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );

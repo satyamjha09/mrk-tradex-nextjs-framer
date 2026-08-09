@@ -17,6 +17,8 @@ import ProductStackSection from "./ProductStack";
 import CurvedVideoReel from "./CurvedVideoReel";
 import FaqAccordion from "./FaqAccordion";
 
+const SHOP_URL = "/shop";
+
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
@@ -56,7 +58,7 @@ function ParticleWordmark({ text }: { text: string }) {
       offscreen.height = height;
       const offscreenCtx = offscreen.getContext("2d");
       if (!offscreenCtx) return;
-
+      
       let fontSize = height * 0.65;
       offscreenCtx.font = `800 ${fontSize}px "Plus Jakarta Sans", sans-serif`;
       while (offscreenCtx.measureText(text).width > width * 0.92 && fontSize > 12) {
@@ -552,17 +554,21 @@ const tw: Record<string, string> = {
   "scroll-hint": "absolute bottom-9 left-1/2 -translate-x-1/2 text-center font-mono text-[0.68rem] uppercase tracking-[0.22em] text-muted",
   chev: "mx-auto mb-2 block h-5 w-5 animate-cue fill-none stroke-current opacity-70 [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:2] motion-reduce:animate-none",
 
-  hero: "relative flex min-h-[max(540px,min(100svh,64vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:pb-14 max-[900px]:pt-28",
+  // above 900px the copy sits in the scrim over the photo; below it the photo is
+  // dropped and the copy becomes a centred, content-height block.
+  hero: "relative flex min-h-[max(520px,min(100svh,64vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:py-14",
   "hero-photo": "pointer-events-none absolute inset-0 bg-[url('/images/intro1.png')] bg-cover bg-[center_top_15px] max-[900px]:hidden",
-  "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[50%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.72)_38%,rgba(255,255,255,.86)_100%)] max-[900px]:hidden",
-  "hero-inner": "relative z-10 w-full pl-[59%] pr-[4%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-6 max-[900px]:text-center",
-  "hero-copy": "max-w-[620px] translate-y-4",
-  "hero-title": "text-[clamp(1.9rem,3.5vw,3.75rem)] font-extrabold leading-[1.14] tracking-[-0.02em]",
+  // the scrim widens as the viewport narrows so the copy column keeps a readable
+  // backdrop even once it starts earlier in the row.
+  "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[50%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.72)_38%,rgba(255,255,255,.86)_100%)] max-[1200px]:w-[58%] max-[900px]:hidden",
+  "hero-inner": "relative z-10 w-full pl-[59%] pr-[4%] max-[1200px]:pl-[50%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-5 max-[900px]:text-center min-[520px]:max-[900px]:px-8",
+  "hero-copy": "max-w-[620px] translate-y-4 max-[900px]:translate-y-0",
+  "hero-title": "text-[clamp(1.75rem,3.5vw,3.75rem)] font-extrabold leading-[1.14] tracking-[-0.02em]",
   "hero-title-lead": "block text-ink",
   "hero-title-rest": "block bg-[linear-gradient(180deg,rgb(var(--marine)),rgb(var(--aqua)))] bg-clip-text text-transparent",
-  "hero-rule": "mt-7 block h-[3px] w-[74px] rounded-full bg-aqua max-[900px]:mx-auto",
-  "hero-sub": "mt-7 max-w-[46ch] text-[clamp(0.98rem,1.15vw,1.12rem)] leading-[1.85] text-muted max-[900px]:mx-auto",
-  "hero-actions": "mt-9 flex flex-wrap items-center gap-4 max-[900px]:justify-center",
+  "hero-rule": "mt-7 block h-[3px] w-[74px] rounded-full bg-aqua max-[900px]:mx-auto max-[900px]:mt-6",
+  "hero-sub": "mt-7 max-w-[46ch] text-[clamp(0.98rem,1.15vw,1.12rem)] leading-[1.85] text-muted max-[900px]:mx-auto max-[900px]:mt-5",
+  "hero-actions": "mt-9 flex flex-wrap items-center gap-4 max-[900px]:mt-7 max-[900px]:justify-center",
 
   aq: "text-aqua",
   btn: "relative isolate inline-flex items-center gap-2 overflow-hidden rounded-full border border-transparent px-[1.6rem] py-[0.95rem] text-sm font-semibold transition duration-300 ease-[cubic-bezier(.2,.7,.2,1)] before:absolute before:inset-0 before:-z-10 before:translate-y-[101%] before:content-[''] before:transition-transform before:duration-[450ms] before:ease-[cubic-bezier(.2,.7,.2,1)] hover:before:translate-y-0 [&>svg]:h-4 [&>svg]:w-4",
@@ -575,7 +581,7 @@ const tw: Record<string, string> = {
   // gaps between figures read as equal. below 1100px that would cramp, so it falls
   // back to an even grid.
   "stat-grid":
-    "flex justify-between gap-x-8 gap-y-10 max-[1100px]:grid max-[1100px]:grid-cols-3 max-[640px]:grid-cols-2",
+    "flex justify-between gap-x-8 gap-y-10 max-[1100px]:grid max-[1100px]:grid-cols-3 max-[1100px]:gap-x-6 max-[640px]:grid-cols-2 max-[640px]:gap-x-5 max-[640px]:gap-y-7",
   stat: "border-t border-white/20 pt-5",
   num: "text-[clamp(1.65rem,3.1vw,2.35rem)] font-bold leading-none tracking-[-0.015em] tabular-nums",
   plus: "text-splash",
@@ -994,7 +1000,7 @@ export default function MrkHome() {
           </symbol>
         </defs>
       </svg>
-      <header className={cn('nav', tw['nav'])}>
+      <header className={cn('nav hidden', tw['nav'])} style={{ display: "none" }}>
         <a className={cn('brand', tw['brand'])} href={"#top"} aria-label={"MRK Tradex home"}>
           <img className={cn('logo', tw['logo'])} src={"/images/mrk-logo.png"} alt={"MRK"} />
         </a>
@@ -1050,7 +1056,7 @@ export default function MrkHome() {
                 MRK submersible starters and panels protect every pump that brings India its water, for homes, farms and industry, across single-phase and three-phase.
               </p>
               <div className={cn('hero-actions', tw['hero-actions'])}>
-                <a className={cn('btn btn-primary', tw['btn'], tw['btn-primary'])} href={"#range"} data-hi={"सभी देखें"}>
+                <a className={cn('btn btn-primary', tw['btn'], tw['btn-primary'])} href={SHOP_URL} data-hi={"सभी देखें"}>
                   Explore all
                   <svg viewBox={"0 0 24 24"} fill={"none"} stroke={"currentColor"} strokeWidth={"2.2"} strokeLinecap={"round"} strokeLinejoin={"round"}>
                     <path d={"M5 12h14M13 6l6 6-6 6"}></path>
@@ -1107,7 +1113,7 @@ export default function MrkHome() {
         </section>
         <section
           id="range"
-          className="relative min-h-[100svh] overflow-hidden bg-[#f3f7fb] lg:h-[100svh]"
+          className="relative overflow-hidden bg-[#f3f7fb] lg:h-[100svh]"
         >
           {/* Background decoration */}
           <div
@@ -1123,10 +1129,10 @@ export default function MrkHome() {
           {/* Main viewport-height wrapper */}
           <div
             className="
-              relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1720px] flex-col
-              px-4 pb-8 pt-9
-              sm:px-6 sm:py-6
-              md:py-8
+              relative z-10 mx-auto flex w-full max-w-[1720px] flex-col
+              px-4 pb-10 pt-10
+              sm:px-6 sm:py-12
+              md:py-14
               lg:h-full lg:min-h-0
               lg:px-10 lg:py-7
               xl:px-16 xl:py-8
@@ -1174,12 +1180,12 @@ export default function MrkHome() {
                     [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]
                   "
                 >
-                  Every pump. The right panel.
+                  For every pump there is one MRK starter
                 </h2>
               </motion.div>
 
               <motion.a
-                href="#all-products"
+                href={SHOP_URL}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1221,8 +1227,10 @@ export default function MrkHome() {
               </motion.a>
             </div>
 
-            {/* Cards available-height wrapper */}
-            <div className="min-h-[430px] flex-1 overflow-hidden sm:min-h-[480px] lg:min-h-0">
+            {/* Cards available-height wrapper. Below lg the rail gets a fixed
+                height so the cards keep a sane aspect on tall phones/tablets;
+                at lg it goes back to filling the leftover viewport height. */}
+            <div className="h-[480px] overflow-hidden sm:h-[540px] md:h-[600px] lg:h-auto lg:min-h-0 lg:flex-1">
               {/* 
                 Mobile/tablet:
                 - Horizontal card scrolling
@@ -1489,7 +1497,7 @@ export default function MrkHome() {
 
             {/* Mobile explore-all link */}
             <a
-              href="#all-products"
+              href={SHOP_URL}
               className="
                 mt-3 inline-flex shrink-0 items-center justify-center gap-2
                 text-sm font-semibold text-[#1598df]
@@ -1518,7 +1526,7 @@ export default function MrkHome() {
         <ProductStackSection />
        
          <CurvedVideoReel />
-        <DealerParticleSection />
+        {/* <DealerParticleSection /> */}
         <section className={cn('secti s channels vertical general it centers a professionally, as doingon container', tw['section'], tw['container'])} id={"why"}>
           <div className={cn('section-head', tw['section-head'])}>
             <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"MRK मानक"}>The MRK standard</span>

@@ -1,0 +1,1502 @@
+// @ts-nocheck
+import {
+  demoId,
+  findDemoUserByEmail,
+  getCartOwnerKey,
+  getCurrentDemoUser,
+  getDemoState,
+  loginDemoUser,
+  logoutDemoUser,
+  setDemoState,
+} from "../index";
+import type {
+  DemoCartItem,
+  DemoMrkDealerApplicationStatus,
+  DemoMrkLeadStatus,
+  DemoOrder,
+} from "../types";
+
+type DemoRequest = {
+  url: string;
+  method?: string;
+  body?: unknown;
+  params?: Record<string, string>;
+};
+
+function ok<T extends Record<string, unknown>>(data: T, message = "Success") {
+  return { success: true, message, ...data };
+}
+
+function notFound(message: string) {
+  return {
+    error: { status: 404, data: { success: false, message } },
+  };
+}
+
+function parseUrl(url: string): { pathname: string; search: URLSearchParams } {
+  const [path, query = ""] = url.split("?");
+  const pathname = path.startsWith("/") ? path : `/${path}`;
+  return { pathname, search: new URLSearchParams(query) };
+}
+
+function isFormDataBody(body: unknown): body is FormData {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
+function getBodyValue(body: Record<string, unknown> | undefined, key: string) {
+  if (!body) return undefined;
+  if (isFormDataBody(body)) return body.get(key) ?? undefined;
+  return body[key];
+}
+
+function getBodyEntries(body: Record<string, unknown> | undefined) {
+  if (!body) return [];
+  if (isFormDataBody(body)) return Array.from(body.entries());
+  return Object.entries(body);
+}
+
+function getBodyString(
+  body: Record<string, unknown> | undefined,
+  key: string,
+  fallback = "",
+) {
+  const value = getBodyValue(body, key);
+  if (value === undefined || value === null) return fallback;
+  if (typeof File !== "undefined" && value instanceof File) return fallback;
+  return String(value);
+}
+
+function getBodyBoolean(
+  body: Record<string, unknown> | undefined,
+  key: string,
+  fallback = false,
+) {
+  const value = getBodyValue(body, key);
+  if (value === undefined || value === null || value === "") return fallback;
+  return value === true || value === "true" || value === "1";
+}
+
+function parseJsonArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (value === undefined || value === null || value === "") return [];
+  if (typeof File !== "undefined" && value instanceof File) return [];
+  try {
+    const parsed = JSON.parse(String(value));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return String(value)
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+}
+
+function getBodyStringArray(
+  body: Record<string, unknown> | undefined,
+  key: string,
+) {
+  return parseJsonArray(getBodyValue(body, key)).map(String).filter(Boolean);
+}
+
+function getBodyNumber(
+  body: Record<string, unknown> | undefined,
+  key: string,
+  fallback = 0,
+) {
+  const parsed = Number(getBodyValue(body, key));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function slugifyDemoProduct(value: string) {
+  const slug = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || `product-${Date.now()}`;
+}
+
+function parseDemoProductVariants(
+  body: Record<string, unknown> | undefined,
+  productId: string,
+) {
+  const grouped: Record<number, Record<string, unknown>> = {};
+  getBodyEntries(body).forEach(([key, value]) => {
+    const match = String(key).match(/^variants\[(\d+)\]\[(\w+)\]$/);
+    if (!match) return;
+    const index = Number(match[1]);
+    grouped[index] = grouped[index] ?? {};
+    grouped[index][match[2]] = value;
+  });
+
+  const fallbackImages = [
+    "/images/three-phase-panel.png",
+    "/images/panel-components.png",
+    "/images/intro-products.jpg",
+    "/images/mrg-dpt-2-auto-timer.png",
+  ];
+
+  const parsed = Object.keys(grouped)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((key, position) => {
+      const variant = grouped[Number(key)];
+      const imageIndexes = parseJsonArray(variant.imageIndexes);
+      const existingImages = parseJsonArray(variant.images)
+        .map(String)
+        .filter(Boolean);
+      const imageCount = Math.min(
+        4,
+        Math.max(existingImages.length, imageIndexes.length),
+      );
+      const images = existingImages.length
+        ? existingImages.slice(0, 4)
+        : fallbackImages.slice(0, Math.max(1, imageCount || 1));
+
+      const attributes = parseJsonArray(variant.attributes);
+
+      return {
+        id: String(variant.id || "") || demoId("demo-var"),
+        productId,
+        sku: String(variant.sku || `MRK-DEMO-${position + 1}`),
+        price: Number(variant.price || 1),
+        priceVisible: variant.priceVisible !== "false",
+        stock: Number(variant.stock || 0),
+        stockVisible: variant.stockVisible === true || variant.stockVisible === "true",
+        lowStockThreshold: Number(variant.lowStockThreshold || 10),
+        barcode: String(variant.barcode || "") || null,
+        warehouseLocation: String(variant.warehouseLocation || "") || null,
+        hp: String(variant.hp || "") || null,
+        hpMin: variant.hpMin ? Number(variant.hpMin) : null,
+        hpMax: variant.hpMax ? Number(variant.hpMax) : null,
+        phase: String(variant.phase || "") || null,
+        variantType: String(variant.variantType || "") || null,
+        maxLoadAmps: variant.maxLoadAmps ? Number(variant.maxLoadAmps) : null,
+        boxType: String(variant.boxType || "") || null,
+        bodyType: String(variant.bodyType || "") || null,
+        meterType: String(variant.meterType || "") || null,
+        meterDisplayType: String(variant.meterDisplayType || "") || null,
+        meterSize: String(variant.meterSize || "") || null,
+        startCapacitor: String(variant.startCapacitor || "") || null,
+        runCapacitor: String(variant.runCapacitor || "") || null,
+        mcbRelayOlp: String(variant.mcbRelayOlp || "") || null,
+        warranty: String(variant.warranty || "") || null,
+        protectionFeatures: parseJsonArray(variant.protectionFeatures)
+          .map(String)
+          .filter(Boolean),
+        manualUrl: String(variant.manualUrl || "") || null,
+        videoUrl: String(variant.videoUrl || "") || null,
+        isActive: variant.isActive !== "false",
+        sortOrder: Number(variant.sortOrder || position),
+        images,
+        attributes,
+      };
+    });
+
+  return parsed.length
+    ? parsed
+    : [
+        {
+          id: demoId("demo-var"),
+          productId,
+          sku: "MRK-DEMO-1",
+          price: 1,
+          priceVisible: true,
+          stock: 0,
+          stockVisible: false,
+          lowStockThreshold: 10,
+          images: fallbackImages.slice(0, 1),
+          attributes: [],
+          isActive: true,
+          sortOrder: 0,
+        },
+      ];
+}
+
+function findVariant(variantId: string) {
+  const state = getDemoState();
+  return state.variants.find((v) => v.id === variantId);
+}
+
+function getOrCreateCart() {
+  const key = getCartOwnerKey();
+  const state = getDemoState();
+  return state.carts[key] ?? { id: `demo-cart-${key}`, cartItems: [] };
+}
+
+function saveCart(cart: ReturnType<typeof getOrCreateCart>) {
+  const key = getCartOwnerKey();
+  setDemoState((s) => ({
+    ...s,
+    carts: { ...s.carts, [key]: cart },
+  }));
+}
+
+function handleAuth(
+  pathname: string,
+  method: string,
+  body: Record<string, unknown> | undefined
+) {
+  if (pathname === "/auth/sign-in" && method === "POST") {
+    const email = String(body?.email ?? "");
+    const user = findDemoUserByEmail(email);
+    if (!user) {
+      return {
+        error: {
+          status: 401,
+          data: { success: false, message: "Invalid credentials" },
+        },
+      };
+    }
+    loginDemoUser(user);
+    return { data: ok({ user, accessToken: "demo-token" }, "Signed in") };
+  }
+
+  if (pathname === "/auth/register" && method === "POST") {
+    const email = String(body?.email ?? "");
+    const existing = findDemoUserByEmail(email);
+    if (existing) {
+      return {
+        error: {
+          status: 400,
+          data: { success: false, message: "Email already registered" },
+        },
+      };
+    }
+    const user = {
+      id: demoId("demo-user"),
+      name: String(body?.name ?? "New User"),
+      email,
+      role: "USER" as const,
+      emailVerified: true,
+      avatar: null,
+    };
+    setDemoState((s) => ({ ...s, users: [...s.users, user] }));
+    loginDemoUser(user);
+    return { data: ok({ user, accessToken: "demo-token" }, "Registered") };
+  }
+
+  if (pathname === "/auth/sign-out") {
+    logoutDemoUser();
+    return { data: ok({}, "Signed out") };
+  }
+
+  if (pathname === "/auth/refresh-token" && method === "POST") {
+    const user = getCurrentDemoUser();
+    if (!user) {
+      return {
+        error: { status: 401, data: { success: false, message: "Unauthorized" } },
+      };
+    }
+    return { data: ok({ user, accessToken: "demo-token" }) };
+  }
+
+  if (pathname === "/auth/forgot-password" || pathname === "/auth/reset-password") {
+    return { data: ok({}, "Email sent (demo)") };
+  }
+
+  return null;
+}
+
+function handleUsers(pathname: string, method: string, body?: Record<string, unknown>) {
+  const state = getDemoState();
+  const current = getCurrentDemoUser();
+
+  if (pathname === "/users/me" && method === "GET") {
+    if (!current) {
+      return {
+        error: { status: 401, data: { success: false, message: "Unauthorized" } },
+      };
+    }
+    return { data: ok({ user: current }) };
+  }
+
+  if (pathname === "/users" && method === "GET") {
+    return { data: ok({ users: state.users }) };
+  }
+
+  if (pathname === "/users/admins" && method === "GET") {
+    return {
+      data: ok({
+        users: state.users.filter((u) => u.role === "ADMIN" || u.role === "SUPERADMIN"),
+      }),
+    };
+  }
+
+  const profileMatch = pathname.match(/^\/users\/profile\/(.+)$/);
+  if (profileMatch && method === "GET") {
+    const user = state.users.find((u) => u.id === profileMatch[1]);
+    if (!user) return notFound("User not found");
+    return { data: ok({ user }) };
+  }
+
+  const userMatch = pathname.match(/^\/users\/([^/]+)$/);
+  if (userMatch && method === "PUT") {
+    const id = userMatch[1];
+    setDemoState((s) => ({
+      ...s,
+      users: s.users.map((u) =>
+        u.id === id ? { ...u, ...(body as Partial<typeof u>) } : u
+      ),
+    }));
+    const user = getDemoState().users.find((u) => u.id === id);
+    return { data: ok({ user }, "User updated") };
+  }
+
+  if (userMatch && method === "DELETE") {
+    const id = userMatch[1];
+    setDemoState((s) => ({
+      ...s,
+      users: s.users.filter((u) => u.id !== id),
+    }));
+    return { data: ok({}, "User deleted") };
+  }
+
+  if (pathname === "/users/admin" && method === "POST") {
+    const user = {
+      id: demoId("demo-user"),
+      name: String(body?.name ?? "Admin"),
+      email: String(body?.email ?? ""),
+      role: "ADMIN" as const,
+      emailVerified: true,
+      avatar: null,
+    };
+    setDemoState((s) => ({ ...s, users: [...s.users, user] }));
+    return { data: ok({ user }, "Admin created") };
+  }
+
+  return null;
+}
+
+function handleCart(pathname: string, method: string, body?: Record<string, unknown>) {
+  if (pathname === "/cart" && method === "GET") {
+    const cart = getOrCreateCart();
+    return { data: ok({ cart }) };
+  }
+
+  if (pathname === "/cart/count" && method === "GET") {
+    const cart = getOrCreateCart();
+    const count = cart.cartItems.reduce((n, i) => n + i.quantity, 0);
+    return { data: ok({ count }) };
+  }
+
+  if (pathname === "/cart" && method === "POST") {
+    const variantId = String(body?.variantId ?? "");
+    const quantity = Number(body?.quantity ?? 1);
+    const variant = findVariant(variantId);
+    if (!variant) return notFound("Variant not found");
+
+    const cart = getOrCreateCart();
+    const existing = cart.cartItems.find((i) => i.variant.id === variantId);
+    let cartItems: DemoCartItem[];
+
+    if (existing) {
+      cartItems = cart.cartItems.map((i) =>
+        i.variant.id === variantId
+          ? { ...i, quantity: i.quantity + quantity }
+          : i
+      );
+    } else {
+      const product = getDemoState().products.find((p) => p.id === variant.productId);
+      cartItems = [
+        ...cart.cartItems,
+        {
+          id: demoId("ci"),
+          quantity,
+          variant: {
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            images: [],
+            stock: variant.stock,
+            product: {
+              id: product?.id ?? variant.productId,
+              name: product?.name ?? "Product",
+              slug: product?.slug ?? "",
+            },
+          },
+        },
+      ];
+    }
+
+    saveCart({ ...cart, cartItems });
+    return { data: ok({ cart: { ...cart, cartItems } }, "Added to cart") };
+  }
+
+  const itemMatch = pathname.match(/^\/cart\/item\/(.+)$/);
+  if (itemMatch && method === "PUT") {
+    const id = itemMatch[1];
+    const quantity = Number(body?.quantity ?? 1);
+    const cart = getOrCreateCart();
+    const cartItems = cart.cartItems.map((i) =>
+      i.id === id ? { ...i, quantity } : i
+    );
+    saveCart({ ...cart, cartItems });
+    return { data: ok({ cart: { ...cart, cartItems } }) };
+  }
+
+  if (itemMatch && method === "DELETE") {
+    const id = itemMatch[1];
+    const cart = getOrCreateCart();
+    const cartItems = cart.cartItems.filter((i) => i.id !== id);
+    saveCart({ ...cart, cartItems });
+    return { data: ok({ cart: { ...cart, cartItems } }) };
+  }
+
+  return null;
+}
+
+function handleCheckout() {
+  const current = getCurrentDemoUser();
+  if (!current) {
+    return {
+      error: { status: 401, data: { success: false, message: "Sign in required" } },
+    };
+  }
+
+  const cart = getOrCreateCart();
+  if (!cart.cartItems.length) {
+    return {
+      error: { status: 400, data: { success: false, message: "Cart is empty" } },
+    };
+  }
+
+  const amount = cart.cartItems.reduce(
+    (sum, i) => sum + i.variant.price * i.quantity,
+    0
+  );
+
+  const order: DemoOrder = {
+    id: demoId("demo-order"),
+    userId: current.id,
+    status: "PROCESSING",
+    amount,
+    orderDate: new Date().toISOString(),
+    orderItems: cart.cartItems.map((i) => ({
+      id: demoId("oi"),
+      quantity: i.quantity,
+      price: i.variant.price,
+      productName: i.variant.product.name,
+      variant: {
+        id: i.variant.id,
+        sku: i.variant.sku,
+        product: i.variant.product,
+      },
+    })),
+  };
+
+  setDemoState((s) => ({
+    ...s,
+    orders: [order, ...s.orders],
+    transactions: [
+      {
+        id: demoId("demo-tx"),
+        amount,
+        status: "COMPLETED",
+        createdAt: new Date().toISOString(),
+        user: { id: current.id, name: current.name, email: current.email },
+        order: { id: order.id },
+      },
+      ...s.transactions,
+    ],
+    carts: { ...s.carts, [getCartOwnerKey()]: { ...cart, cartItems: [] } },
+  }));
+
+  return {
+    data: ok({ sessionId: "demo-checkout", orderId: order.id }, "Checkout complete"),
+  };
+}
+
+function handleOrders(pathname: string, method: string, body?: Record<string, unknown>) {
+  const state = getDemoState();
+  const current = getCurrentDemoUser();
+
+  if (pathname === "/orders/user" && method === "GET") {
+    const orders = current
+      ? state.orders.filter((o) => o.userId === current.id)
+      : [];
+    return { data: ok({ orders }) };
+  }
+
+  if (pathname === "/orders" && method === "GET") {
+    return { data: ok({ orders: state.orders }) };
+  }
+
+  const orderMatch = pathname.match(/^\/orders\/(.+)$/);
+  if (orderMatch && method === "GET") {
+    const order = state.orders.find((o) => o.id === orderMatch[1]);
+    if (!order) return notFound("Order not found");
+    return { data: ok({ order }) };
+  }
+
+  if (orderMatch && method === "PUT") {
+    const id = orderMatch[1];
+    const status = String(body?.status ?? "PROCESSING");
+    setDemoState((s) => ({
+      ...s,
+      orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)),
+    }));
+    const order = getDemoState().orders.find((o) => o.id === id);
+    return { data: ok({ order }) };
+  }
+
+  if (orderMatch && method === "DELETE") {
+    const id = orderMatch[1];
+    setDemoState((s) => ({
+      ...s,
+      orders: s.orders.filter((o) => o.id !== id),
+    }));
+    return { data: ok({}, "Order deleted") };
+  }
+
+  return null;
+}
+
+function handleProducts(
+  pathname: string,
+  method: string,
+  body: Record<string, unknown> | undefined,
+  search: URLSearchParams
+) {
+  const state = getDemoState();
+
+  if (pathname === "/products" && method === "GET") {
+    return handleProductsList(search);
+  }
+
+  if (pathname === "/products" && method === "POST") {
+    const id = demoId("demo-prod");
+    const name = getBodyString(body, "name", "New Product");
+    const categoryId = getBodyString(
+      body,
+      "categoryId",
+      state.categories[0]?.id ?? "",
+    );
+    const category = state.categories.find((item) => item.id === categoryId);
+    const variants = parseDemoProductVariants(body, id);
+    const product = {
+      id,
+      slug: slugifyDemoProduct(name),
+      name,
+      description: getBodyString(body, "description"),
+      shortDescription: getBodyString(body, "shortDescription") || null,
+      modelNumber: getBodyString(body, "modelNumber") || null,
+      tagline: getBodyString(body, "tagline") || null,
+      productLine: getBodyString(body, "productLine") || null,
+      productSeries: getBodyString(body, "productSeries") || null,
+      phase: getBodyString(body, "phase") || null,
+      hp: getBodyString(body, "hp") || null,
+      boxType: getBodyString(body, "boxType") || null,
+      meterType: getBodyString(body, "meterType") || null,
+      startCapacitor: getBodyString(body, "startCapacitor") || null,
+      runCapacitor: getBodyString(body, "runCapacitor") || null,
+      capacitor: getBodyString(body, "capacitor") || null,
+      maxLoad: getBodyString(body, "maxLoad") || null,
+      mcbRelayOlp: getBodyString(body, "mcbRelayOlp") || null,
+      warranty: getBodyString(body, "warranty") || null,
+      voltage: getBodyString(body, "voltage") || null,
+      ampRating: getBodyString(body, "ampRating") || null,
+      suitableFor: getBodyString(body, "suitableFor") || null,
+      protectionFeatures: getBodyStringArray(body, "protectionFeatures"),
+      useCases: getBodyStringArray(body, "useCases"),
+      manualUrl: getBodyString(body, "manualUrl") || null,
+      videoUrl: getBodyString(body, "videoUrl") || null,
+      featuredVideoUrl: getBodyString(body, "featuredVideoUrl") || null,
+      isActive: getBodyBoolean(body, "isActive", true),
+      isPublished: getBodyBoolean(body, "isPublished", true),
+      isCatalogVisible: getBodyBoolean(body, "isCatalogVisible", true),
+      enquiryEnabled: getBodyBoolean(body, "enquiryEnabled", true),
+      sortOrder: getBodyNumber(body, "sortOrder", state.products.length),
+      isNew: getBodyBoolean(body, "isNew"),
+      isFeatured: getBodyBoolean(body, "isFeatured"),
+      isTrending: getBodyBoolean(body, "isTrending"),
+      isBestSeller: getBodyBoolean(body, "isBestSeller"),
+      categoryId,
+      category,
+      averageRating: 0,
+      reviewCount: 0,
+      variants,
+    };
+    setDemoState((s) => ({
+      ...s,
+      products: [...s.products, product],
+      variants: [
+        ...s.variants,
+        ...variants.map((variant) => ({
+          ...variant,
+          attributes: [],
+          product: { id: product.id, name: product.name, slug: product.slug },
+        })),
+      ],
+    }));
+    return { data: ok({ product }, "Product created") };
+  }
+
+  const slugMatch = pathname.match(/^\/products\/slug\/(.+)$/);
+  if (slugMatch && method === "GET") {
+    const product = state.products.find((p) => p.slug === slugMatch[1]);
+    if (!product) return notFound("Product not found");
+    return { data: ok({ product }) };
+  }
+
+  const idMatch = pathname.match(/^\/products\/([^/]+)$/);
+  if (idMatch && method === "GET") {
+    const product = state.products.find((p) => p.id === idMatch[1]);
+    if (!product) return notFound("Product not found");
+    return { data: ok({ product }) };
+  }
+
+  if (idMatch && method === "PUT") {
+    const id = idMatch[1];
+    setDemoState((s) => ({
+      ...s,
+      products: s.products.map((p) =>
+        p.id === id ? { ...p, ...(body as Partial<typeof p>) } : p
+      ),
+    }));
+    const product = getDemoState().products.find((p) => p.id === id);
+    return { data: ok({ product }) };
+  }
+
+  if (idMatch && method === "DELETE") {
+    const id = idMatch[1];
+    setDemoState((s) => ({
+      ...s,
+      products: s.products.filter((p) => p.id !== id),
+      variants: s.variants.filter((v) => v.productId !== id),
+    }));
+    return { data: ok({}, "Product deleted") };
+  }
+
+  if (pathname === "/products/bulk" && method === "POST") {
+    return { data: ok({ imported: 0 }, "Bulk import simulated") };
+  }
+
+  return null;
+}
+
+function handleProductsList(search: URLSearchParams) {
+  const state = getDemoState();
+  let products = [...state.products];
+  const searchQuery = search.get("searchQuery");
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    products = products.filter((p) => p.name.toLowerCase().includes(q));
+  }
+  const category = search.get("category");
+  if (category) {
+    products = products.filter((p) => p.categoryId === category);
+  }
+  const page = Number(search.get("page") || 1);
+  const limit = Number(search.get("limit") || 50);
+  const start = (page - 1) * limit;
+  const slice = products.slice(start, start + limit);
+  return {
+    data: ok({
+      products: slice,
+      totalResults: products.length,
+      totalPages: Math.ceil(products.length / limit) || 1,
+      currentPage: page,
+      resultsPerPage: limit,
+    }),
+  };
+}
+
+function handleCategories(pathname: string, method: string, body?: Record<string, unknown>) {
+  const state = getDemoState();
+
+  if (pathname === "/categories" && method === "GET") {
+    return { data: ok({ categories: state.categories }) };
+  }
+
+  const idMatch = pathname.match(/^\/categories\/(.+)$/);
+  if (idMatch && method === "GET") {
+    const category = state.categories.find((c) => c.id === idMatch[1]);
+    if (!category) return notFound("Category not found");
+    return { data: ok({ category }) };
+  }
+
+  if (pathname === "/categories" && method === "POST") {
+    const category = {
+      id: demoId("demo-cat"),
+      slug: String(body?.slug ?? "category"),
+      name: String(body?.name ?? "Category"),
+      description: String(body?.description ?? ""),
+      attributes: [],
+    };
+    setDemoState((s) => ({ ...s, categories: [...s.categories, category] }));
+    return { data: ok({ category }) };
+  }
+
+  if (idMatch && method === "PUT") {
+    setDemoState((s) => ({
+      ...s,
+      categories: s.categories.map((c) =>
+        c.id === idMatch[1] ? { ...c, ...(body as Partial<typeof c>) } : c
+      ),
+    }));
+    const category = getDemoState().categories.find((c) => c.id === idMatch[1]);
+    return { data: ok({ category }) };
+  }
+
+  if (idMatch && method === "DELETE") {
+    setDemoState((s) => ({
+      ...s,
+      categories: s.categories.filter((c) => c.id !== idMatch[1]),
+    }));
+    return { data: ok({}, "Category deleted") };
+  }
+
+  return null;
+}
+
+function handleVariants(
+  pathname: string,
+  method: string,
+  body: Record<string, unknown> | undefined,
+  search: URLSearchParams
+) {
+  const state = getDemoState();
+
+  if (pathname === "/variants" && method === "GET") {
+    const page = Number(search.get("page") || 1);
+    const limit = 20;
+    const variants = state.variants;
+    return {
+      data: ok({
+        variants,
+        totalResults: variants.length,
+        totalPages: 1,
+        currentPage: page,
+        resultsPerPage: limit,
+      }),
+    };
+  }
+
+  const idMatch = pathname.match(/^\/variants\/([^/]+)$/);
+  const restockMatch = pathname.match(/^\/variants\/(.+)\/restock$/);
+  const historyMatch = pathname.match(/^\/variants\/(.+)\/restock-history$/);
+  const skuMatch = pathname.match(/^\/variants\/sku\/(.+)$/);
+
+  if (skuMatch && method === "GET") {
+    const variant = state.variants.find((v) => v.sku === skuMatch[1]);
+    if (!variant) return notFound("Variant not found");
+    return { data: ok({ variant }) };
+  }
+
+  if (idMatch && method === "GET" && !restockMatch && !historyMatch) {
+    const variant = state.variants.find((v) => v.id === idMatch[1]);
+    if (!variant) return notFound("Variant not found");
+    return { data: ok({ variant }) };
+  }
+
+  if (pathname === "/variants" && method === "POST") {
+    const variant = {
+      id: demoId("demo-var"),
+      productId: String(body?.productId ?? ""),
+      sku: String(body?.sku ?? "SKU-001"),
+      price: Number(body?.price ?? 0),
+      stock: Number(body?.stock ?? 0),
+      lowStockThreshold: Number(body?.lowStockThreshold ?? 5),
+      attributes: [],
+    };
+    setDemoState((s) => ({ ...s, variants: [...s.variants, variant] }));
+    return { data: ok({ variant }) };
+  }
+
+  if (idMatch && method === "PUT") {
+    setDemoState((s) => ({
+      ...s,
+      variants: s.variants.map((v) =>
+        v.id === idMatch[1] ? { ...v, ...(body as Partial<typeof v>) } : v
+      ),
+    }));
+    const variant = getDemoState().variants.find((v) => v.id === idMatch[1]);
+    return { data: ok({ variant }) };
+  }
+
+  if (restockMatch && method === "POST") {
+    const qty = Number(body?.quantity ?? 0);
+    setDemoState((s) => ({
+      ...s,
+      variants: s.variants.map((v) =>
+        v.id === restockMatch[1] ? { ...v, stock: v.stock + qty } : v
+      ),
+    }));
+    return {
+      data: ok({
+        restock: { id: demoId("restock"), variantId: restockMatch[1], quantity: qty },
+        isLowStock: false,
+      }),
+    };
+  }
+
+  if (historyMatch && method === "GET") {
+    return {
+      data: ok({
+        restocks: [],
+        totalResults: 0,
+        totalPages: 1,
+        currentPage: 1,
+        resultsPerPage: 10,
+      }),
+    };
+  }
+
+  if (idMatch && method === "DELETE") {
+    setDemoState((s) => ({
+      ...s,
+      variants: s.variants.filter((v) => v.id !== idMatch[1]),
+    }));
+    return { data: ok({ message: "Variant deleted" }) };
+  }
+
+  return null;
+}
+
+function handleAttributes(pathname: string, method: string, body?: Record<string, unknown>) {
+  const state = getDemoState();
+
+  if (pathname === "/attributes" && method === "GET") {
+    return { data: ok({ attributes: state.attributes }) };
+  }
+
+  const idMatch = pathname.match(/^\/attributes\/(.+)$/);
+  if (idMatch && method === "GET") {
+    const attribute = state.attributes.find((a) => a.id === idMatch[1]);
+    if (!attribute) return notFound("Attribute not found");
+    return { data: ok({ attribute }) };
+  }
+
+  if (pathname === "/attributes" && method === "POST") {
+    const attribute = {
+      id: demoId("demo-attr"),
+      name: String(body?.name ?? "Attribute"),
+      slug: String(body?.slug ?? "attr"),
+      values: [],
+    };
+    setDemoState((s) => ({ ...s, attributes: [...s.attributes, attribute] }));
+    return { data: ok({ attribute }) };
+  }
+
+  if (pathname === "/attributes/value" && method === "POST") {
+    return { data: ok({ value: { id: demoId("val"), value: body?.value } }) };
+  }
+
+  if (pathname === "/attributes/assign-category" || pathname === "/attributes/assign-product") {
+    return { data: ok({}, "Assigned (demo)") };
+  }
+
+  if (pathname.startsWith("/attributes/value/") && method === "DELETE") {
+    return { data: ok({}, "Value deleted") };
+  }
+
+  if (idMatch && method === "DELETE") {
+    setDemoState((s) => ({
+      ...s,
+      attributes: s.attributes.filter((a) => a.id !== idMatch[1]),
+    }));
+    return { data: ok({}, "Attribute deleted") };
+  }
+
+  return null;
+}
+
+function handleTransactions(pathname: string, method: string, body?: Record<string, unknown>) {
+  const state = getDemoState();
+
+  if (pathname === "/transactions" && method === "GET") {
+    const txs = state.transactions;
+    return {
+      data: ok({
+        transactions: txs,
+        totalResults: txs.length,
+        totalPages: 1,
+        currentPage: 1,
+        resultsPerPage: txs.length,
+      }),
+    };
+  }
+
+  const idMatch = pathname.match(/^\/transactions\/(.+)$/);
+  const statusMatch = pathname.match(/^\/transactions\/status\/(.+)$/);
+
+  if (idMatch && method === "GET" && !statusMatch) {
+    const transaction = state.transactions.find((t) => t.id === idMatch[1]);
+    if (!transaction) return notFound("Transaction not found");
+    return { data: ok({ transaction }) };
+  }
+
+  if (statusMatch && method === "PUT") {
+    const id = statusMatch[1];
+    const status = String(body?.status ?? "PENDING");
+    setDemoState((s) => ({
+      ...s,
+      transactions: s.transactions.map((t) =>
+        t.id === id ? { ...t, status } : t
+      ),
+    }));
+    return { data: ok({ transaction: getDemoState().transactions.find((t) => t.id === id) }) };
+  }
+
+  if (idMatch && method === "DELETE") {
+    setDemoState((s) => ({
+      ...s,
+      transactions: s.transactions.filter((t) => t.id !== idMatch[1]),
+    }));
+    return { data: ok({}, "Transaction deleted") };
+  }
+
+  return null;
+}
+
+function handleLogs(pathname: string, method: string) {
+  const state = getDemoState();
+
+  if (pathname === "/logs" && method === "GET") {
+    return { data: ok({ logs: state.logs }) };
+  }
+
+  if (pathname === "/logs" && method === "DELETE") {
+    setDemoState((s) => ({ ...s, logs: [] }));
+    return { data: ok({}, "Logs cleared") };
+  }
+
+  const levelMatch = pathname.match(/^\/logs\/level\/(.+)$/);
+  if (levelMatch && method === "GET") {
+    const logs = state.logs.filter((l) => l.level === levelMatch[1]);
+    return { data: ok({ logs }) };
+  }
+
+  const idMatch = pathname.match(/^\/logs\/(.+)$/);
+  if (idMatch && method === "GET") {
+    const log = state.logs.find((l) => l.id === idMatch[1]);
+    if (!log) return notFound("Log not found");
+    return { data: ok({ log }) };
+  }
+
+  if (idMatch && method === "DELETE") {
+    setDemoState((s) => ({
+      ...s,
+      logs: s.logs.filter((l) => l.id !== idMatch[1]),
+    }));
+    return { data: ok({}, "Log deleted") };
+  }
+
+  return null;
+}
+
+function handleReviews(pathname: string, method: string, body?: Record<string, unknown>) {
+  const state = getDemoState();
+  const current = getCurrentDemoUser();
+
+  const productMatch = pathname.match(/^\/reviews\/(.+)$/);
+  if (productMatch && method === "GET") {
+    const reviews = state.reviews.filter((r) => r.productId === productMatch[1]);
+    return { data: ok({ reviews }) };
+  }
+
+  if (pathname === "/reviews" && method === "POST") {
+    const review = {
+      id: demoId("review"),
+      productId: String(body?.productId ?? ""),
+      userId: current?.id ?? "guest",
+      rating: Number(body?.rating ?? 5),
+      comment: String(body?.comment ?? ""),
+      createdAt: new Date().toISOString(),
+      user: current
+        ? { id: current.id, name: current.name, avatar: current.avatar }
+        : undefined,
+    };
+    setDemoState((s) => ({ ...s, reviews: [...s.reviews, review] }));
+    return { data: ok({ review }) };
+  }
+
+  if (pathname === "/reviews" && method === "DELETE") {
+    const reviewId = String(body?.reviewId ?? "");
+    setDemoState((s) => ({
+      ...s,
+      reviews: s.reviews.filter((r) => r.id !== reviewId),
+    }));
+    return { data: ok({}, "Review deleted") };
+  }
+
+  return null;
+}
+
+function readString(value: unknown): string | undefined {
+  const text = String(value ?? "").trim();
+  return text || undefined;
+}
+
+function readStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function handleMrk(
+  pathname: string,
+  method: string,
+  body: Record<string, unknown> | undefined,
+  search: URLSearchParams
+) {
+  const state = getDemoState();
+
+  if (pathname.startsWith("/mrk/admin/")) {
+    if (pathname === "/mrk/admin/enquiries" && method === "GET") {
+      return { data: ok({ enquiries: state.mrkEnquiries }) };
+    }
+
+    const enquiryStatusMatch = pathname.match(
+      /^\/mrk\/admin\/enquiries\/(.+)\/status$/
+    );
+    if (enquiryStatusMatch && method === "PATCH") {
+      const id = enquiryStatusMatch[1];
+      const status = String(body?.status ?? "NEW") as DemoMrkLeadStatus;
+      setDemoState((s) => ({
+        ...s,
+        mrkEnquiries: s.mrkEnquiries.map((lead) =>
+          lead.id === id
+            ? { ...lead, status, updatedAt: new Date().toISOString() }
+            : lead
+        ),
+      }));
+      const enquiry = getDemoState().mrkEnquiries.find((lead) => lead.id === id);
+      return { data: ok({ enquiry }, "Enquiry updated") };
+    }
+
+    if (pathname === "/mrk/admin/dealer-applications" && method === "GET") {
+      return {
+        data: ok({ dealerApplications: state.mrkDealerApplications }),
+      };
+    }
+
+    const dealerApplicationStatusMatch = pathname.match(
+      /^\/mrk\/admin\/dealer-applications\/(.+)\/status$/
+    );
+    if (dealerApplicationStatusMatch && method === "PATCH") {
+      const id = dealerApplicationStatusMatch[1];
+      const status = String(
+        body?.status ?? "NEW"
+      ) as DemoMrkDealerApplicationStatus;
+      setDemoState((s) => ({
+        ...s,
+        mrkDealerApplications: s.mrkDealerApplications.map((application) =>
+          application.id === id
+            ? { ...application, status, updatedAt: new Date().toISOString() }
+            : application
+        ),
+      }));
+      const dealerApplication = getDemoState().mrkDealerApplications.find(
+        (application) => application.id === id
+      );
+      return {
+        data: ok({ dealerApplication }, "Dealer application updated"),
+      };
+    }
+
+    if (pathname === "/mrk/admin/contact-submissions" && method === "GET") {
+      return {
+        data: ok({ contactSubmissions: state.mrkContactSubmissions }),
+      };
+    }
+
+    const contactStatusMatch = pathname.match(
+      /^\/mrk\/admin\/contact-submissions\/(.+)\/status$/
+    );
+    if (contactStatusMatch && method === "PATCH") {
+      const id = contactStatusMatch[1];
+      const status = String(body?.status ?? "NEW") as DemoMrkLeadStatus;
+      setDemoState((s) => ({
+        ...s,
+        mrkContactSubmissions: s.mrkContactSubmissions.map((submission) =>
+          submission.id === id
+            ? { ...submission, status, updatedAt: new Date().toISOString() }
+            : submission
+        ),
+      }));
+      const contactSubmission = getDemoState().mrkContactSubmissions.find(
+        (submission) => submission.id === id
+      );
+      return {
+        data: ok({ contactSubmission }, "Contact submission updated"),
+      };
+    }
+
+    if (pathname === "/mrk/admin/dealers" && method === "GET") {
+      return { data: ok({ dealers: state.mrkDealers }) };
+    }
+
+    if (pathname === "/mrk/admin/dealers" && method === "POST") {
+      const dealer = {
+        id: demoId("demo-dealer"),
+        name: readString(body?.name) ?? "Demo Dealer",
+        businessName: readString(body?.businessName) ?? null,
+        contactPerson: readString(body?.contactPerson) ?? null,
+        phone: readString(body?.phone) ?? "",
+        whatsapp: readString(body?.whatsapp) ?? null,
+        email: readString(body?.email) ?? null,
+        address: readString(body?.address) ?? "",
+        city: readString(body?.city) ?? "",
+        district: readString(body?.district) ?? null,
+        state: readString(body?.state) ?? "",
+        pincode: readString(body?.pincode) ?? "",
+        latitude: null,
+        longitude: null,
+        active: body?.active !== false,
+        featured: body?.featured === true,
+        serviceAreas: readStringArray(body?.serviceAreas),
+      };
+      setDemoState((s) => ({ ...s, mrkDealers: [dealer, ...s.mrkDealers] }));
+      return { data: ok({ dealer }, "Dealer created") };
+    }
+
+    const dealerMatch = pathname.match(/^\/mrk\/admin\/dealers\/(.+)$/);
+    if (dealerMatch && method === "PATCH") {
+      const id = dealerMatch[1];
+      setDemoState((s) => ({
+        ...s,
+        mrkDealers: s.mrkDealers.map((dealer) =>
+          dealer.id === id
+            ? {
+                ...dealer,
+                ...(body ?? {}),
+                serviceAreas:
+                  body?.serviceAreas === undefined
+                    ? dealer.serviceAreas
+                    : readStringArray(body.serviceAreas),
+              }
+            : dealer
+        ),
+      }));
+      const dealer = getDemoState().mrkDealers.find((item) => item.id === id);
+      return { data: ok({ dealer }, "Dealer updated") };
+    }
+
+    if (pathname === "/mrk/admin/download-assets" && method === "GET") {
+      return { data: ok({ downloadAssets: state.mrkDownloadAssets }) };
+    }
+
+    if (pathname === "/mrk/admin/download-assets" && method === "POST") {
+      const downloadAsset = {
+        id: demoId("demo-download"),
+        title: readString(body?.title) ?? "MRK Download",
+        slug: readString(body?.slug),
+        description: readString(body?.description) ?? null,
+        type: String(body?.type ?? "CATALOG") as
+          | "CATALOG"
+          | "PRICE_LIST"
+          | "MANUAL"
+          | "BROCHURE"
+          | "CONNECTION_GUIDE"
+          | "VIDEO"
+          | "OTHER",
+        fileUrl: readString(body?.fileUrl) ?? "#",
+        thumbnailUrl: readString(body?.thumbnailUrl) ?? null,
+        language: (readString(body?.language) ?? "EN") as "EN" | "HI",
+        active: body?.active !== false,
+        sortOrder: Number(body?.sortOrder ?? state.mrkDownloadAssets.length),
+        version: readString(body?.version) ?? null,
+        effectiveDate: readString(body?.effectiveDate) ?? null,
+        product: null,
+        variant: null,
+      };
+      setDemoState((s) => ({
+        ...s,
+        mrkDownloadAssets: [downloadAsset, ...s.mrkDownloadAssets],
+      }));
+      return { data: ok({ downloadAsset }, "Download asset created") };
+    }
+
+    const downloadAssetMatch = pathname.match(
+      /^\/mrk\/admin\/download-assets\/(.+)$/
+    );
+    if (downloadAssetMatch && method === "PATCH") {
+      const id = downloadAssetMatch[1];
+      setDemoState((s) => ({
+        ...s,
+        mrkDownloadAssets: s.mrkDownloadAssets.map((asset) =>
+          asset.id === id ? { ...asset, ...(body ?? {}) } : asset
+        ),
+      }));
+      const downloadAsset = getDemoState().mrkDownloadAssets.find(
+        (asset) => asset.id === id
+      );
+      return { data: ok({ downloadAsset }, "Download asset updated") };
+    }
+
+    if (pathname === "/mrk/admin/testimonials" && method === "GET") {
+      return { data: ok({ testimonials: state.mrkTestimonials }) };
+    }
+
+    if (pathname === "/mrk/admin/testimonials" && method === "POST") {
+      const testimonial = {
+        id: demoId("demo-testimonial"),
+        quote: readString(body?.quote) ?? "",
+        name: readString(body?.name) ?? "Demo Customer",
+        city: readString(body?.city) ?? null,
+        role: String(body?.role ?? "OTHER") as
+          | "DEALER"
+          | "FARMER"
+          | "HOMEOWNER"
+          | "OTHER",
+        active: body?.active !== false,
+        sortOrder: Number(body?.sortOrder ?? state.mrkTestimonials.length),
+      };
+      setDemoState((s) => ({
+        ...s,
+        mrkTestimonials: [testimonial, ...s.mrkTestimonials],
+      }));
+      return { data: ok({ testimonial }, "Testimonial created") };
+    }
+
+    const testimonialMatch = pathname.match(
+      /^\/mrk\/admin\/testimonials\/(.+)$/
+    );
+    if (testimonialMatch && method === "PATCH") {
+      const id = testimonialMatch[1];
+      setDemoState((s) => ({
+        ...s,
+        mrkTestimonials: s.mrkTestimonials.map((testimonial) =>
+          testimonial.id === id ? { ...testimonial, ...(body ?? {}) } : testimonial
+        ),
+      }));
+      const testimonial = getDemoState().mrkTestimonials.find(
+        (item) => item.id === id
+      );
+      return { data: ok({ testimonial }, "Testimonial updated") };
+    }
+
+    if (pathname === "/mrk/admin/site-settings" && method === "PUT") {
+      const siteSetting = {
+        ...state.mrkSiteSetting,
+        ...(body ?? {}),
+        id: state.mrkSiteSetting.id,
+        key: readString(body?.key) ?? state.mrkSiteSetting.key,
+      };
+      setDemoState((s) => ({ ...s, mrkSiteSetting: siteSetting }));
+      return { data: ok({ siteSetting }, "Site settings saved") };
+    }
+  }
+
+  if (pathname === "/mrk/enquiries" && method === "POST") {
+    const now = new Date().toISOString();
+    const productId = readString(body?.productId);
+    const categoryId = readString(body?.categoryId);
+    const product = productId
+      ? state.products.find((item) => item.id === productId)
+      : undefined;
+    const category = categoryId
+      ? state.categories.find((item) => item.id === categoryId)
+      : product?.category;
+    const enquiry = {
+      id: demoId("demo-enquiry"),
+      name: readString(body?.name) ?? "Demo Enquiry",
+      phone: readString(body?.phone) ?? readString(body?.mobile) ?? "",
+      mobile: readString(body?.mobile),
+      whatsapp: readString(body?.whatsapp),
+      email: readString(body?.email),
+      city: readString(body?.city),
+      state: readString(body?.state),
+      pincode: readString(body?.pincode),
+      message: readString(body?.message),
+      source: readString(body?.source) ?? "demo",
+      sourceType: readString(body?.sourceType) ?? "CONTACT",
+      productId,
+      variantId: readString(body?.variantId),
+      categoryId,
+      status: "NEW" as const,
+      createdAt: now,
+      updatedAt: now,
+      product: product
+        ? {
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+          }
+        : undefined,
+      category: category
+        ? {
+            id: category.id,
+            name: category.name,
+            slug: category.slug,
+          }
+        : undefined,
+      metadata: body?.metadata as Record<string, unknown> | undefined,
+    };
+    setDemoState((s) => ({
+      ...s,
+      mrkEnquiries: [enquiry, ...s.mrkEnquiries],
+    }));
+    return { data: ok({ enquiry }, "Enquiry submitted") };
+  }
+
+  if (pathname === "/mrk/dealer-applications" && method === "POST") {
+    const now = new Date().toISOString();
+    const dealerApplication = {
+      id: demoId("demo-dealer-application"),
+      name: readString(body?.name) ?? "Demo Applicant",
+      businessName: readString(body?.businessName) ?? "Demo Business",
+      address: readString(body?.address) ?? "",
+      mobile: readString(body?.mobile) ?? "",
+      whatsapp: readString(body?.whatsapp),
+      city: readString(body?.city),
+      state: readString(body?.state),
+      pincode: readString(body?.pincode),
+      email: readString(body?.email),
+      gstNumber: readString(body?.gstNumber),
+      currentBusiness: readString(body?.currentBusiness),
+      productCategories: readStringArray(body?.productCategories),
+      experience: readString(body?.experience),
+      message: readString(body?.message),
+      status: "NEW" as const,
+      createdAt: now,
+      updatedAt: now,
+      metadata: body?.metadata as Record<string, unknown> | undefined,
+    };
+    setDemoState((s) => ({
+      ...s,
+      mrkDealerApplications: [
+        dealerApplication,
+        ...s.mrkDealerApplications,
+      ],
+    }));
+    return {
+      data: ok({ dealerApplication }, "Dealer application submitted"),
+    };
+  }
+
+  if (pathname === "/mrk/contact-submissions" && method === "POST") {
+    const now = new Date().toISOString();
+    const contactSubmission = {
+      id: demoId("demo-contact"),
+      name: readString(body?.name) ?? "Demo Contact",
+      message: readString(body?.message) ?? "",
+      type: (readString(body?.type) ?? "CONTACT") as "CONTACT" | "FEEDBACK",
+      phone: readString(body?.phone),
+      email: readString(body?.email),
+      subject: readString(body?.subject),
+      city: readString(body?.city),
+      state: readString(body?.state),
+      status: "NEW" as const,
+      createdAt: now,
+      updatedAt: now,
+      metadata: body?.metadata as Record<string, unknown> | undefined,
+    };
+    setDemoState((s) => ({
+      ...s,
+      mrkContactSubmissions: [
+        contactSubmission,
+        ...s.mrkContactSubmissions,
+      ],
+    }));
+    return { data: ok({ contactSubmission }, "Contact request submitted") };
+  }
+
+  if (pathname === "/mrk/downloads" && method === "GET") {
+    return {
+      data: ok({
+        downloads: state.mrkDownloadAssets.filter((asset) => asset.active),
+      }),
+    };
+  }
+
+  if (pathname === "/mrk/download-assets" && method === "GET") {
+    return {
+      data: ok({
+        downloadAssets: state.mrkDownloadAssets
+          .filter((asset) => asset.active)
+          .sort((a, b) => a.sortOrder - b.sortOrder),
+      }),
+    };
+  }
+
+  if (pathname === "/mrk/dealers" && method === "GET") {
+    const city = search.get("city")?.trim().toLowerCase();
+    const dealerState = search.get("state")?.trim().toLowerCase();
+    const dealers = state.mrkDealers.filter((dealer) => {
+      if (!dealer.active) return false;
+      if (city && !dealer.city.toLowerCase().includes(city)) return false;
+      if (dealerState && !dealer.state.toLowerCase().includes(dealerState)) {
+        return false;
+      }
+      return true;
+    });
+
+    return {
+      data: ok({ dealers }),
+    };
+  }
+
+  if (pathname === "/mrk/testimonials" && method === "GET") {
+    return {
+      data: ok({
+        testimonials: state.mrkTestimonials
+          .filter((item) => item.active)
+          .sort((a, b) => a.sortOrder - b.sortOrder),
+      }),
+    };
+  }
+
+  if (pathname === "/mrk/site-settings" && method === "GET") {
+    return {
+      data: ok({ siteSetting: state.mrkSiteSetting }),
+    };
+  }
+
+  return null;
+}
+
+export function resolveDemoRequest(req: DemoRequest): { data?: unknown; error?: unknown } {
+  const url =
+    typeof req.url === "string"
+      ? req.url
+      : String((req as { url?: string }).url ?? "");
+  const method = (req.method ?? "GET").toUpperCase();
+  const body = req.body as Record<string, unknown> | undefined;
+
+  const { pathname, search } = parseUrl(url);
+
+  if (pathname === "/checkout" && method === "POST") {
+    return handleCheckout();
+  }
+
+  const handlers = [
+    () => handleAuth(pathname, method, body),
+    () => handleUsers(pathname, method, body),
+    () => handleCart(pathname, method, body),
+    () => handleOrders(pathname, method, body),
+    () => handleProducts(pathname, method, body, search),
+    () => handleCategories(pathname, method, body),
+    () => handleVariants(pathname, method, body, search),
+    () => handleAttributes(pathname, method, body),
+    () => handleTransactions(pathname, method, body),
+    () => handleLogs(pathname, method),
+    () => handleReviews(pathname, method, body),
+    () => handleMrk(pathname, method, body, search),
+  ];
+
+  if (pathname.startsWith("/analytics")) {
+    return { data: ok({}, "Analytics tracked (demo)") };
+  }
+
+  if (pathname.startsWith("/chat")) {
+    return { data: ok({ chats: [] }, "Chat unavailable in demo") };
+  }
+
+  if (pathname.startsWith("/reports/generate")) {
+    const blob = new Blob(["Demo report"], { type: "text/plain" });
+    return { data: blob };
+  }
+
+  for (const run of handlers) {
+    const result = run();
+    if (result) return result;
+  }
+
+  return notFound(`Demo: no handler for ${method} ${pathname}`);
+}

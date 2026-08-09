@@ -1,0 +1,122 @@
+ ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2464485874'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '222300476'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '311751926'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '311751926'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '311751926'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '311751926'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '311751926'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '311751926'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2464485874'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2464485874'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2464485874'
+}
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  digest: '3706933233'
+}
+ ⨯ Error: Could not find the module "C:\mrk-tradex-nextjs-framer\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2464485874'
+}
+[TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  page: '/product/mrk-catalog-one-time-test-1786269085037'
+}
+ ⨯ Failed to generate static paths for /product/[slug]:
+[Error: Cannot find module './vendor-chunks/lucide-react.js'
+Require stack:
+- C:\mrk-tradex-nextjs-framer\.next\server\webpack-runtime.js
+- C:\mrk-tradex-nextjs-framer\.next\server\app\(public)\product\[slug]\page.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\require.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\load-components.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\build\utils.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\compiled\jest-worker\processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /product/[slug]:
+[Error: Cannot find module './vendor-chunks/lucide-react.js'
+Require stack:
+- C:\mrk-tradex-nextjs-framer\.next\server\webpack-runtime.js
+- C:\mrk-tradex-nextjs-framer\.next\server\app\(public)\product\[slug]\page.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\require.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\load-components.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\build\utils.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\compiled\jest-worker\processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /product/[slug]:
+[Error: Cannot find module './vendor-chunks/lucide-react.js'
+Require stack:
+- C:\mrk-tradex-nextjs-framer\.next\server\webpack-runtime.js
+- C:\mrk-tradex-nextjs-framer\.next\server\app\(public)\product\[slug]\page.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\require.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\load-components.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\build\utils.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\compiled\jest-worker\processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /product/[slug]:
+[Error: Cannot find module './vendor-chunks/lucide-react.js'
+Require stack:
+- C:\mrk-tradex-nextjs-framer\.next\server\webpack-runtime.js
+- C:\mrk-tradex-nextjs-framer\.next\server\app\(public)\product\[slug]\page.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\require.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\load-components.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\build\utils.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\server\dev\static-paths-worker.js
+- C:\mrk-tradex-nextjs-framer\node_modules\next\dist\compiled\jest-worker\processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
