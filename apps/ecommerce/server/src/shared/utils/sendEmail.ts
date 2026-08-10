@@ -42,7 +42,9 @@ const sendEmail = async ({
     } as TransporterConfig);
 
     const mailOptions: MailOptions = {
-      from: "Egwinch",
+      // Gmail rewrites From to the authenticated account anyway, so this only
+      // controls the display name.
+      from: process.env.EMAIL_FROM || (process.env.EMAIL_USER as string),
       to,
       subject,
       text,

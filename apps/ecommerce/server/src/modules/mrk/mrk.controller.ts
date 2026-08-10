@@ -1,7 +1,21 @@
 import { Request, Response } from "express";
 import asyncHandler from "@/shared/utils/asyncHandler";
 import sendResponse from "@/shared/utils/sendResponse";
+import sendEmail from "@/shared/utils/sendEmail";
 import { MrkService } from "./mrk.service";
+
+const escapeHtml = (value: unknown) =>
+  String(value ?? "—").replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[character] as string
+  );
 
 export class MrkController {
   constructor(private mrkService: MrkService) {}
@@ -37,11 +51,69 @@ export class MrkController {
     const dealerApplication = await this.mrkService.createDealerApplication(
       req.body
     );
+
+    // Notify the office. Deliberately not awaited into the response path: a
+    // mail outage must not fail an application that is already stored.
+    void this.notifyDealerApplication(req.body);
+
     sendResponse(res, 201, {
       data: { dealerApplication },
       message: "Dealer application submitted successfully",
     });
   });
+
+  private async notifyDealerApplication(application: Record<string, any>) {
+    const to = process.env.MRK_NOTIFY_EMAIL || process.env.EMAIL_USER;
+    if (!to) {
+      console.warn(
+        "[mrk] No MRK_NOTIFY_EMAIL or EMAIL_USER set — dealer application email skipped"
+      );
+      return;
+    }
+
+    const allRows: [string, unknown][] = [
+      ["Name", application.name],
+      ["Business name", application.businessName],
+      ["Address", application.address],
+      ["Mobile", application.mobile],
+      ["WhatsApp", application.whatsapp],
+      ["Email", application.email],
+      ["City", application.city],
+      ["State", application.state],
+      ["Pincode", application.pincode],
+      ["GST number", application.gstNumber],
+      ["Current business", application.currentBusiness],
+      ["Experience", application.experience],
+      ["Message", application.message],
+      ["Source", application.metadata?.source],
+    ];
+
+    const rows = allRows.filter(
+      ([, value]) => value !== undefined && value !== null && value !== ""
+    );
+
+    const text = rows.map(([label, value]) => `${label}: ${value}`).join("\n");
+    const html = `
+      <h2 style="font-family:sans-serif;color:#0b1f33">New dealer application</h2>
+      <table style="font-family:sans-serif;border-collapse:collapse">
+        ${rows
+          .map(
+            ([label, value]) =>
+              `<tr>
+                 <td style="padding:6px 14px 6px 0;color:#5d7488">${escapeHtml(label)}</td>
+                 <td style="padding:6px 0;color:#0b1f33"><strong>${escapeHtml(value)}</strong></td>
+               </tr>`
+          )
+          .join("")}
+      </table>`;
+
+    await sendEmail({
+      to,
+      subject: `New dealer application — ${application.businessName || application.name || "MRK"}`,
+      text,
+      html,
+    });
+  }
 
   getDealerApplications = asyncHandler(async (_req: Request, res: Response) => {
     const dealerApplications = await this.mrkService.getDealerApplications();

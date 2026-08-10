@@ -17,7 +17,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ProductStackSection from "./ProductStack";
 import CurvedVideoReel from "./CurvedVideoReel";
 import FaqAccordion from "./FaqAccordion";
+import {
+  Award,
+  Headset,
+  IndianRupee,
+  PanelTop,
+  Shield,
+  Waypoints,
+  type LucideIcon,
+} from "lucide-react";
+
+import SiteFooter from "@/app/components/layout/SiteFooter";
 import { shopUrl } from "@/app/data/catalog/series";
+import useToast from "@/app/hooks/ui/useToast";
+import { useCreateDealerApplicationMutation } from "@/app/store/apis/MrkApi";
 
 const SHOP_URL = "/shop";
 
@@ -296,83 +309,341 @@ function DealerParticleSection() {
 // grid reads as evidence rather than six icons. imgClass carries the crop: the
 // studio shots sit on their own backdrop and are contained, the in-situ photos
 // are cropped away from their watermarks and clutter.
-const whyCards: {
-  no: string;
+// A bento grid: on wide screens the row shapes are 4+2+2 and 2+3+3 across eight
+// columns, so the two picture cards and the closing value card each get room to
+// breathe. Everything collapses to two columns, then one, further down.
+type WhyCard = {
   title: string;
   hiTitle: string;
   copy: string;
   hiCopy: string;
-  img: string;
-  alt: string;
-  imgClass: string;
-}[] = [
+  icon: LucideIcon;
+  span: string;
+  img?: string;
+  alt?: string;
+  imgClass?: string;
+  tone?: "light" | "dark";
+};
+
+const whyCards: WhyCard[] = [
   {
-    no: "01",
     title: "Considered components",
     hiTitle: "सोच-समझकर चुने गए कंपोनेंट",
     copy: "EPCOS and MRK-grade capacitors, chosen to endure the supply our customers actually get.",
     hiCopy: "EPCOS और MRK-ग्रेड कैपेसिटर, टिकाऊपन को ध्यान में रखकर चुने गए।",
+    icon: Award,
+    span: "md:col-span-2 lg:col-span-4",
     img: "/images/panel-components.png",
     alt: "MRK capacitor and terminal block inside an open starter panel",
-    imgClass: "object-cover object-center",
+    imgClass: "object-contain",
   },
   {
-    no: "02",
-    title: "A complete range",
-    hiTitle: "पूरी रेंज",
-    copy: "Every HP and phase under one name, from entry-level starters to heavy-duty panels.",
-    hiCopy: "हर HP और फेज़ एक ही नाम के तहत, एंट्री-लेवल से हैवी-ड्यूटी तक।",
-    img: "/images/mrk-hero-products-2026.png",
-    alt: "The MRK range of single-phase and three-phase panels and digital meters",
-    imgClass: "object-contain p-2",
-  },
-  {
-    no: "03",
-    title: "Enclosures built to last",
-    hiTitle: "मज़बूत एनक्लोज़र",
-    copy: "ABS and MS bodies, finished to look the part on the wall for years.",
-    hiCopy: "ABS और MS बॉडी, सालों तक दीवार पर अच्छी दिखने वाली फिनिश के साथ।",
-    img: "/images/single-phase-starter.png",
-    alt: "MRK single-phase starter enclosure with hinged door",
-    imgClass: "object-cover object-center",
-  },
-  {
-    no: "04",
-    title: "Precision wiring",
-    hiTitle: "सटीक वायरिंग",
-    copy: "Clean, safe and serviceable in every unit, so any electrician can work on it.",
-    hiCopy: "हर यूनिट में साफ़, सुरक्षित और सर्विस-योग्य वायरिंग।",
-    img: "/images/three-phase-panel.png",
-    alt: "Wiring, contactors and terminal rows inside an MRK three-phase panel",
-    imgClass: "object-cover object-center",
-  },
-  {
-    no: "05",
     title: "Warranty & service",
     hiTitle: "वारंटी और सर्विस",
     copy: "Assured through a nationwide dealer network, with spares close to where you are.",
     hiCopy: "देशभर के डीलर नेटवर्क के ज़रिए, स्पेयर आपके नज़दीक।",
-    img: "/images/MRK WEBSITE/I Phase Starters/Family Photo/IMG20250305130830.jpg",
-    alt: "An MRK starter carrying its OK-tested seal",
-    imgClass: "object-cover object-top",
+    icon: Headset,
+    span: "md:col-span-1 lg:col-span-2",
   },
   {
-    no: "06",
+    title: "Enclosures built to last",
+    hiTitle: "मज़बूत एनक्लोज़र",
+    copy: "ABS and MS bodies, finished to look the part on the wall for years.",
+    hiCopy: "ABS और MS बॉडी, सालों तक दीवार पर अच्छी दिखने वाली फिनिश के साथ।",
+    icon: Shield,
+    span: "md:col-span-1 lg:col-span-2",
+  },
+  {
+    title: "Precision wiring",
+    hiTitle: "सटीक वायरिंग",
+    copy: "Clean, safe and serviceable in every unit, so any electrician can work on it.",
+    hiCopy: "हर यूनिट में साफ़, सुरक्षित और सर्विस-योग्य वायरिंग।",
+    icon: Waypoints,
+    span: "md:col-span-1 lg:col-span-2",
+  },
+  {
+    title: "A complete range",
+    hiTitle: "पूरी रेंज",
+    copy: "Every HP and phase under one name, from entry-level starters to heavy-duty panels.",
+    hiCopy: "हर HP और फेज़ एक ही नाम के तहत, एंट्री-लेवल से हैवी-ड्यूटी तक।",
+    icon: PanelTop,
+    span: "md:col-span-1 lg:col-span-3",
+    img: "/images/single-phase-starter.png",
+    alt: "An MRK single-phase starter panel",
+    imgClass: "object-contain",
+  },
+  {
     title: "Value, without compromise",
     hiTitle: "बिना समझौते के वैल्यू",
     copy: "Advanced protection, priced for India, with nothing quietly left out to hit a number.",
     hiCopy: "बेहतर सुरक्षा, भारत के लिए सही कीमत पर।",
-    img: "/images/farmers.jpeg",
-    alt: "A farmer drawing water at a pump in his field",
-    imgClass: "object-cover object-left",
+    icon: IndianRupee,
+    span: "md:col-span-2 lg:col-span-3",
+    tone: "dark",
   },
 ];
+
+/** Soft organic wash behind the picture cards. */
+function WhyBlob({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox={"0 0 200 200"}
+      aria-hidden={"true"}
+      className={className}
+      fill={"currentColor"}
+    >
+      <path
+        d={
+          "M45.6,-58.3C58.3,-49.5,66.5,-34.2,70.2,-18.1C73.9,-2,73.1,14.9,66.2,28.8C59.3,42.7,46.3,53.6,31.7,60.5C17.1,67.4,0.9,70.3,-15.6,68.1C-32.1,65.9,-48.9,58.6,-59.6,45.9C-70.3,33.2,-74.9,15.1,-73.4,-2.1C-71.9,-19.3,-64.3,-35.6,-52.4,-45.1C-40.5,-54.6,-24.3,-57.3,-8.4,-59.3C7.5,-61.3,32.9,-67.1,45.6,-58.3Z"
+        }
+        transform={"translate(100 100)"}
+      />
+    </svg>
+  );
+}
+
+/**
+ * A stylised India outline for the closing card. Deliberately simplified — it
+ * sits at low opacity as a dashed silhouette, so it reads as the map without
+ * pretending to be a survey boundary.
+ */
+function IndiaOutline({ className }: { className?: string }) {
+  const outline =
+    "M74 16 L88 10 L96 22 L112 30 L130 40 L150 52 L168 60 L182 58 L192 66 L186 78 L194 86 L180 90 L168 84 L158 92 L150 106 L146 122 L138 146 L128 172 L116 198 L104 226 L94 206 L84 180 L74 152 L64 126 L54 104 L38 96 L26 84 L34 70 L48 58 L58 40 L66 26 Z";
+
+  return (
+    <svg
+      viewBox={"0 0 220 240"}
+      aria-hidden={"true"}
+      className={className}
+      fill={"none"}
+    >
+      <path
+        d={outline}
+        stroke={"currentColor"}
+        strokeWidth={1.5}
+        strokeDasharray={"3 5"}
+        strokeLinecap={"round"}
+        strokeLinejoin={"round"}
+      />
+      {[
+        [110, 74],
+        [110, 122],
+        [110, 170],
+        [72, 122],
+        [148, 122],
+      ].map(([cx, cy]) => (
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={2.4} fill={"currentColor"} />
+      ))}
+    </svg>
+  );
+}
 
 const dealerStats: { value: string; label: string; hi: string }[] = [
   { value: "1,000+", label: "Dealers", hi: "डीलर" },
   { value: "500+", label: "Cities", hi: "शहर" },
   { value: "20+", label: "States", hi: "राज्य" },
 ];
+
+// The short version of the /dealer application. These four are exactly the
+// fields that page treats as required, so a submission from here is a complete
+// record — the optional detail is collected later, not dropped.
+type DealerFormFieldName = "name" | "businessName" | "address" | "mobile";
+
+type DealerFormField = {
+  name: DealerFormFieldName;
+  label: string;
+  hi: string;
+  placeholder: string;
+  autoComplete: string;
+  type?: string;
+  inputMode?: "numeric" | "tel" | "text";
+  multiline?: boolean;
+};
+
+const dealerFormFields: DealerFormField[] = [
+  {
+    name: "name",
+    label: "Name",
+    hi: "नाम",
+    placeholder: "Your full name",
+    autoComplete: "name",
+  },
+  {
+    name: "businessName",
+    label: "Business name",
+    hi: "व्यवसाय का नाम",
+    placeholder: "Shop or firm name",
+    autoComplete: "organization",
+  },
+  {
+    name: "address",
+    label: "Address",
+    hi: "पता",
+    placeholder: "Shop address with city",
+    autoComplete: "street-address",
+    multiline: true,
+  },
+  {
+    name: "mobile",
+    label: "Mobile number",
+    hi: "मोबाइल नंबर",
+    placeholder: "10-digit mobile number",
+    autoComplete: "tel",
+    type: "tel",
+    inputMode: "numeric",
+  },
+];
+
+const emptyDealerForm: Record<DealerFormFieldName, string> = {
+  name: "",
+  businessName: "",
+  address: "",
+  mobile: "",
+};
+
+function DealerApplicationForm() {
+  const { showToast } = useToast();
+  const [createDealerApplication, { isLoading }] =
+    useCreateDealerApplicationMutation();
+  const [form, setForm] = useState(emptyDealerForm);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (
+      !form.name.trim() ||
+      !form.businessName.trim() ||
+      !form.address.trim() ||
+      !form.mobile.trim()
+    ) {
+      showToast(
+        "Name, business name, address, and mobile are required",
+        "error",
+      );
+      return;
+    }
+
+    try {
+      await createDealerApplication({
+        name: form.name,
+        businessName: form.businessName,
+        address: form.address,
+        mobile: form.mobile,
+        // distinguishes these from the full /dealer submissions in the inbox
+        metadata: { source: "home_dealer_cta" },
+      }).unwrap();
+
+      setForm(emptyDealerForm);
+      showToast("Dealer application submitted successfully", "success");
+    } catch (error: any) {
+      showToast(
+        error?.data?.message || "Failed to submit dealer application",
+        "error",
+      );
+    }
+  };
+
+  const fieldClass =
+    "w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-[0.95rem] text-white outline-none transition-colors placeholder:text-white/45 focus:border-[#5fb8ef] focus:bg-white/[0.16]";
+
+  return (
+    <motion.form
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, y: 26 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full rounded-[24px] border border-white/15 bg-white/[0.07] p-6 shadow-[0_24px_60px_rgba(3,17,32,0.35)] backdrop-blur-md sm:p-8 lg:max-w-[470px] lg:justify-self-end"
+    >
+      <h3
+        className="text-[1.35rem] font-extrabold tracking-[-0.02em] text-white"
+        data-hi={"डीलर आवेदन"}
+      >
+        Dealer application
+      </h3>
+      <p
+        className="mt-2 text-[0.9rem] leading-relaxed text-white/60"
+        data-hi={"अपनी जानकारी भेजें और हमारी टीम आपसे संपर्क करेगी।"}
+      >
+        Share your details and our team will get in touch.
+      </p>
+
+      <div className="mt-6 space-y-4">
+        {dealerFormFields.map((field) => (
+          <div key={field.name}>
+            <label
+              htmlFor={`dealer-${field.name}`}
+              className="mb-2 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/60"
+              data-hi={field.hi}
+            >
+              {field.label}
+            </label>
+            {field.multiline ? (
+              <textarea
+                id={`dealer-${field.name}`}
+                name={field.name}
+                rows={2}
+                required
+                value={form[field.name]}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    [field.name]: event.target.value,
+                  }))
+                }
+                autoComplete={field.autoComplete}
+                placeholder={field.placeholder}
+                className={`${fieldClass} resize-none`}
+              />
+            ) : (
+              <input
+                id={`dealer-${field.name}`}
+                name={field.name}
+                type={field.type ?? "text"}
+                inputMode={field.inputMode}
+                required
+                value={form[field.name]}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    [field.name]: event.target.value,
+                  }))
+                }
+                autoComplete={field.autoComplete}
+                placeholder={field.placeholder}
+                className={fieldClass}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <motion.button
+        type={"submit"}
+        disabled={isLoading}
+        whileHover={{ scale: isLoading ? 1 : 1.02 }}
+        whileTap={{ scale: isLoading ? 1 : 0.98 }}
+        className="mt-7 inline-flex w-full items-center justify-center gap-3 rounded-full bg-white px-8 py-4 text-[0.95rem] font-bold text-[#0a2540] shadow-[0_18px_40px_rgba(3,17,32,0.35)] transition-colors hover:bg-[#eaf4fd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isLoading ? "Submitting..." : "Apply for dealership"}
+        {!isLoading && (
+          <svg
+            viewBox={"0 0 24 24"}
+            aria-hidden={"true"}
+            className="h-4 w-4 fill-none stroke-current stroke-2"
+          >
+            <path
+              d={"M5 12h14M13 6l6 6-6 6"}
+              strokeLinecap={"round"}
+              strokeLinejoin={"round"}
+            ></path>
+          </svg>
+        )}
+      </motion.button>
+    </motion.form>
+  );
+}
 
 function DealerCtaSection() {
   return (
@@ -389,7 +660,7 @@ function DealerCtaSection() {
         className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:64px_64px]"
       />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-12 px-5 py-[clamp(3.5rem,7vw,6rem)] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] gap-12 px-5 py-[clamp(3.5rem,7vw,6rem)] sm:px-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
         <div className="max-w-[640px]">
           <motion.span
             initial={{ opacity: 0, y: 14 }}
@@ -453,33 +724,36 @@ function DealerCtaSection() {
               </svg>
             </motion.a>
           </motion.div>
+
+          {/* Stats sit under the copy now — the right column belongs to the form. */}
+          <div className="mt-12 flex flex-wrap gap-x-[clamp(1.75rem,4vw,3.5rem)] gap-y-8 border-t border-white/10 pt-10">
+            {dealerStats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{
+                  duration: 0.55,
+                  delay: 0.3 + index * 0.1,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <div className="text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-none tracking-[-0.04em] text-white">
+                  {stat.value}
+                </div>
+                <div
+                  className="mt-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/55"
+                  data-hi={stat.hi}
+                >
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-x-[clamp(1.75rem,4vw,3.5rem)] gap-y-8 lg:flex-nowrap lg:pr-4">
-          {dealerStats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{
-                duration: 0.55,
-                delay: 0.3 + index * 0.1,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              <div className="text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-none tracking-[-0.04em] text-white">
-                {stat.value}
-              </div>
-              <div
-                className="mt-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/55"
-                data-hi={stat.hi}
-              >
-                {stat.label}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <DealerApplicationForm />
       </div>
     </section>
   );
@@ -1720,53 +1994,96 @@ export default function MrkHome() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-5 max-[1180px]:grid-cols-2 max-[760px]:grid-cols-1">
-            {whyCards.map((card, index) => (
-              <article
-                key={card.no}
-                className={cn(
-                  'reveal',
-                  index % 3 === 1 && 'd1',
-                  index % 3 === 2 && 'd2',
-                  tw['reveal'],
-                  "group/why relative flex items-center gap-5 overflow-hidden rounded-[1.5rem] border border-white bg-white p-4 shadow-[0_14px_34px_rgba(11,31,51,.06)] transition duration-300 ease-[cubic-bezier(.2,.7,.2,1)] after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-aqua after:to-splash after:transition-transform after:duration-[400ms] after:content-[''] hover:-translate-y-1.5 hover:shadow-[0_26px_48px_rgba(11,31,51,.12)] hover:after:scale-x-100 max-[520px]:flex-col max-[520px]:items-stretch",
-                )}
-              >
-                <div className="relative aspect-square w-[42%] flex-none overflow-hidden rounded-[1.15rem] bg-mist max-[520px]:aspect-[16/10] max-[520px]:w-full">
-                  <Image
-                    src={card.img}
-                    alt={card.alt}
-                    fill
-                    // the tile is 42% of a card, and a card is at most a third of
-                    // the 1440px grid, so we never need more than ~200px of it.
-                    sizes={"(max-width: 520px) 100vw, (max-width: 1180px) 22vw, 15vw"}
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-8">
+            {whyCards.map((card, index) => {
+              const Icon = card.icon;
+              const isDark = card.tone === "dark";
+
+              return (
+                <article
+                  key={card.title}
+                  className={cn(
+                    "reveal",
+                    index % 3 === 1 && "d1",
+                    index % 3 === 2 && "d2",
+                    tw["reveal"],
+                    card.span,
+                    `group/why relative flex min-h-[228px] overflow-hidden rounded-[1.5rem]
+                     p-6 transition duration-300 ease-[cubic-bezier(.2,.7,.2,1)]
+                     hover:-translate-y-1.5 sm:p-7`,
+                    isDark
+                      ? "border border-transparent bg-[linear-gradient(150deg,#1f6fc0_0%,#12315e_100%)] shadow-[0_18px_44px_rgba(11,31,51,.22)] hover:shadow-[0_30px_60px_rgba(11,31,51,.3)]"
+                      : "border border-line/60 bg-white shadow-[0_14px_34px_rgba(11,31,51,.06)] hover:shadow-[0_26px_48px_rgba(11,31,51,.12)]",
+                  )}
+                >
+                  {/* Wash + artwork sit behind the copy, never over it. */}
+                  <WhyBlob
                     className={cn(
-                      "transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover/why:scale-[1.05]",
-                      card.imgClass,
+                      "pointer-events-none absolute -right-10 -top-8 h-[260px] w-[260px]",
+                      isDark ? "text-white/[0.06]" : "text-[#e5edfb]",
                     )}
                   />
-                </div>
 
-                <div className="min-w-0 flex-1 py-2 pr-[3.25rem] max-[520px]:pr-4">
-                  <h3
-                    className="text-[1.15rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink"
-                    data-hi={card.hiTitle}
-                  >
-                    {card.title}
-                  </h3>
-                  <p
-                    className="mt-3 text-[0.9rem] leading-[1.68] text-muted"
-                    data-hi={card.hiCopy}
-                  >
-                    {card.copy}
-                  </p>
-                </div>
+                  {isDark && (
+                    <IndiaOutline className="pointer-events-none absolute -right-2 bottom-0 top-0 my-auto h-[86%] w-auto text-white/25" />
+                  )}
 
-                <span className="absolute right-5 top-5 font-mono text-[0.78rem] tracking-[0.1em] text-aqua after:mt-1 after:block after:h-[2px] after:w-full after:origin-right after:scale-x-100 after:rounded-full after:bg-aqua/45 after:transition-colors after:duration-300 after:content-[''] group-hover/why:after:bg-aqua max-[520px]:top-auto max-[520px]:bottom-5">
-                  {card.no}
-                </span>
-              </article>
-            ))}
+                  {card.img && (
+                    <div className="pointer-events-none absolute bottom-0 right-0 top-0 hidden w-[46%] sm:block">
+                      <Image
+                        src={card.img}
+                        alt={card.alt ?? ""}
+                        fill
+                        // never wider than half a card, and a card is at most
+                        // half the 1440px grid
+                        sizes={"(max-width: 1180px) 30vw, 22vw"}
+                        className={cn(
+                          "p-4 transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover/why:scale-[1.04]",
+                          card.imgClass,
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  <div
+                    className={cn(
+                      "relative z-10 flex min-w-0 flex-col",
+                      card.img ? "sm:max-w-[54%]" : "max-w-full",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-[52px] w-[52px] items-center justify-center rounded-full",
+                        isDark
+                          ? "border border-white/35 text-white"
+                          : "bg-mist text-aqua",
+                      )}
+                    >
+                      <Icon size={24} strokeWidth={1.6} aria-hidden={"true"} />
+                    </span>
+
+                    <h3
+                      className={cn(
+                        "mt-7 text-[1.15rem] font-bold leading-[1.3] tracking-[-0.01em]",
+                        isDark ? "text-white" : "text-ink",
+                      )}
+                      data-hi={card.hiTitle}
+                    >
+                      {card.title}
+                    </h3>
+                    <p
+                      className={cn(
+                        "mt-3 text-[0.9rem] leading-[1.68]",
+                        isDark ? "text-white/75" : "text-muted",
+                      )}
+                      data-hi={card.hiCopy}
+                    >
+                      {card.copy}
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
           </div>
         </section>
@@ -1827,88 +2144,7 @@ export default function MrkHome() {
         <FaqAccordion />
 
       </main>
-      <footer className={cn('foot', tw['foot'])} id={"contact"}>
-        <div className={cn('container', tw['container'])}>
-          <div className={cn('foot-main', tw['foot-main'])}>
-            <div>
-              <div className={cn('fbrand', tw['fbrand'])}>
-                <img className={cn('logo flogo', tw['logo'], tw['flogo'])} src={"/images/mrk-logo.png"} alt={"MRK"} />
-                Tradex Pvt Ltd
-              </div>
-              <div className={cn('ftag', tw['ftag'])} data-hi={"पानी ही जीवन है, और हम आपके जीवन को पानी से भरते हैं।"}>Water is life, and we fill your life with water.</div>
-              <address>
-                R/3A, Dooars Trp Compound, GT Road,
-                <br />
-                Sahibabad, Ghaziabad, Uttar Pradesh 201005
-                <br />
-                <a href={"tel:+919319719670"}>+91 93197 19670</a>
-                <br />
-                <a href={"mailto:rajesh.mrktradex@gmail.com"}>rajesh.mrktradex@gmail.com</a>
-              </address>
-              <span className={cn('tagpill', tw['tagpill'])}>GST: [add number]</span>
-            </div>
-            <div>
-              <h5>Products</h5>
-              <ul>
-                <li>
-                  <a href={"#range"}>Single-Phase Starters</a>
-                </li>
-                <li>
-                  <a href={"#range"}>Three-Phase Panels</a>
-                </li>
-                <li>
-                  <a href={"#range"}>WLC Smart Plugs</a>
-                </li>
-                <li>
-                  <a href={"#range"}>Switch Gears</a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h5>Company</h5>
-              <ul>
-                <li>
-                  <a href={"#why"}>Why MRK</a>
-                </li>
-                <li>
-                  <a href={"#dealer"}>Become a Dealer</a>
-                </li>
-                <li>
-                  <a href={"#downloads"}>Downloads</a>
-                </li>
-                <li>
-                  <a href={"#"}>YouTube: [add link]</a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h5>Get in touch</h5>
-              <ul>
-                <li>
-                  <a href={"tel:+919319719670"}>Call us</a>
-                </li>
-                <li>
-                  <a href={"#"}>WhatsApp</a>
-                </li>
-                <li>
-                  <a href={"#contact"}>Feedback</a>
-                </li>
-                <li>
-                  <a href={"#"}>Find a dealer</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className={cn('foot-bottom', tw['foot-bottom'])}>
-            <span>© 2026 MRK Tradex Pvt Ltd. All rights reserved.</span>
-            <span>
-              <a href={"#"}>Privacy Policy</a>
-              ·
-              <a href={"#"}>Terms & Conditions</a>
-            </span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
