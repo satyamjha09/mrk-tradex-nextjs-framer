@@ -830,12 +830,12 @@ const googleReviewLinks = [
   },
 ];
 
-// Individual reviews from the Google Maps listing, each quoted verbatim with
-// the reviewer's name and star rating exactly as published. Spelling is theirs.
+// Reviews from the Google Maps listing, quoted verbatim with the reviewer's
+// name and star rating exactly as published. The spelling is theirs — do not
+// tidy it, that would misquote them.
 //
-// The earlier entries here were Google's auto-generated "review summary"
-// snippets, which carry no author, which is why the cards had no names. These
-// are whole reviews, so they can be attributed.
+// This is a selected set, not the full listing: the section links out to Google
+// so the complete rating and every review stay one click away.
 //
 // Names must be copied from the listing, never guessed — anything else is false
 // attribution on a real person's words. Omitting `name` falls back to a generic
@@ -848,6 +848,16 @@ const googleReviews: { quote: string; rating: number; name?: string }[] = [
     name: "Amit Dubey",
   },
   {
+    quote: "Yeh company is good all helps all facility in company",
+    rating: 5,
+    name: "Rehan Roy",
+  },
+  {
+    quote: "Nice quality and product \u{1F44C}",
+    rating: 5,
+    name: "srsourav das",
+  },
+  {
     quote: "Very nice product WLC MRK PLUG",
     rating: 5,
     name: "sanjay sharma",
@@ -856,6 +866,11 @@ const googleReviews: { quote: string; rating: number; name?: string }[] = [
     quote: "Very nice wlc prodect tank over flow",
     rating: 5,
     name: "Pankaj Singj",
+  },
+  {
+    quote: "Wlc plug very nice prodect",
+    rating: 5,
+    name: "Kalpna Kalpna",
   },
 ];
 
@@ -1617,7 +1632,12 @@ export default function MrkHome() {
             at the section edge — reads as a seam. */}
         <section
           id="range"
-          className="relative overflow-hidden bg-paper lg:h-[100svh] my-8"
+          // min-h, not h: the section still fills the screen on a tall window,
+          // but on a short one (a 768p laptop, or 1080p at 150% Windows
+          // scaling) it grows instead of clipping. Pinned to h-[100svh] the
+          // III-Phase card — which carries the longest description — pushed its
+          // Explore button past the card edge and overflow-hidden ate it.
+          className="relative overflow-hidden bg-paper lg:flex lg:flex-col lg:min-h-[100svh] my-8"
         >
           {/* Main viewport-height wrapper. max-w and px are kept identical to
               the #solutions wrapper in ProductStack so the two sections share a
@@ -1628,7 +1648,7 @@ export default function MrkHome() {
               px-4 pb-10 pt-10
               sm:px-6 sm:py-12
               md:py-14
-              lg:h-full lg:min-h-0
+              lg:min-h-0 lg:flex-1
               lg:py-7
               xl:py-8
             "
@@ -1681,7 +1701,7 @@ export default function MrkHome() {
             {/* Cards available-height wrapper. Below lg the rail gets a fixed
                 height so the cards keep a sane aspect on tall phones/tablets;
                 at lg it goes back to filling the leftover viewport height. */}
-            <div className="h-[480px] overflow-hidden sm:h-[540px] md:h-[600px] lg:h-auto lg:min-h-0 lg:flex-1">
+            <div className="h-[480px] overflow-hidden sm:h-[540px] md:h-[600px] lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible">
               {/* 
                 Mobile/tablet:
                 - Horizontal card scrolling
