@@ -531,12 +531,16 @@ const tw: Record<string, string> = {
 
   // above 900px the copy sits in the scrim over the photo; below it the photo is
   // dropped and the copy becomes a centred, content-height block.
-  hero: "relative flex min-h-[max(520px,min(100svh,64vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:py-14",
+  // the 56vw ceiling keeps the hero flatter than the photo's own 16:9, so bg-cover
+  // always fits the image by width. that pins the product cluster to a known
+  // fraction of the hero (it ends at 63.3% of the source image) whatever the
+  // viewport does, and the copy column can be parked clear of it.
+  hero: "relative flex min-h-[max(560px,min(108svh,56vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:py-14",
   "hero-photo": "pointer-events-none absolute inset-0 bg-[url('/images/mrk-hero-water-space-2026.png')] bg-cover bg-center max-[900px]:hidden",
   // the scrim widens as the viewport narrows so the copy column keeps a readable
   // backdrop even once it starts earlier in the row.
-  "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[50%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.72)_38%,rgba(255,255,255,.86)_100%)] max-[1200px]:w-[58%] max-[900px]:hidden",
-  "hero-inner": "relative z-10 w-full pl-[59%] pr-[4%] max-[1200px]:pl-[50%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-5 max-[900px]:text-center min-[520px]:max-[900px]:px-8",
+  "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[52%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.78)_38%,rgba(255,255,255,.92)_100%)] max-[1200px]:w-[60%] max-[900px]:hidden",
+  "hero-inner": "relative z-10 w-full pl-[65%] pr-[3%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-5 max-[900px]:text-center min-[520px]:max-[900px]:px-8",
   "hero-copy": "max-w-[620px] translate-y-4 max-[900px]:translate-y-0",
   "hero-title": "text-[clamp(1.75rem,3.5vw,3.75rem)] font-extrabold leading-[1.14] tracking-[-0.02em]",
   "hero-title-lead": "block text-ink",
