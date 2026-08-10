@@ -1,13 +1,15 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 type FaqItem = {
   no: string;
   question: string;
   points: string[];
-  answer: string;
+  // ReactNode rather than string: several answers carry emphasis or run to a
+  // second paragraph.
+  answer: ReactNode;
 };
 
 const FAQS: FaqItem[] = [
@@ -45,6 +47,117 @@ const FAQS: FaqItem[] = [
     points: ["Territory", "Margins", "Field support"],
     answer:
       "We have been building starters and panels since 2005 and work with dealers across 20+ states. Get in touch and we will talk through territory, pricing and the support we provide on the ground.",
+  },
+  {
+    no: "06",
+    question: "What are the main products of MRK?",
+    points: ["Starter panels", "WLC Smart Plugs", "Cables"],
+    answer: (
+      <>
+        MRK manufactures{" "}
+        <strong className="font-semibold text-ink">
+          submersible starter panels, WLC Smart Plugs, submersible support
+          cables, and power cables.
+        </strong>
+      </>
+    ),
+  },
+  {
+    no: "07",
+    question: "What is a WLC device?",
+    points: ["Water Level Controller", "Overflow cut-off"],
+    answer: (
+      <>
+        A{" "}
+        <strong className="font-semibold text-ink">
+          WLC (Water Level Controller)
+        </strong>{" "}
+        is an electrical device used to stop water from overflowing from an
+        overhead tank.
+      </>
+    ),
+  },
+  {
+    no: "08",
+    question: "Is any other company providing the same services?",
+    points: ["Market position"],
+    answer: "No.",
+  },
+  {
+    no: "09",
+    question: "What is the difference between a Franchisee and a Distributor?",
+    points: ["Distributor", "Franchisee", "Service scope"],
+    answer: (
+      <>
+        <span className="block">
+          A <strong className="font-semibold text-ink">Distributor</strong> is a
+          regular stockist of MRK who keeps our range of starter panels for
+          local distribution.
+        </span>
+        <span className="mt-4 block">
+          A <strong className="font-semibold text-ink">Franchisee</strong> works
+          in a selected area within a town or city. Along with selling our
+          products, the franchisee also provides{" "}
+          <strong className="font-semibold text-ink">
+            new installation and repair services for existing installations on a
+            chargeable basis.
+          </strong>
+        </span>
+      </>
+    ),
+  },
+  {
+    no: "10",
+    question: "What is the process of becoming a Dealer or Franchisee?",
+    points: ["Scan the QR code", "10 working days", "Registration"],
+    answer: (
+      <>
+        Scan the{" "}
+        <strong className="font-semibold text-ink">respective QR code</strong>{" "}
+        for the offer you are interested in. Our company will contact you within
+        the next{" "}
+        <strong className="font-semibold text-ink">10 working days</strong>.
+        After that, the applicant can complete the registration process and
+        start transactions with MRK.
+      </>
+    ),
+  },
+  {
+    no: "11",
+    question: "What warranty is offered on the WLC Smart Plug?",
+    points: ["Free replacement", "7 days from sale", "Manufacturing defect"],
+    answer: (
+      <>
+        MRK provides a{" "}
+        <strong className="font-semibold text-ink">
+          free replacement within 7 days from the date of sale
+        </strong>{" "}
+        if there is any manufacturing defect in the device.
+      </>
+    ),
+  },
+  {
+    no: "12",
+    question: "What should I do if the device stops working after a few days?",
+    points: ["Scan the QR code", "YouTube walkthrough", "Live video support"],
+    answer: (
+      <>
+        <span className="block">
+          You can scan the{" "}
+          <strong className="font-semibold text-ink">QR code</strong> to watch
+          the relevant YouTube video for troubleshooting and rectification.
+        </span>
+        <span className="mt-4 block">
+          You can also contact our{" "}
+          <strong className="font-semibold text-ink">
+            customer support executive
+          </strong>{" "}
+          and show the complaint through a{" "}
+          <strong className="font-semibold text-ink">live video</strong> for
+          assistance.
+        </span>
+      </>
+    ),
   },
 ];
 
