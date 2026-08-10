@@ -578,8 +578,8 @@ const rangeProducts = [
   {
     title: "I-Phase Starter Panels",
     description:
-      "For homes and small farms, up to 7.5 HP. Manual and fully-digital.",
-    image: "/images/single-phase-starter.png",
+      "Multiple series of I-phase starters for motors up to 7.5 HP, available in both manual and fully digital options.",
+    image: "/images/wlcphase.png",
     alt: "MRK single-phase starters",
     href: "#single-phase",
     dark: false,
@@ -587,7 +587,7 @@ const rangeProducts = [
   {
     title: "III-Phase Starter Panels",
     description:
-      "DOL and Star-Delta panels for agriculture, industry and housing.",
+      "A complete range of III-phase starter panels in DOL and Star Delta models, suitable for motors up to 40 HP and designed for agriculture, industrial applications, and high-rise societies.",
     image: "/images/three-phase-panel.png",
     alt: "MRK three-phase control panel",
     href: "#three-phase",
@@ -596,7 +596,7 @@ const rangeProducts = [
   {
     title: "WLC Smart Plugs",
     description:
-      "Effortless water-level control, including an advanced Wi-Fi model.",
+      "Our new arrivals for effortless water level control, available in two options: Sensor-wire models and Wi-Fi models.",
 
     // This existing image will remain visible.
     // Change it to "/images/wlc-smart-plug.png"
@@ -610,8 +610,8 @@ const rangeProducts = [
   {
     title: "Switch Gears",
     description:
-      "Submersible cables and fittings, built and tested to the same standard.",
-    image: "/images/panel-components.png",
+      "Long-lasting, rugged-quality switches, digital meters, capacitors, and contactors are the hallmark of our starter panels.",
+    image: "/images/switch&gears.jpeg",
     alt: "MRK cables and accessories",
     href: "#cables-accessories",
     dark: true,
@@ -1325,32 +1325,26 @@ export default function MrkHome() {
             </div>
           </div>
         </section>
+        {/* flat bg-paper, matching the page: the my-8 margin lets the page
+            background show through above and below, so any other tone here —
+            including a decorative glow, which overflow-hidden clips dead flat
+            at the section edge — reads as a seam. */}
         <section
           id="range"
-          className="relative overflow-hidden bg-[#f3f7fb] lg:h-[100svh]"
+          className="relative overflow-hidden bg-paper lg:h-[100svh] my-8"
         >
-          {/* Background decoration */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#dceefe]/70 blur-[130px]"
-          />
-
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-64 -right-44 h-[600px] w-[600px] rounded-full bg-[#cfe7fb]/60 blur-[150px]"
-          />
-
-          {/* Main viewport-height wrapper */}
+          {/* Main viewport-height wrapper. max-w and px are kept identical to
+              the #solutions wrapper in ProductStack so the two sections share a
+              left and right edge — change them together. */}
           <div
             className="
-              relative z-10 mx-auto flex w-full max-w-[1720px] flex-col
+              relative z-10 mx-auto flex w-full max-w-[1340px] flex-col
               px-4 pb-10 pt-10
               sm:px-6 sm:py-12
               md:py-14
               lg:h-full lg:min-h-0
-              lg:px-10 lg:py-7
-              xl:px-16 xl:py-8
-              2xl:px-20
+              lg:py-7
+              xl:py-8
             "
           >
             {/* Heading */}
@@ -1372,73 +1366,30 @@ export default function MrkHome() {
                 }}
                 className="max-w-[1050px]"
               >
-                <span
+                 <h2
                   className="
-                    mb-2 block font-mono text-[10px] font-medium uppercase
-                    tracking-[0.28em] text-[#1598df]
-                    sm:mb-3 sm:text-xs
+                    font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold
+                    leading-[1.05] uppercase
+                    tracking-[0.05em] text-[#1598df]
                   "
+                  data-hi={"हमारे लोकप्रिय उत्पाद।"}
                 >
-                  The range
-                </span>
+                  THE RANGE
+                </h2>
 
                 <h2
                   className="
-                    max-w-[1050px]
-                    text-[clamp(1.45rem,8vw,1.9rem)]
-                    font-extrabold leading-[1.02]
-                    tracking-[-0.04em] text-[#071d33]
-
                     sm:text-[clamp(1.75rem,3.4vw,3.6rem)]
                     [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)]
                     [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]
+                    tracking-[0.015em]
                   "
                 >
                   For every pump there is one MRK starter
                 </h2>
               </motion.div>
 
-              <motion.a
-                href={SHOP_URL}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.55,
-                  delay: 0.15,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="
-                  group hidden w-fit shrink-0 items-center justify-center gap-3
-                  rounded-full border border-[#aebdcb] bg-white/80
-                  px-6 py-3 text-sm font-semibold text-[#071d33]
-                  shadow-[0_10px_30px_rgba(7,29,51,0.06)]
-                  backdrop-blur-md transition-all duration-300
-
-                  hover:-translate-y-1 hover:border-[#1598df]
-                  hover:bg-[#1598df] hover:text-white
-                  hover:shadow-[0_16px_35px_rgba(21,152,223,0.22)]
-
-                  sm:inline-flex
-                "
-              >
-                Explore all
-
-                <svg
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"
-                  fill="none"
-                >
-                  <path
-                    d="M5 12h14M13 6l6 6-6 6"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.a>
+             
             </div>
 
             {/* Cards available-height wrapper. Below lg the rail gets a fixed
@@ -1497,11 +1448,9 @@ export default function MrkHome() {
                           from-[#247bd0]
                           via-[#0d559b]
                           to-[#063d73]
-                          shadow-[0_22px_45px_rgba(4,66,125,0.22)]
                         `
                         : `
-                          border-white bg-white
-                          shadow-[0_22px_48px_rgba(7,29,51,0.10)]
+                          border-[#e4ecf4] bg-white
                         `,
                     ].join(" ")}
                   >

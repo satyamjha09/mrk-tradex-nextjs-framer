@@ -429,22 +429,29 @@ const CurvedVideoReel: React.FC = () => {
       className="relative overflow-hidden bg-white text-ink py-12 sm:py-16 lg:py-20"
     >
       {/* ── Section Header ── */}
-      <div className="mx-auto mb-8 max-w-3xl px-5 text-center sm:mb-10 sm:px-6">
-        <span className="mb-4 inline-block font-mono text-[0.67rem] uppercase tracking-[0.22em] text-marine font-semibold">
-          Our full range · 2005 onwards
+      {/* one margin scale, not three: mb-8 / sm:mb-10 / mb-12 were all set here
+          and fought each other, leaving less gap at sm+ than below it. */}
+      <div className="mx-auto max-w-3xl px-5 text-center sm:px-6 mb-14 sm:mb-20 lg:mb-24">
+        <span className="mb-4 inline-block font-mono text-[1rem] uppercase tracking-[0.22em] text-marine font-semibold">
+          In Service Since 2005
         </span>
-        <h2 className="mb-4 text-[clamp(1.9rem,3.5vw,2.9rem)] font-extrabold leading-[1.1] tracking-[-0.02em] text-ink">
-          Every pump protected.{" "}
-          <span className="text-aqua">Every need covered.</span>
-        </h2>
-        <p className="mx-auto max-w-[52ch] text-[clamp(0.95rem,1.2vw,1.05rem)] leading-relaxed text-muted">
-          From economy single-phase starters to fully digital three-phase
-          panels — drag to explore the complete MRK lineup.
-        </p>
+        
+       <h2 className="
+            mb-10
+            text-[clamp(1.9rem,3.5vw,2.9rem)]
+            font-extrabold
+            leading-[1]
+            tracking-[0.08em]
+            text-ink
+          ">
+            SEE THE ACTION{" "}
+            <span className="text-aqua">LIVE</span>
+          </h2>
+        
       </div>
 
       {/* ── Curved Reel Track Wrapper ── */}
-      <div className="relative my-4 mx-auto w-full max-w-[1680px] overflow-hidden px-2 sm:my-6 sm:px-8">
+      <div className="relative my-4 mx-auto w-full max-w-[1680px] overflow-hidden px-2 sm:my-6 sm:px-8 ">
         <div
           ref={containerRef}
           onMouseEnter={() => setIsHovered(true)}

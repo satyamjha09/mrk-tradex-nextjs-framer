@@ -36,19 +36,19 @@ const PANELS: PanelData[] = [
   {
     no: "01",
     category: "MRG Series",
-    title: "Starter with Built-in Auto-Off Timer",
+    title: "Starter with Integrated Timer",
     description: (
       <>
-        Set how long you want the pump to run, and the starter switches it{" "}
-        <strong>OFF automatically</strong> when the time is over.
+        A starter with an integrated timer. Once the required time is set using the buttons on the display meter, the starter automatically switches off when the set time is completed.{" "}
+        
       </>
     ),
-    image: "/images/mrg-dpt-2-auto-timer.jpg",
+    image: "/images/MRG16A_(4).png",
     alt: "MRG DPT-2 auto-timer panel",
     features: [
-      "Helps prevent overhead tank overflow",
-      "No separate WLC required",
-      "No additional sensor wiring needed",
+      "Helps reduce water wastage from the overhead tank",
+      " No additional wiring required",
+      "No cost of a separate WLC plug",
     ],
     buttonText: "Explore MRG",
     href: "#mrg",
@@ -56,18 +56,21 @@ const PANELS: PanelData[] = [
   {
     no: "02",
     category: "WLC Smart Plug",
-    title: "Smart Water-Level Control for Your Pump",
-    description:
-      "Route the pump’s supply through it and run the pump automatically.",
+    title: "Plug-and-Play Model for Tank Overflow Control",
+    description:(
+      <>
+       A unique plug-and-play model designed to control overhead tank overflow. The power supply of the <strong> Tullu or submersible </strong> pump is connected through the Smart Plug.
+      </>
+    ),
     // /images/wlc-smart-plug.png does not exist — this is the real file on disk
-    image: "/images/MRK WEBSITE/WLC Smart Plug/DOC-20260802-WA0063_.jpg",
+    image: "/images/wlc.png",
     alt: "MRK WLC Smart Plug",
     copy:
       "Connect your Tullu or submersible pump through the smart plug. Its tank sensor detects the water level and automatically controls the pump.",
     featureList: [
-      "Automatically manages pump ON/OFF",
-      "Helps prevent tank overflow",
-      "LED display shows the tank water level",
+      "Sensor wire detects the water level inside the overhead tank",
+      "Automatically manages the power supply to the starter",
+      "LED display accurately shows the water level inside the tank",
     ],
     features: ["SSO · up to 1.5 HP", "ISO · Tullu", "Wi-Fi model"],
     buttonText: "Explore WLC",
@@ -75,21 +78,20 @@ const PANELS: PanelData[] = [
   },
   {
     no: "03",
-    category: "MRX-HD : III-Phase Digital Starter Panel",
-    title: "Smarter Protection for III-Phase Pumps",
+    category: "Three Phase – MRX-HD",
+    title: "Fully Digital III-Phase Starter Panel",
     description: (
       <>
-        A fully digital starter panel for{" "}
-        <strong>agriculture, industry and housing</strong>, designed to monitor
-        and protect your pump automatically.
+        India’s first fully digital three-phase starter panel, designed for{" "}
+        <strong>agriculture, industrial, and housing applications.</strong>
       </>
     ),
-    image: "/images/three-phase-panel.png",
+    image: "/images/MRX-HD_F04_(3).png",
     alt: "MRX-HD three-phase panel",
     features: [
-      "Displays voltage and current load",
-      "Protects against phase failure and voltage fluctuations",
-      "Error codes make faults easier to identify",
+      "Smart digital meter displays current load and voltage",
+      "Senses incoming phases and acts as an SPP in case of phase failure",
+      "Protects connected devices from voltage fluctuations",
     ],
     buttonText: "Explore MRX-HD",
     href: "#mrx-hd",
@@ -106,11 +108,20 @@ function PanelVisual({ panel }: { panel: PanelData }) {
   return (
     <div className="relative flex h-full items-center justify-center overflow-hidden bg-[#f2f4f7] px-4 sm:px-6">
       <Dots />
+
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-aqua via-aqua/70 to-transparent" />
+
       <img
         src={panel.image}
         alt={panel.alt}
-        className="relative max-h-[78%] w-auto max-w-full object-contain drop-shadow-[0_16px_28px_rgba(20,35,57,0.18)]"
+        className="
+          relative
+          max-h-[92%]
+          w-auto
+          max-w-full
+          object-contain
+          drop-shadow-[0_16px_28px_rgba(20,35,57,0.18)]
+        "
       />
     </div>
   );
@@ -144,15 +155,17 @@ function PanelBody({ panel }: { panel: PanelData }) {
       >
         <header className="mb-1 sm:mb-2">
           <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 sm:mb-4">
-            <span className="font-mono text-[15px] font-semibold text-aqua sm:text-[16px] xl:text-[18px]">
+            <span className="font-mono text-[17px] font-semibold text-aqua sm:text-[19px] xl:text-[22px]">
               {panel.no}
             </span>
-            <p className="text-[18px] font-semibold text-aqua sm:text-[20px] xl:text-[24px]">
+            <p className="text-[21px] font-semibold text-aqua sm:text-[24px] xl:text-[30px]">
               {panel.category}
             </p>
           </div>
-          {/* no nowrap: these titles are wider than the text column at lg/xl */}
-          <h2 className="text-[20px] font-semibold leading-[1.12] tracking-[-0.025em] text-ink sm:text-[24px] sm:leading-[1.08] xl:text-[32px]">
+          {/* no nowrap: these titles are wider than the text column at lg/xl.
+              deliberately lighter and smaller than the blue category above it —
+              the category leads, the title reads as its subline. */}
+          <h2 className="text-[18px] font-normal leading-[1.2] tracking-[-0.015em] text-ink sm:text-[21px] sm:leading-[1.18] xl:text-[26px]">
             {panel.title}
           </h2>
         </header>
@@ -343,9 +356,46 @@ export default function ProductStackSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const isDesktop = useIsDesktop();
 
+  // same fill as #range above it, so the two read as one continuous field
+  // instead of meeting at a visible line.
   return (
-    <section id="solutions" className="bg-[#f5f8fc] text-ink lg:min-h-screen">
-      <div className="mx-auto max-w-[1500px] px-4 pb-[clamp(3rem,6vw,5.5rem)] pt-10 sm:px-6 sm:pt-14 lg:pt-4">
+    <section id="solutions" className="bg-[#e8f1fa] text-ink lg:min-h-screen">
+      <div className="mx-auto max-w-[1340px] px-4 pb-[clamp(3rem,6vw,5.5rem)] pt-14 sm:px-6 sm:pt-16 lg:pt-16 xl:pt-20">
+        {/* sits in normal flow above the sticky stage, so it scrolls away as the
+            panels pin rather than eating the stage's viewport height. */}
+             <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{
+                  duration: 0.65,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="max-w-[1050px] mb-8 sm:mb-10 lg:mb-12 xl:mb-14 2xl:mb-18"
+              >
+              <h2
+                className="
+                  font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold
+                  leading-[1.05] uppercase
+                  tracking-[0.05em] text-[#1598df]
+                "
+                data-hi={"हमारे लोकप्रिय उत्पाद।"}
+              >
+                OUR POPULAR PRODUCTS
+              </h2>
+
+              <h2
+                className="
+                  sm:text-[clamp(1.75rem,3.4vw,3.6rem)]
+                  [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)]
+                  [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]
+                  tracking-[0.015em]
+                "
+              >
+                For every pump there is one MRK starter
+              </h2>
+            </motion.div>
+
         {isDesktop ? (
           <StackingStage
             topOffset={SITE_NAV_HEIGHT}
