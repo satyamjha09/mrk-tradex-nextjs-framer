@@ -139,8 +139,11 @@ export const CATALOG_GROUPS: CatalogGroup[] = [
   },
   {
     key: "cables-accessories",
-    label: "Cables & Accessories",
-    shortLabel: "Accessories",
+    // Labelled to match the "Switch Gears" card on the home page, which is the
+    // entry point into this group. The underlying category row is still
+    // "Cables & Accessories" — the slug in categorySlugs is what binds them.
+    label: "Switch Gears",
+    shortLabel: "Switch Gears",
     categorySlugs: ["cables-accessories"],
     seriesLabel: "Type",
     series: [],
@@ -198,6 +201,22 @@ export function getSeriesMatchTokens(
 ): string[] | undefined {
   const series = getSeries(groupKey, code);
   return series?.match.length ? series.match : undefined;
+}
+
+/**
+ * Deep-link into the catalog with a category — and optionally a series —
+ * already selected. Unknown keys fall back to the plain catalog rather than
+ * producing a URL the shop cannot resolve, so a rename here degrades to an
+ * unfiltered listing instead of an empty one.
+ */
+export function shopUrl(groupKey?: string, seriesCode?: string): string {
+  const group = getGroupByKey(groupKey);
+  if (!group) return "/shop";
+
+  const series = getSeries(group.key, seriesCode);
+  return series
+    ? `/shop?group=${group.key}&series=${series.code}`
+    : `/shop?group=${group.key}`;
 }
 
 /** Client-side equivalent of the resolver's seriesMatch clause. */

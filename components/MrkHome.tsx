@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ProductStackSection from "./ProductStack";
 import CurvedVideoReel from "./CurvedVideoReel";
 import FaqAccordion from "./FaqAccordion";
+import { shopUrl } from "@/app/data/catalog/series";
 
 const SHOP_URL = "/shop";
 
@@ -581,7 +582,7 @@ const rangeProducts = [
       "Multiple series of I-phase starters for motors up to 7.5 HP, available in both manual and fully digital options.",
     image: "/images/wlcphase.png",
     alt: "MRK single-phase starters",
-    href: "#single-phase",
+    href: shopUrl("single-phase-starter"),
     dark: false,
   },
   {
@@ -590,7 +591,7 @@ const rangeProducts = [
       "A complete range of III-phase starter panels in DOL and Star Delta models, suitable for motors up to 40 HP and designed for agriculture, industrial applications, and high-rise societies.",
     image: "/images/three-phase-panel.png",
     alt: "MRK three-phase control panel",
-    href: "#three-phase",
+    href: shopUrl("three-phase-panel"),
     dark: true,
   },
   {
@@ -604,7 +605,7 @@ const rangeProducts = [
     image: "/images/mrg-dpt-2-auto-timer.png",
 
     alt: "MRK WLC smart plug",
-    href: "#wlc-smart-plugs",
+    href: shopUrl("wlc-smart-plug"),
     dark: false,
   },
   {
@@ -612,8 +613,8 @@ const rangeProducts = [
     description:
       "Long-lasting, rugged-quality switches, digital meters, capacitors, and contactors are the hallmark of our starter panels.",
     image: "/images/switch&gears.jpeg",
-    alt: "MRK cables and accessories",
-    href: "#cables-accessories",
+    alt: "MRK switch gears and accessories",
+    href: shopUrl("cables-accessories"),
     dark: true,
   },
 ] as const;

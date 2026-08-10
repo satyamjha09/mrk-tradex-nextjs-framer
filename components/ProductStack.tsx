@@ -15,6 +15,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { shopUrl } from "@/app/data/catalog/series";
+
 // The site header is fixed at the top, so the sticky product stage sits below it.
 const SITE_NAV_HEIGHT = 68;
 
@@ -51,7 +53,7 @@ const PANELS: PanelData[] = [
       "No cost of a separate WLC plug",
     ],
     buttonText: "Explore MRG",
-    href: "#mrg",
+    href: shopUrl("single-phase-starter", "MRG"),
   },
   {
     no: "02",
@@ -74,7 +76,8 @@ const PANELS: PanelData[] = [
     ],
     features: ["SSO · up to 1.5 HP", "ISO · Tullu", "Wi-Fi model"],
     buttonText: "Explore WLC",
-    href: "#wlc",
+    // The panel covers SSO, ISO and Wi-Fi, so it lands on the group, not a model.
+    href: shopUrl("wlc-smart-plug"),
   },
   {
     no: "03",
@@ -94,7 +97,8 @@ const PANELS: PanelData[] = [
       "Protects connected devices from voltage fluctuations",
     ],
     buttonText: "Explore MRX-HD",
-    href: "#mrx-hd",
+    // MRX-HD is one of the Star Delta series' match tokens.
+    href: shopUrl("three-phase-panel", "STAR-DELTA"),
   },
 ];
 
