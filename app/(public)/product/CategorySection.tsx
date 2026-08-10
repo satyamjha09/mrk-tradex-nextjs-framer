@@ -90,7 +90,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({
           </h2>
         </div>
       </motion.div>
-      <div className="grid grid-cols-1 gap-5 min-[680px]:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 sm:gap-6 lg:gap-8">
+      {/* matches the /shop grid — ProductCard is a horizontal card now */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 sm:gap-6">
         {products.map((product, index) => (
           <motion.div
             key={product.id}

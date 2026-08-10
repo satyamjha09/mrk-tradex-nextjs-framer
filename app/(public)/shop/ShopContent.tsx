@@ -195,7 +195,9 @@ const ShopContent: React.FC<ShopContentProps> = ({
 
         {!noProductsFound && (
           <>
-            <div className="grid grid-cols-1 gap-5 min-[680px]:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 sm:gap-6">
+            {/* two across, not four: the cards are horizontal now, so they need
+                roughly double the width each */}
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
               {displayedProducts.map((product: Product, index: number) => (
                 <motion.div
                   key={product.id}

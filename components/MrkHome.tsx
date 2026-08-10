@@ -1773,8 +1773,8 @@ export default function MrkHome() {
          <section className={cn('section container tsec', tw['section'], tw['container'], tw['tsec'])}>
           <div className={cn('thead', tw['thead'])}>
             <div className={cn('section-head', tw['section-head'])}>
-              <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"ग्राहकों की ज़ुबानी"}>In their words</span>
-              <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Trusted where water matters most.</h2>
+              <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"ग्राहकों की ज़ुबानी"}>TESTIMONIALS</span>
+              <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>What our customers say about us</h2>
             </div>
           </div>
           <div className={cn('tgrid', tw['tgrid'])}>

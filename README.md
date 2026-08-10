@@ -34,3 +34,41 @@ Open `http://localhost:3000`.
 ## Production placeholders still present
 
 Replace the placeholder testimonial copy, GST number, catalog/price-list links, WhatsApp URL, YouTube URL, and any `#` links before launch.
+
+
+
+funtion panelproduct() {
+    const panel = funtion core (<>
+
+      <try> if()e lse {
+        promise.all([]sadsad module if possible thane promise.all([proimise1 , promise2, promise3, promis5, promis6, promise ])).resolve(() => {
+            filter.product(.includes().brand.style.ok)
+
+        })
+
+        let arr[] = resolve(if possible in the )
+
+        if not api.hit
+
+        const promise = await json({
+            resolve this product and this is 
+        })
+
+        filter promise . reolve and will  
+
+        if(resolve) {
+            status: 201
+        } else {
+            status: 400
+        }
+
+        and connect possible the entire the system possible 
+
+        console.log("is possible is not need to find")
+
+        if(resolve and ultra due )
+        else 
+        show if not possinle
+      }
+    <>)
+}
