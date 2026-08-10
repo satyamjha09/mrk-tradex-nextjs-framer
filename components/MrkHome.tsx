@@ -19,6 +19,23 @@ import FaqAccordion from "./FaqAccordion";
 
 const SHOP_URL = "/shop";
 
+function ReviewStars({ rating }: { rating: number }) {
+  const filled = Math.max(0, Math.min(5, Math.round(rating)));
+  return (
+    <span
+      className={cn("stars5", tw["stars5"])}
+      aria-label={`Rated ${rating} out of 5`}
+    >
+      <span aria-hidden={"true"} className="text-[#F5A524]">
+        {"★".repeat(filled)}
+      </span>
+      <span aria-hidden={"true"} className="text-line">
+        {"★".repeat(5 - filled)}
+      </span>
+    </span>
+  );
+}
+
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
@@ -330,18 +347,34 @@ const slideVariants = {
 
 const SLIDE_INTERVAL = 5000;
 
+const GOOGLE_LISTING_URL = "https://maps.app.goo.gl/vuo8G1zForLxoT1bA";
+
 const googleReviewLinks = [
   {
-    label: "Read Google reviews",
-    href: "https://maps.app.goo.gl/vuo8G1zForLxoT1bA",
+    label: "Read all Google reviews",
+    href: GOOGLE_LISTING_URL,
   },
   {
-    label: "Open Google listing",
-    href: "https://maps.app.goo.gl/vuo8G1zForLxoT1bA",
+    label: "Write a review",
+    href: GOOGLE_LISTING_URL,
+  },
+];
+
+// Reviews as published on the Google Maps listing, quoted verbatim. Google does
+// not expose the reviewer names on the public panel, so the cards attribute to
+// the listing itself rather than inventing a name.
+const googleReviews = [
+  {
+    quote: "And The Company also give us one year warranty.",
+    rating: 4,
   },
   {
-    label: "View more feedback",
-    href: "https://maps.app.goo.gl/PYwQUW2cXaqoGSrG6",
+    quote: "Yeh company is good all helps all facility in company",
+    rating: 5,
+  },
+  {
+    quote: "Nice quality and product \u{1F44C}",
+    rating: 5,
   },
 ];
 
@@ -1616,70 +1649,43 @@ export default function MrkHome() {
               <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Trusted where water matters most.</h2>
             </div>
           </div>
-          <div className="rounded-[1.5rem] bg-mist p-6 shadow-[0_18px_42px_rgba(11,31,51,.06)] sm:p-8">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex items-start gap-4">
-                <div className={cn('av', tw['av'])}>G</div>
-                <div>
-                  <div className={cn('stars5', tw['stars5'])} aria-label={"Google reviews rated 5 out of 5"}>★★★★★</div>
-                  <h3 className="mt-3 text-2xl font-bold tracking-normal text-ink">
-                    Read real MRK customer reviews on Google
-                  </h3>
-                  <p className="mt-3 max-w-[62ch] text-base leading-7 text-muted">
-                    Actual customer reviews are maintained on Google Maps. Open
-                    the Google listing to read the latest public feedback and
-                    ratings.
-                  </p>
-                </div>
-              </div>
-              <span className="inline-flex rounded-full bg-white px-4 py-2 font-mono text-xs uppercase tracking-[0.08em] text-aqua">
-                Google reviews
-              </span>
-            </div>
-            <div className="mt-7 flex flex-wrap gap-3">
-              {googleReviewLinks.map((item, index) => (
-                <a
-                  className="inline-flex items-center gap-2 rounded-full bg-aqua px-5 py-3 text-sm font-semibold text-white transition hover:bg-marine focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua"
-                  href={item.href}
-                  key={`${item.href}-${index}`}
-                  rel={"noopener noreferrer"}
-                  target={"_blank"}
-                >
-                  {item.label}
-                  <svg viewBox={"0 0 24 24"} aria-hidden={"true"} className="h-4 w-4 fill-none stroke-current stroke-2">
-                    <path d={"M5 12h14M13 6l6 6-6 6"} strokeLinecap={"round"} strokeLinejoin={"round"}></path>
-                  </svg>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div className="hidden">
-            {googleReviewLinks.slice(0, 0).map((item, index) => (
+          <div className={cn('tgrid', tw['tgrid'])}>
+            {googleReviews.map((review, index) => (
               <a
                 className={cn("tcard", tw.tcard)}
+                href={GOOGLE_LISTING_URL}
+                key={`review-${index}`}
+                rel={"noopener noreferrer"}
+                target={"_blank"}
+              >
+                <div className={cn('tcard-top', tw['tcard-top'])}>
+                  <ReviewStars rating={review.rating} />
+                  <span className={cn('tidx', tw['tidx'])}>Google</span>
+                </div>
+                <p>&ldquo;{review.quote}&rdquo;</p>
+                <div className={cn('who', tw['who'])}>
+                  <div className={cn('av', tw['av'])}>G</div>
+                  <div>
+                    <b>Google review</b>
+                    <span>Posted on Google Maps</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            {googleReviewLinks.map((item, index) => (
+              <a
+                className="inline-flex items-center gap-2 rounded-full bg-aqua px-5 py-3 text-sm font-semibold text-white transition hover:bg-marine focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua"
                 href={item.href}
                 key={`${item.href}-${index}`}
                 rel={"noopener noreferrer"}
                 target={"_blank"}
               >
-                <div className={cn('tcard-top', tw['tcard-top'])}>
-                  <span className={cn('stars5', tw['stars5'])} aria-label={"Rated 5 out of 5"}>★★★★★</span>
-                  <span className={cn('tidx', tw['tidx'])}>Google</span>
-                </div>
-                <p>{item.quote}</p>
-                <div className={cn('who', tw['who'])}>
-                  <div className={cn('av', tw['av'])}>{item.initial}</div>
-                  <div>
-                    <b>{item.name}</b>
-                    <span>{item.role}</span>
-                  </div>
-                </div>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-aqua">
-                  Open Google review
-                  <svg viewBox={"0 0 24 24"} aria-hidden={"true"} className="h-4 w-4 fill-none stroke-current stroke-2">
-                    <path d={"M5 12h14M13 6l6 6-6 6"} strokeLinecap={"round"} strokeLinejoin={"round"}></path>
-                  </svg>
-                </span>
+                {item.label}
+                <svg viewBox={"0 0 24 24"} aria-hidden={"true"} className="h-4 w-4 fill-none stroke-current stroke-2">
+                  <path d={"M5 12h14M13 6l6 6-6 6"} strokeLinecap={"round"} strokeLinejoin={"round"}></path>
+                </svg>
               </a>
             ))}
           </div>
