@@ -10,11 +10,33 @@ import MainLayout from "@/app/components/templates/MainLayout";
 import ProductFilters, { FilterValues } from "./ProductFilters";
 import { useCatalogCategories } from "@/app/hooks/catalog/useCatalogCategories";
 import { useShopProducts } from "@/app/hooks/catalog/useShopProducts";
+import {
+  CATALOG_GROUPS,
+  findCategoryForGroup,
+  getGroupByKey,
+  getSeries,
+  getSeriesMatchTokens,
+} from "@/app/data/catalog/series";
 
 const ShopPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamString = searchParams.toString();
+
+  const { categories, loading: categoriesLoading } = useCatalogCategories();
+
+  // Two-level browse: `group` is the panel type (I-Phase / III-Phase / WLC),
+  // `series` is the lettered series inside it. Both live in the URL so a
+  // filtered view stays shareable.
+  const activeGroupKey = searchParams.get("group") || undefined;
+  const activeSeriesCode = searchParams.get("series") || undefined;
+  const activeGroup = getGroupByKey(activeGroupKey);
+  const activeSeries = getSeries(activeGroupKey, activeSeriesCode);
+
+  // A group names a category by slug; the id only exists once the category
+  // list has loaded. Kept as a primitive so it is a safe memo dependency —
+  // the categories array itself is a fresh reference on every render.
+  const groupCategoryId = findCategoryForGroup(categories, activeGroup)?.id;
 
   const initialFilters = useMemo(() => {
     const params = new URLSearchParams(searchParamString);
@@ -31,17 +53,26 @@ const ShopPage: React.FC = () => {
       maxPrice: params.get("maxPrice")
         ? parseFloat(params.get("maxPrice")!)
         : undefined,
-      categoryId: params.get("categoryId") || undefined,
+      categoryId: groupCategoryId || params.get("categoryId") || undefined,
       phase: params.get("phase") || undefined,
       meterDisplayType: params.get("meterDisplayType") || undefined,
+      seriesMatch: getSeriesMatchTokens(
+        params.get("group"),
+        params.get("series"),
+      ),
     };
-  }, [searchParamString]);
+  }, [searchParamString, groupCategoryId]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
   const [searchDraft, setSearchDraft] = useState(initialFilters.search || "");
 
-  const { categories } = useCatalogCategories();
+  // A selected group whose category has not resolved would otherwise query the
+  // whole catalog unfiltered. Hold the query until we know which it is: still
+  // loading, or genuinely absent from the catalog.
+  const groupCategoryUnresolved = Boolean(activeGroup) && !groupCategoryId;
+  const groupCategoryMissing = groupCategoryUnresolved && !categoriesLoading;
+
   const {
     displayedProducts,
     loading,
@@ -52,7 +83,7 @@ const ShopPage: React.FC = () => {
     isFetchingMore,
     handleShowMore,
     isDemoCatalog,
-  } = useShopProducts(filters);
+  } = useShopProducts(filters, { pause: groupCategoryUnresolved });
 
   const activeFilterCount = Object.values(filters).filter(
     (value) => value !== undefined && value !== "" && value !== false,
@@ -94,7 +125,30 @@ const ShopPage: React.FC = () => {
     HIGHLIGHTS.find((item) => item.key && initialFilters[item.key])?.label ||
     "All Products";
 
-  const updateFilters = (newFilters: FilterValues) => {
+  /**
+   * `browse` is passed only by the category/series chips. Every other caller
+   * leaves the current browse selection alone — except the drawer's category
+   * dropdown, which overrides the group when it picks a different category.
+   */
+  const updateFilters = (
+    newFilters: FilterValues,
+    browse?: { group?: string; series?: string },
+  ) => {
+    const params = new URLSearchParams(searchParamString);
+    const categoryChanged =
+      !browse && (newFilters.categoryId || undefined) !== groupCategoryId;
+
+    const nextGroup = browse
+      ? browse.group
+      : categoryChanged
+        ? undefined
+        : params.get("group") || undefined;
+    const nextSeries = browse
+      ? browse.series
+      : categoryChanged
+        ? undefined
+        : params.get("series") || undefined;
+
     const query = new URLSearchParams();
     if (newFilters.search) query.set("search", newFilters.search);
     if (newFilters.isNew) query.set("isNew", "true");
@@ -105,7 +159,15 @@ const ShopPage: React.FC = () => {
       query.set("minPrice", newFilters.minPrice.toString());
     if (newFilters.maxPrice)
       query.set("maxPrice", newFilters.maxPrice.toString());
-    if (newFilters.categoryId) query.set("categoryId", newFilters.categoryId);
+
+    if (nextGroup) {
+      // categoryId is derived from the group, so it is not written to the URL.
+      query.set("group", nextGroup);
+      if (nextSeries) query.set("series", nextSeries);
+    } else if (!browse && newFilters.categoryId) {
+      query.set("categoryId", newFilters.categoryId);
+    }
+
     if (newFilters.phase) query.set("phase", newFilters.phase);
     if (newFilters.meterDisplayType)
       query.set("meterDisplayType", newFilters.meterDisplayType);
@@ -114,16 +176,28 @@ const ShopPage: React.FC = () => {
     router.push(queryString ? `/shop?${queryString}` : "/shop");
   };
 
+  /** Picking a panel type clears whatever series was selected under the old one. */
+  const handleGroupSelect = (groupKey?: string) => {
+    updateFilters(filters, { group: groupKey, series: undefined });
+  };
+
+  const handleSeriesSelect = (seriesCode?: string) => {
+    updateFilters(filters, { group: activeGroupKey, series: seriesCode });
+  };
+
   const handleReset = () => {
     router.push("/shop");
   };
 
   const noProductsFound =
-    hasLoaded && displayedProducts.length === 0 && !loading && !error;
+    groupCategoryMissing ||
+    (hasLoaded && displayedProducts.length === 0 && !loading && !error);
   const catalogCountText =
     loading && displayedProducts.length === 0
       ? "Loading catalog items..."
-      : `${totalCount} catalog items available for enquiry`;
+      : groupCategoryMissing
+        ? "No catalog items in this category yet"
+        : `${totalCount} catalog items available for enquiry`;
 
   return (
     <MainLayout isDemoCatalog={isDemoCatalog}>
@@ -159,8 +233,97 @@ const ShopPage: React.FC = () => {
         </div>
 
         <div className="container mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
-          {/* Search / category / price / highlight bar. Replaces the left
-              sidebar; the full filter set still opens in the drawer. */}
+          {/* Browse strip — panel type on the first row, and once one is
+              picked, the lettered series inside it on the second. Mirrors the
+              MRK product register; the taxonomy lives in data/catalog/series. */}
+          <div className="mb-4 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_10px_28px_rgba(11,31,51,0.05)] sm:p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Category
+              </span>
+              <button
+                type="button"
+                onClick={() => handleGroupSelect(undefined)}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  !activeGroup
+                    ? "border-[#1598df] bg-[#1598df] text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-[#1598df] hover:text-[#1598df]"
+                }`}
+              >
+                All Products
+              </button>
+              {CATALOG_GROUPS.map((group) => (
+                <button
+                  key={group.key}
+                  type="button"
+                  onClick={() => handleGroupSelect(group.key)}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                    activeGroupKey === group.key
+                      ? "border-[#1598df] bg-[#1598df] text-white"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-[#1598df] hover:text-[#1598df]"
+                  }`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
+
+            {activeGroup && activeGroup.series.length > 0 && (
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {activeGroup.seriesLabel}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleSeriesSelect(undefined)}
+                    className={`rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors ${
+                      !activeSeries
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900"
+                    }`}
+                  >
+                    All
+                  </button>
+                  {activeGroup.series.map((series) => (
+                    <button
+                      key={series.code}
+                      type="button"
+                      onClick={() => handleSeriesSelect(series.code)}
+                      className={`inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors ${
+                        activeSeriesCode === series.code
+                          ? "border-slate-900 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded text-[11px] font-bold ${
+                          activeSeriesCode === series.code
+                            ? "bg-white/20 text-white"
+                            : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {series.letter}
+                      </span>
+                      {series.label}
+                    </button>
+                  ))}
+                </div>
+
+                {activeSeries && activeSeries.models.length > 0 && (
+                  <p className="mt-2.5 text-xs text-slate-500">
+                    Models in {activeSeries.label}:{" "}
+                    <span className="font-medium text-slate-700">
+                      {activeSeries.models.join(", ")}
+                    </span>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Search / price / highlight bar. Replaces the left sidebar; the
+              full filter set still opens in the drawer. */}
           <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_10px_28px_rgba(11,31,51,0.05)] sm:p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <div className="relative min-w-0 flex-1">
@@ -184,24 +347,6 @@ const ShopPage: React.FC = () => {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#1598df] focus:bg-white"
                 />
               </div>
-
-              <select
-                value={initialFilters.categoryId || ""}
-                onChange={(e) =>
-                  updateFilters({
-                    ...filters,
-                    categoryId: e.target.value || undefined,
-                  })
-                }
-                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[190px]"
-              >
-                <option value="">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
 
               <select
                 value={activePriceBand > 0 ? activePriceBand : 0}
@@ -301,7 +446,7 @@ const ShopPage: React.FC = () => {
                 duration: 0.3,
               }}
             >
-              {loading && !displayedProducts.length && (
+              {loading && !displayedProducts.length && !groupCategoryMissing && (
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
                   {[...Array(8)].map((_, index) => (
                     <div

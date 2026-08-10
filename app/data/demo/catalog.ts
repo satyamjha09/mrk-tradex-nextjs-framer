@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Product } from "@/app/types/productTypes";
 import type { FilterValues } from "@/app/(public)/shop/ProductFilters";
+import { productMatchesSeriesTokens } from "@/app/data/catalog/series";
 import HeroImage from "@/app/assets/images/mrk-control-panel-hero.png";
 
 export type DemoCategory = {
@@ -396,6 +397,9 @@ export function filterDemoProducts(
       if (!haystack.includes(q)) return false;
     }
     if (filters.categoryId && productItem.category?.id !== filters.categoryId) {
+      return false;
+    }
+    if (!productMatchesSeriesTokens(productItem, filters.seriesMatch)) {
       return false;
     }
     if (filters.isNew && !productItem.isNew) return false;

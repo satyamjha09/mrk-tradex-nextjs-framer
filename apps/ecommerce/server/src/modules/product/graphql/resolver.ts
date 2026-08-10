@@ -61,6 +61,7 @@ export const productResolvers = {
           categoryId?: string;
           phase?: string;
           meterDisplayType?: string;
+          seriesMatch?: string[];
           flags?: string[];
         };
       },
@@ -95,6 +96,21 @@ export const productResolvers = {
       // Category filter
       if (filters.categoryId) {
         where.categoryId = filters.categoryId;
+      }
+
+      // Series filter. Goes through AND rather than where.OR, which search and
+      // flags already claim — the series has to narrow those, not widen them.
+      if (filters.seriesMatch && filters.seriesMatch.length > 0) {
+        where.AND = [
+          ...(where.AND || []),
+          {
+            OR: filters.seriesMatch.flatMap((token) => [
+              { modelNumber: { contains: token, mode: "insensitive" } },
+              { productSeries: { contains: token, mode: "insensitive" } },
+              { name: { contains: token, mode: "insensitive" } },
+            ]),
+          },
+        ];
       }
 
       const variantSome: any = { isActive: true };

@@ -40,6 +40,8 @@ export const GET_PRODUCTS = gql`
         id
         name
         slug
+        modelNumber
+        productSeries
         isNew
         isFeatured
         isTrending

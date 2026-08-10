@@ -15,7 +15,15 @@ import type { FilterValues } from "@/app/(public)/shop/ProductFilters";
 
 const PAGE_SIZE = 12;
 
-export function useShopProducts(filters: FilterValues) {
+/**
+ * `pause` holds the query while the caller is still resolving a filter — the
+ * shop page uses it so a `?group=` URL never fires an unfiltered request in the
+ * gap before the category list arrives.
+ */
+export function useShopProducts(
+  filters: FilterValues,
+  { pause = false }: { pause?: boolean } = {},
+) {
   const forceDemo = isDemoCatalogForced();
   const [skip, setSkip] = useState(0);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
@@ -25,7 +33,7 @@ export function useShopProducts(filters: FilterValues) {
   const { data, loading, error, fetchMore } = useQuery(GET_PRODUCTS, {
     variables: { first: PAGE_SIZE, skip: 0, filters },
     fetchPolicy: "no-cache",
-    skip: forceDemo,
+    skip: forceDemo || pause,
   });
 
   const isDemoCatalog = shouldUseDemoCatalog(Boolean(error));
@@ -102,7 +110,11 @@ export function useShopProducts(filters: FilterValues) {
 
   return {
     displayedProducts,
-    loading: isDemoCatalog ? false : loading && !displayedProducts.length,
+    // A paused query reports as loading so the caller shows skeletons rather
+    // than an empty grid while the filter it is waiting on resolves.
+    loading: isDemoCatalog
+      ? false
+      : pause || (loading && !displayedProducts.length),
     error: isDemoCatalog ? undefined : error,
     totalCount,
     hasLoaded,

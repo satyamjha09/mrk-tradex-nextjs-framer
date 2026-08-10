@@ -138,6 +138,12 @@ const typeDefs = gql`
     categoryId: String
     phase: String
     meterDisplayType: String
+    """
+    Tokens identifying a product series (AHD, MRG, DOL ...). A product matches
+    when any token appears in its modelNumber, productSeries, or name. The
+    client owns the series taxonomy and sends the tokens for the chosen series.
+    """
+    seriesMatch: [String!]
     flags: [String!]
   }
 

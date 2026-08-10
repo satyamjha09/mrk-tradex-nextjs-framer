@@ -18,6 +18,9 @@ export interface FilterValues {
   isFeatured?: boolean;
   isTrending?: boolean;
   isBestSeller?: boolean;
+  /** Match tokens for the series chosen in the browse strip — see
+   *  app/data/catalog/series.ts. Driven by the chips, not by this drawer. */
+  seriesMatch?: string[];
 }
 
 interface ProductFiltersProps {
@@ -52,9 +55,11 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     debouncedSearch(value);
   };
 
-  // Handle form submission (Apply Filters)
+  // Handle form submission (Apply Filters). seriesMatch has no control in this
+  // drawer — carry it through explicitly so applying filters does not silently
+  // drop the series picked in the browse strip.
   const onSubmit = (data: FilterValues) => {
-    onFilterChange(data);
+    onFilterChange({ ...data, seriesMatch: initialFilters.seriesMatch });
     if (isMobile && onCloseMobile) onCloseMobile();
   };
 
