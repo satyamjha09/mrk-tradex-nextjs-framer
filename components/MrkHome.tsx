@@ -11,6 +11,7 @@ import {
   useTransform,
 } from "framer-motion";
 import gsap from "gsap";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import ProductStackSection from "./ProductStack";
@@ -288,6 +289,83 @@ function DealerParticleSection() {
     </section>
   );
 }
+
+
+// each card pairs a claim with a photograph of the thing being claimed, so the
+// grid reads as evidence rather than six icons. imgClass carries the crop: the
+// studio shots sit on their own backdrop and are contained, the in-situ photos
+// are cropped away from their watermarks and clutter.
+const whyCards: {
+  no: string;
+  title: string;
+  hiTitle: string;
+  copy: string;
+  hiCopy: string;
+  img: string;
+  alt: string;
+  imgClass: string;
+}[] = [
+  {
+    no: "01",
+    title: "Considered components",
+    hiTitle: "सोच-समझकर चुने गए कंपोनेंट",
+    copy: "EPCOS and MRK-grade capacitors, chosen to endure the supply our customers actually get.",
+    hiCopy: "EPCOS और MRK-ग्रेड कैपेसिटर, टिकाऊपन को ध्यान में रखकर चुने गए।",
+    img: "/images/panel-components.png",
+    alt: "MRK capacitor and terminal block inside an open starter panel",
+    imgClass: "object-cover object-center",
+  },
+  {
+    no: "02",
+    title: "A complete range",
+    hiTitle: "पूरी रेंज",
+    copy: "Every HP and phase under one name, from entry-level starters to heavy-duty panels.",
+    hiCopy: "हर HP और फेज़ एक ही नाम के तहत, एंट्री-लेवल से हैवी-ड्यूटी तक।",
+    img: "/images/mrk-hero-products-2026.png",
+    alt: "The MRK range of single-phase and three-phase panels and digital meters",
+    imgClass: "object-contain p-2",
+  },
+  {
+    no: "03",
+    title: "Enclosures built to last",
+    hiTitle: "मज़बूत एनक्लोज़र",
+    copy: "ABS and MS bodies, finished to look the part on the wall for years.",
+    hiCopy: "ABS और MS बॉडी, सालों तक दीवार पर अच्छी दिखने वाली फिनिश के साथ।",
+    img: "/images/single-phase-starter.png",
+    alt: "MRK single-phase starter enclosure with hinged door",
+    imgClass: "object-cover object-center",
+  },
+  {
+    no: "04",
+    title: "Precision wiring",
+    hiTitle: "सटीक वायरिंग",
+    copy: "Clean, safe and serviceable in every unit, so any electrician can work on it.",
+    hiCopy: "हर यूनिट में साफ़, सुरक्षित और सर्विस-योग्य वायरिंग।",
+    img: "/images/three-phase-panel.png",
+    alt: "Wiring, contactors and terminal rows inside an MRK three-phase panel",
+    imgClass: "object-cover object-center",
+  },
+  {
+    no: "05",
+    title: "Warranty & service",
+    hiTitle: "वारंटी और सर्विस",
+    copy: "Assured through a nationwide dealer network, with spares close to where you are.",
+    hiCopy: "देशभर के डीलर नेटवर्क के ज़रिए, स्पेयर आपके नज़दीक।",
+    img: "/images/MRK WEBSITE/I Phase Starters/Family Photo/IMG20250305130830.jpg",
+    alt: "An MRK starter carrying its OK-tested seal",
+    imgClass: "object-cover object-top",
+  },
+  {
+    no: "06",
+    title: "Value, without compromise",
+    hiTitle: "बिना समझौते के वैल्यू",
+    copy: "Advanced protection, priced for India, with nothing quietly left out to hit a number.",
+    hiCopy: "बेहतर सुरक्षा, भारत के लिए सही कीमत पर।",
+    img: "/images/farmers.jpeg",
+    alt: "A farmer drawing water at a pump in his field",
+    imgClass: "object-cover object-left",
+  },
+];
 
 const dealerStats: { value: string; label: string; hi: string }[] = [
   { value: "1,000+", label: "Dealers", hi: "डीलर" },
@@ -681,22 +759,42 @@ const tw: Record<string, string> = {
 
   // above 900px the copy sits in the scrim over the photo; below it the photo is
   // dropped and the copy becomes a centred, content-height block.
-  // the 56vw ceiling keeps the hero flatter than the photo's own 16:9, so bg-cover
-  // always fits the image by width. that pins the product cluster to a known
-  // fraction of the hero (it ends at 63.3% of the source image) whatever the
-  // viewport does, and the copy column can be parked clear of it.
-  hero: "relative flex min-h-[max(560px,min(108svh,56vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:py-14",
-  "hero-photo": "pointer-events-none absolute inset-0 bg-[url('/images/mrk-hero-water-space-2026.png')] bg-cover bg-center max-[900px]:hidden",
-  // the scrim widens as the viewport narrows so the copy column keeps a readable
-  // backdrop even once it starts earlier in the row.
-  "hero-scrim": "pointer-events-none absolute inset-y-0 right-0 w-[52%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,.78)_38%,rgba(255,255,255,.92)_100%)] max-[1200px]:w-[60%] max-[900px]:hidden",
-  "hero-inner": "relative z-10 w-full pl-[65%] pr-[3%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-5 max-[900px]:text-center min-[520px]:max-[900px]:px-8",
+  // the 52vw ceiling keeps the hero flatter than the photo's own 16:9 (56.28vw),
+  // so bg-cover always fits the image by width. that pins the product cluster to
+  // a known fraction of the hero (it ends at 55.8% of the source image) whatever
+  // the viewport does, and the copy column can be parked clear of it. the 4.3vw
+  // of surplus image height is split top and bottom by bg-center, trimming empty
+  // sky above and the tail of the reflections below.
+  // 92svh keeps the whole hero, button included, inside the first screen; on a
+  // short, wide window svh is what drives the height and anything over 100 clips.
+  hero: "relative flex min-h-[max(520px,min(92svh,52vw))] w-full items-center overflow-hidden bg-[linear-gradient(180deg,#FBFDFF_0%,#EDF6FC_100%)] pt-10 sm:pt-14 max-[900px]:min-h-0 max-[900px]:py-14",
+  "hero-photo": "pointer-events-none absolute inset-0 bg-[url('/images/hero_section1.png')] bg-cover bg-center max-[900px]:hidden",
+  // the product cluster ends at 55.8% of the photo, so the scrim is held fully
+  // transparent until 56% and only then lifts — the whole fade now falls in
+  // empty water and none of it touches the lineup. the stops are measured
+  // against the hero, not the scrim's own box, so they hold at every width
+  // without a separate narrow-viewport variant. the photo's right side is
+  // near-white empty water already, so a light veil is enough for the copy.
+  "hero-scrim": "pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_56%,rgba(255,255,255,.5)_68%,rgba(255,255,255,.66)_100%)] max-[900px]:hidden",
+  // 62% clears the cluster's 55.8% edge with room for the scrim's fade to land
+  // in between, and buys the headline ~50px more line width than the old 65%.
+  "hero-inner": "relative z-10 w-full pl-[62%] pr-[3%] max-[900px]:flex max-[900px]:flex-col max-[900px]:items-center max-[900px]:px-5 max-[900px]:text-center min-[520px]:max-[900px]:px-8",
   "hero-copy": "max-w-[620px] translate-y-4 max-[900px]:translate-y-0",
+  // below 900px the backdrop photo is dropped, so the lineup gets its own block
+  // instead of vanishing. 4:3 anchored left shows the cluster (which ends at
+  // 55.8% of the source) filling the frame, rather than the zoomed-in slice a
+  // full-bleed cover crop would give on a portrait screen.
+  // order-first puts it above the copy: the copy stack alone is taller than a
+  // short phone viewport, so below the button the photo never got seen.
+  "hero-photo-m": "relative mb-9 hidden aspect-[4/3] w-full max-w-[560px] overflow-hidden rounded-2xl bg-[#EDF6FC] shadow-[0_18px_40px_rgba(11,31,51,.10)] max-[900px]:order-first max-[900px]:block",
   "hero-title": "text-[clamp(1.75rem,3.5vw,3.75rem)] font-extrabold leading-[1.14] tracking-[-0.02em]",
   "hero-title-lead": "block text-ink",
   "hero-title-rest": "block bg-[linear-gradient(180deg,rgb(var(--marine)),rgb(var(--aqua)))] bg-clip-text text-transparent",
   "hero-rule": "mt-7 block h-[3px] w-[74px] rounded-full bg-aqua max-[900px]:mx-auto max-[900px]:mt-6",
-  "hero-sub": "mt-7 max-w-[46ch] text-[clamp(0.98rem,1.15vw,1.12rem)] leading-[1.85] text-muted max-[900px]:mx-auto max-[900px]:mt-5",
+  // ink/75 rather than the muted token: over the hero photo's pale water the
+  // muted grey only reaches 4.2:1, short of AA for body text. below 900px the
+  // photo is dropped and the plain muted grey is fine again.
+  "hero-sub": "mt-7 max-w-[46ch] text-[clamp(0.98rem,1.15vw,1.12rem)] leading-[1.85] text-ink/75 max-[900px]:mx-auto max-[900px]:mt-5 max-[900px]:text-muted",
   "hero-actions": "mt-9 flex flex-wrap items-center gap-4 max-[900px]:mt-7 max-[900px]:justify-center",
 
   aq: "text-aqua",
@@ -740,15 +838,6 @@ const tw: Record<string, string> = {
   sarrow: "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink transition duration-300 ease-in-out hover:scale-105 hover:border-aqua hover:shadow-[0_8px_20px_rgba(11,31,51,.1)] [&>svg]:h-5 [&>svg]:w-5 [&>svg]:fill-none [&>svg]:stroke-current [&>svg]:stroke-2",
   sdots: "col-span-full flex items-center justify-center gap-2",
   sdot: "h-2 w-2 rounded-full bg-line transition-all duration-300 [&.on]:w-5 [&.on]:bg-aqua",
-
-  flipgrid: "grid grid-cols-3 gap-[1.4rem] max-[900px]:grid-cols-2 max-[560px]:grid-cols-1",
-  "flip-wrap": "group/flip min-h-[210px] [perspective:1200px]",
-  flip: "relative h-full min-h-[210px] w-full transition-transform duration-700 ease-[cubic-bezier(.2,.75,.25,1)] [transform-style:preserve-3d] group-hover/flip:[transform:rotateY(180deg)] [&.flipped]:[transform:rotateY(180deg)]",
-  "flip-face": "absolute inset-0 flex flex-col overflow-hidden rounded-[1.25rem] p-[1.7rem] [backface-visibility:hidden]",
-  "flip-front": "justify-center border border-line bg-white shadow-[0_12px_30px_rgba(11,31,51,.07)] [&>h4]:text-xl [&>h4]:font-semibold [&>h4]:text-ink",
-  fic: "mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-[0.875rem] bg-mist [&>svg]:h-[26px] [&>svg]:w-[26px] [&>svg]:fill-none [&>svg]:stroke-aqua [&>svg]:stroke-2 [&>svg]:[stroke-linecap:round] [&>svg]:[stroke-linejoin:round]",
-  fbadge: "absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-mist text-sm font-bold text-aqua",
-  "flip-back": "justify-center border border-transparent bg-gradient-to-br from-deep via-aqua to-ink text-white [transform:rotateY(180deg)] [&>p]:m-0 [&>p]:text-base [&>p]:font-medium [&>p]:leading-6",
 
   tsec: "[&_.section-head]:mb-0 [&_.section-head]:max-w-none [&_h2.title]:uppercase [&_h2.title]:leading-[.95] [&_h2.title]:tracking-[-.02em]",
   thead: "mb-10 flex items-end justify-between gap-8 max-[1000px]:mb-[2.4rem] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-6",
@@ -891,14 +980,6 @@ export default function MrkHome() {
         };
         link.addEventListener("click", closeMenu);
         cleanups.push(() => link.removeEventListener("click", closeMenu));
-      });
-    }
-
-    if (matchMedia("(hover: none)").matches) {
-      root.querySelectorAll<HTMLElement>(".flip").forEach((card) => {
-        const flip = () => card.classList.toggle("flipped");
-        card.addEventListener("click", flip);
-        cleanups.push(() => card.removeEventListener("click", flip));
       });
     }
 
@@ -1187,9 +1268,19 @@ export default function MrkHome() {
                 </a>
               </div>
             </div>
+
+            <div className={cn('hero-photo-m', tw['hero-photo-m'])}>
+              <Image
+                src={"/images/hero_section.png"}
+                alt={"MRK single-phase starters, three-phase panels, digital meters and switchgear"}
+                fill
+                sizes={"(max-width: 900px) 92vw, 1px"}
+                className="object-cover object-left"
+              />
+            </div>
           </div>
         </section>
-        
+
         <section className={cn('stats', tw['stats'])}>
           <div
             aria-hidden={"true"}
@@ -1650,115 +1741,86 @@ export default function MrkHome() {
        
          <CurvedVideoReel />
         {/* <DealerParticleSection /> */}
-        <section className={cn('secti s channels vertical general it centers a professionally, as doingon container', tw['section'], tw['container'])} id={"why"}>
+        <section
+          className={cn(
+            tw['section'],
+            "relative overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#F2F8FC_100%)]",
+          )}
+          id={"why"}
+        >
+          <div
+            aria-hidden={"true"}
+            className="pointer-events-none absolute -left-44 top-16 h-[520px] w-[520px] rounded-full bg-[#dceefe]/70 blur-[130px]"
+          />
+          <div
+            aria-hidden={"true"}
+            className="pointer-events-none absolute -right-48 bottom-0 h-[560px] w-[560px] rounded-full bg-[#cfe7fb]/60 blur-[150px]"
+          />
+
+          <div className={cn("relative z-10 mx-auto w-full max-w-[1440px] px-6")}>
           <div className={cn('section-head', tw['section-head'])}>
             <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"MRK मानक"}>The MRK standard</span>
             <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Why India chooses MRK.</h2>
+            <p
+              className={cn('reveal d2', tw['reveal'], "mt-6 max-w-[52ch] text-[1.02rem] leading-[1.8] text-muted")}
+              data-hi={"छह बातें जो हर पैनल में एक जैसी रहती हैं, चाहे हॉर्सपावर कोई भी हो और कीमत कोई भी।"}
+            >
+              Six things we hold constant, whatever the panel, the horsepower or
+              the price.
+            </p>
           </div>
-          <div className={cn('flipgrid', tw['flipgrid'])}>
-            <div className={cn('flip-wrap reveal', tw['flip-wrap'], tw['reveal'])}>
-              <div className={cn('flip', tw['flip'])}>
-                <div className={cn('flip-face flip-front', tw['flip-face'], tw['flip-front'])}>
-                  <span className={cn('fbadge', tw['fbadge'])}>+</span>
-                  <div className={cn('fic', tw['fic'])}>
-                    <svg viewBox={"0 0 24 24"}>
-                      <path d={"M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 19.3 7.2 21.9l.9-5.4L4.2 8.7l5.4-.8z"}></path>
-                    </svg>
-                  </div>
-                  <h4>Considered components</h4>
+
+          <div className="grid grid-cols-3 gap-5 max-[1180px]:grid-cols-2 max-[760px]:grid-cols-1">
+            {whyCards.map((card, index) => (
+              <article
+                key={card.no}
+                className={cn(
+                  'reveal',
+                  index % 3 === 1 && 'd1',
+                  index % 3 === 2 && 'd2',
+                  tw['reveal'],
+                  "group/why relative flex items-center gap-5 overflow-hidden rounded-[1.5rem] border border-white bg-white p-4 shadow-[0_14px_34px_rgba(11,31,51,.06)] transition duration-300 ease-[cubic-bezier(.2,.7,.2,1)] after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-aqua after:to-splash after:transition-transform after:duration-[400ms] after:content-[''] hover:-translate-y-1.5 hover:shadow-[0_26px_48px_rgba(11,31,51,.12)] hover:after:scale-x-100 max-[520px]:flex-col max-[520px]:items-stretch",
+                )}
+              >
+                <div className="relative aspect-square w-[42%] flex-none overflow-hidden rounded-[1.15rem] bg-mist max-[520px]:aspect-[16/10] max-[520px]:w-full">
+                  <Image
+                    src={card.img}
+                    alt={card.alt}
+                    fill
+                    // the tile is 42% of a card, and a card is at most a third of
+                    // the 1440px grid, so we never need more than ~200px of it.
+                    sizes={"(max-width: 520px) 100vw, (max-width: 1180px) 22vw, 15vw"}
+                    className={cn(
+                      "transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover/why:scale-[1.05]",
+                      card.imgClass,
+                    )}
+                  />
                 </div>
-                <div className={cn('flip-face flip-back', tw['flip-face'], tw['flip-back'])}>
-                  <p>EPCOS and MRK-grade capacitors, chosen to endure.</p>
+
+                <div className="min-w-0 flex-1 py-2 pr-[3.25rem] max-[520px]:pr-4">
+                  <h3
+                    className="text-[1.15rem] font-bold leading-[1.3] tracking-[-0.01em] text-ink"
+                    data-hi={card.hiTitle}
+                  >
+                    {card.title}
+                  </h3>
+                  <p
+                    className="mt-3 text-[0.9rem] leading-[1.68] text-muted"
+                    data-hi={card.hiCopy}
+                  >
+                    {card.copy}
+                  </p>
                 </div>
-              </div>
-            </div>
-            <div className={cn('flip-wrap reveal d1', tw['flip-wrap'], tw['reveal'])}>
-              <div className={cn('flip', tw['flip'])}>
-                <div className={cn('flip-face flip-front', tw['flip-face'], tw['flip-front'])}>
-                  <span className={cn('fbadge', tw['fbadge'])}>+</span>
-                  <div className={cn('fic', tw['fic'])}>
-                    <svg viewBox={"0 0 24 24"}>
-                      <rect x={"3"} y={"3"} width={"7"} height={"7"} rx={"1"}></rect>
-                      <rect x={"14"} y={"3"} width={"7"} height={"7"} rx={"1"}></rect>
-                      <rect x={"3"} y={"14"} width={"7"} height={"7"} rx={"1"}></rect>
-                      <rect x={"14"} y={"14"} width={"7"} height={"7"} rx={"1"}></rect>
-                    </svg>
-                  </div>
-                  <h4>A complete range</h4>
-                </div>
-                <div className={cn('flip-face flip-back', tw['flip-face'], tw['flip-back'])}>
-                  <p>Every HP and phase under one name, entry-level to heavy-duty.</p>
-                </div>
-              </div>
-            </div>
-            <div className={cn('flip-wrap reveal d2', tw['flip-wrap'], tw['reveal'])}>
-              <div className={cn('flip', tw['flip'])}>
-                <div className={cn('flip-face flip-front', tw['flip-face'], tw['flip-front'])}>
-                  <span className={cn('fbadge', tw['fbadge'])}>+</span>
-                  <div className={cn('fic', tw['fic'])}>
-                    <svg viewBox={"0 0 24 24"}>
-                      <path d={"M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"}></path>
-                    </svg>
-                  </div>
-                  <h4>Enclosures built to last</h4>
-                </div>
-                <div className={cn('flip-face flip-back', tw['flip-face'], tw['flip-back'])}>
-                  <p>ABS and MS bodies, finished to look the part.</p>
-                </div>
-              </div>
-            </div>
-            <div className={cn('flip-wrap reveal', tw['flip-wrap'], tw['reveal'])}>
-              <div className={cn('flip', tw['flip'])}>
-                <div className={cn('flip-face flip-front', tw['flip-face'], tw['flip-front'])}>
-                  <span className={cn('fbadge', tw['fbadge'])}>+</span>
-                  <div className={cn('fic', tw['fic'])}>
-                    <svg viewBox={"0 0 24 24"}>
-                      <path d={"M4 7h6l2 3 2-6 2 9 2-3"}></path>
-                      <path d={"M4 17h16"}></path>
-                    </svg>
-                  </div>
-                  <h4>Precision wiring</h4>
-                </div>
-                <div className={cn('flip-face flip-back', tw['flip-face'], tw['flip-back'])}>
-                  <p>Clean, safe and serviceable in every unit.</p>
-                </div>
-              </div>
-            </div>
-            <div className={cn('flip-wrap reveal d1', tw['flip-wrap'], tw['reveal'])}>
-              <div className={cn('flip', tw['flip'])}>
-                <div className={cn('flip-face flip-front', tw['flip-face'], tw['flip-front'])}>
-                  <span className={cn('fbadge', tw['fbadge'])}>+</span>
-                  <div className={cn('fic', tw['fic'])}>
-                    <svg viewBox={"0 0 24 24"}>
-                      <path d={"M12 3l7 3v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V6z"}></path>
-                      <path d={"M9 12l2 2 4-4"}></path>
-                    </svg>
-                  </div>
-                  <h4>Warranty & service</h4>
-                </div>
-                <div className={cn('flip-face flip-back', tw['flip-face'], tw['flip-back'])}>
-                  <p>Assured through a nationwide dealer network.</p>
-                </div>
-              </div>
-            </div>
-            <div className={cn('flip-wrap reveal d2', tw['flip-wrap'], tw['reveal'])}>
-              <div className={cn('flip', tw['flip'])}>
-                <div className={cn('flip-face flip-front', tw['flip-face'], tw['flip-front'])}>
-                  <span className={cn('fbadge', tw['fbadge'])}>+</span>
-                  <div className={cn('fic', tw['fic'])}>
-                    <svg viewBox={"0 0 24 24"}>
-                      <path d={"M7 5h8a4 4 0 0 1 0 8H8m-1 5h9M6 9h12"}></path>
-                    </svg>
-                  </div>
-                  <h4>Value, without compromise</h4>
-                </div>
-                <div className={cn('flip-face flip-back', tw['flip-face'], tw['flip-back'])}>
-                  <p>Advanced protection, priced for India.</p>
-                </div>
-              </div>
-            </div>
+
+                <span className="absolute right-5 top-5 font-mono text-[0.78rem] tracking-[0.1em] text-aqua after:mt-1 after:block after:h-[2px] after:w-full after:origin-right after:scale-x-100 after:rounded-full after:bg-aqua/45 after:transition-colors after:duration-300 after:content-[''] group-hover/why:after:bg-aqua max-[520px]:top-auto max-[520px]:bottom-5">
+                  {card.no}
+                </span>
+              </article>
+            ))}
+          </div>
           </div>
         </section>
+
          <section className={cn('section container tsec', tw['section'], tw['container'], tw['tsec'])}>
           <div className={cn('thead', tw['thead'])}>
             <div className={cn('section-head', tw['section-head'])}>
