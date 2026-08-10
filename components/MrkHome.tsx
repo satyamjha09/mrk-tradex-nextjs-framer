@@ -830,21 +830,32 @@ const googleReviewLinks = [
   },
 ];
 
-// Reviews as published on the Google Maps listing, quoted verbatim. Google does
-// not expose the reviewer names on the public panel, so the cards attribute to
-// the listing itself rather than inventing a name.
-const googleReviews = [
+// Individual reviews from the Google Maps listing, each quoted verbatim with
+// the reviewer's name and star rating exactly as published. Spelling is theirs.
+//
+// The earlier entries here were Google's auto-generated "review summary"
+// snippets, which carry no author, which is why the cards had no names. These
+// are whole reviews, so they can be attributed.
+//
+// Names must be copied from the listing, never guessed — anything else is false
+// attribution on a real person's words. Omitting `name` falls back to a generic
+// "Google review" byline.
+const googleReviews: { quote: string; rating: number; name?: string }[] = [
   {
-    quote: "And The Company also give us one year warranty.",
+    quote:
+      "Yeah ! You can buy different types of Panel from here in minimum Amount. And The Company also give us one year warranty.",
     rating: 4,
+    name: "Amit Dubey",
   },
   {
-    quote: "Yeh company is good all helps all facility in company",
+    quote: "Very nice product WLC MRK PLUG",
     rating: 5,
+    name: "sanjay sharma",
   },
   {
-    quote: "Nice quality and product \u{1F44C}",
+    quote: "Very nice wlc prodect tank over flow",
     rating: 5,
+    name: "Pankaj Singj",
   },
 ];
 
@@ -2110,9 +2121,11 @@ export default function MrkHome() {
                 </div>
                 <p>&ldquo;{review.quote}&rdquo;</p>
                 <div className={cn('who', tw['who'])}>
-                  <div className={cn('av', tw['av'])}>G</div>
+                  <div className={cn('av', tw['av'])}>
+                    {review.name ? review.name.trim().charAt(0).toUpperCase() : "G"}
+                  </div>
                   <div>
-                    <b>Google review</b>
+                    <b>{review.name || "Google review"}</b>
                     <span>Posted on Google Maps</span>
                   </div>
                 </div>
