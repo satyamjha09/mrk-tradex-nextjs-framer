@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Filter } from "lucide-react";
+import { Package, Filter, Search, SlidersHorizontal } from "lucide-react";
 import { Product } from "@/app/types/productTypes";
 import ProductCard from "../product/ProductCard";
 import MainLayout from "@/app/components/templates/MainLayout";
@@ -38,8 +38,8 @@ const ShopPage: React.FC = () => {
   }, [searchParamString]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [filtersVisible, setFiltersVisible] = useState(true);
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
+  const [searchDraft, setSearchDraft] = useState(initialFilters.search || "");
 
   const { categories } = useCatalogCategories();
   const {
@@ -60,7 +60,39 @@ const ShopPage: React.FC = () => {
 
   useEffect(() => {
     setFilters(initialFilters);
+    setSearchDraft(initialFilters.search || "");
   }, [initialFilters]);
+
+  // price bands for the top bar. the query takes min/max, so each option is
+  // just a pair — "All prices" clears both.
+  const PRICE_BANDS = [
+    { label: "All Prices", min: undefined, max: undefined },
+    { label: "Under Rs. 2,000", min: undefined, max: 2000 },
+    { label: "Rs. 2,000 – 5,000", min: 2000, max: 5000 },
+    { label: "Rs. 5,000 – 10,000", min: 5000, max: 10000 },
+    { label: "Over Rs. 10,000", min: 10000, max: undefined },
+  ];
+
+  const activePriceBand =
+    PRICE_BANDS.findIndex(
+      (band) =>
+        band.min === initialFilters.minPrice &&
+        band.max === initialFilters.maxPrice,
+    ) ?? 0;
+
+  // the catalogue query has no sort argument — these are the boolean
+  // collection flags it does support, surfaced where the reference puts sort.
+  const HIGHLIGHTS = [
+    { label: "All Products", key: undefined },
+    { label: "Featured", key: "isFeatured" },
+    { label: "New Arrivals", key: "isNew" },
+    { label: "Trending", key: "isTrending" },
+    { label: "Best Sellers", key: "isBestSeller" },
+  ];
+
+  const activeHighlight =
+    HIGHLIGHTS.find((item) => item.key && initialFilters[item.key])?.label ||
+    "All Products";
 
   const updateFilters = (newFilters: FilterValues) => {
     const query = new URLSearchParams();
@@ -110,26 +142,11 @@ const ShopPage: React.FC = () => {
 
               <div className="flex shrink-0 items-center gap-3">
                 <button
-                  onClick={() => setFiltersVisible(!filtersVisible)}
-                  className="hidden items-center gap-2 rounded-lg bg-black px-4 py-2.5 text-white shadow-sm transition-colors hover:bg-gray-800 lg:flex"
-                >
-                  <Filter size={18} />
-                  <span className="font-medium">
-                    {filtersVisible ? "Hide" : "Show"} Filters
-                  </span>
-                  {activeFilterCount > 0 && (
-                    <span className="bg-white/20 text-white text-xs font-bold rounded-full px-2 py-0.5">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </button>
-
-                <button
                   onClick={() => setSidebarOpen(true)}
-                  className="flex items-center gap-2 rounded-lg bg-black px-4 py-2.5 text-white shadow-sm transition-colors hover:bg-gray-800 lg:hidden"
+                  className="flex items-center gap-2 rounded-lg bg-black px-4 py-2.5 text-white shadow-sm transition-colors hover:bg-gray-800"
                 >
                   <Filter size={18} />
-                  <span className="font-medium">Filters</span>
+                  <span className="font-medium">All Filters</span>
                   {activeFilterCount > 0 && (
                     <span className="bg-white/20 text-white text-xs font-bold rounded-full px-2 py-0.5">
                       {activeFilterCount}
@@ -142,39 +159,116 @@ const ShopPage: React.FC = () => {
         </div>
 
         <div className="container mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:gap-6 xl:gap-8">
-            <AnimatePresence>
-              {filtersVisible && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "auto", opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{
-                    type: "spring",
-                    damping: 25,
-                    stiffness: 300,
-                    duration: 0.3,
+          {/* Search / category / price / highlight bar. Replaces the left
+              sidebar; the full filter set still opens in the drawer. */}
+          <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_10px_28px_rgba(11,31,51,0.05)] sm:p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  size={18}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="search"
+                  value={searchDraft}
+                  onChange={(e) => setSearchDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter")
+                      updateFilters({ ...filters, search: searchDraft });
                   }}
-                  className="hidden shrink-0 self-start overflow-y-auto lg:sticky lg:top-[176px] lg:block lg:max-h-[calc(100vh-192px)]"
-                >
-                  <div className="w-[300px] xl:w-[320px] 2xl:w-[340px]">
-                    <ProductFilters
-                      initialFilters={initialFilters}
-                      onFilterChange={updateFilters}
-                      categories={categories}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  onBlur={() => {
+                    if ((filters.search || "") !== searchDraft)
+                      updateFilters({ ...filters, search: searchDraft });
+                  }}
+                  placeholder="Search products, models, HP..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#1598df] focus:bg-white"
+                />
+              </div>
 
+              <select
+                value={initialFilters.categoryId || ""}
+                onChange={(e) =>
+                  updateFilters({
+                    ...filters,
+                    categoryId: e.target.value || undefined,
+                  })
+                }
+                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[190px]"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={activePriceBand > 0 ? activePriceBand : 0}
+                onChange={(e) => {
+                  const band = PRICE_BANDS[Number(e.target.value)];
+                  updateFilters({
+                    ...filters,
+                    minPrice: band.min,
+                    maxPrice: band.max,
+                  });
+                }}
+                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[180px]"
+              >
+                {PRICE_BANDS.map((band, bandIndex) => (
+                  <option key={band.label} value={bandIndex}>
+                    {band.label}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={activeHighlight}
+                onChange={(e) => {
+                  const picked = HIGHLIGHTS.find(
+                    (item) => item.label === e.target.value,
+                  );
+                  updateFilters({
+                    ...filters,
+                    isFeatured: undefined,
+                    isNew: undefined,
+                    isTrending: undefined,
+                    isBestSeller: undefined,
+                    ...(picked?.key ? { [picked.key]: true } : {}),
+                  });
+                }}
+                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[180px]"
+              >
+                {HIGHLIGHTS.map((item) => (
+                  <option key={item.label} value={item.label}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1598df]/40 px-5 py-3 text-sm font-semibold text-[#1598df] transition-colors hover:bg-[#1598df] hover:text-white"
+              >
+                <SlidersHorizontal size={18} />
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="rounded-full bg-[#1598df]/15 px-2 py-0.5 text-xs font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5 lg:flex-row lg:gap-6 xl:gap-8">
             <AnimatePresence>
               {sidebarOpen && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[90] bg-black/50 lg:hidden"
+                  className="fixed inset-0 z-[90] bg-black/50"
                   onClick={() => setSidebarOpen(false)}
                 >
                   <motion.div
@@ -208,17 +302,18 @@ const ShopPage: React.FC = () => {
               }}
             >
               {loading && !displayedProducts.length && (
-                <div className="grid grid-cols-1 gap-5 min-[680px]:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 sm:gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
                   {[...Array(8)].map((_, index) => (
                     <div
                       key={index}
-                      className="overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-sm animate-pulse sm:rounded-[24px] lg:rounded-[28px]"
+                      className="flex overflow-hidden rounded-[18px] border border-gray-100 bg-white shadow-sm animate-pulse max-[520px]:flex-col"
                     >
-                      <div className="h-48 bg-gray-200 sm:h-56 lg:h-64"></div>
-                      <div className="space-y-3 p-4 lg:p-5">
-                        <div className="h-4 rounded bg-gray-200 lg:h-5"></div>
-                        <div className="h-4 w-2/3 rounded bg-gray-200 lg:h-5"></div>
-                        <div className="h-6 w-1/2 rounded bg-gray-200 lg:h-7"></div>
+                      <div className="w-[42%] flex-none bg-gray-200 max-[520px]:aspect-[16/10] max-[520px]:w-full"></div>
+                      <div className="flex-1 space-y-3 p-5">
+                        <div className="h-4 rounded bg-gray-200"></div>
+                        <div className="h-4 w-2/3 rounded bg-gray-200"></div>
+                        <div className="h-6 w-1/2 rounded bg-gray-200"></div>
+                        <div className="h-9 rounded bg-gray-200"></div>
                       </div>
                     </div>
                   ))}
@@ -267,7 +362,7 @@ const ShopPage: React.FC = () => {
 
               {!noProductsFound && !loading && (
                 <>
-                  <div className="grid grid-cols-1 gap-5 min-[680px]:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 sm:gap-6 lg:gap-8">
+                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
                     {displayedProducts.map(
                       (product: Product, index: number) => (
                         <motion.div
