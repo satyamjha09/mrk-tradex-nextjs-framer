@@ -289,6 +289,123 @@ function DealerParticleSection() {
   );
 }
 
+const dealerStats: { value: string; label: string; hi: string }[] = [
+  { value: "1,000+", label: "Dealers", hi: "डीलर" },
+  { value: "500+", label: "Cities", hi: "शहर" },
+  { value: "20+", label: "States", hi: "राज्य" },
+];
+
+function DealerCtaSection() {
+  return (
+    <section
+      id={"dealer"}
+      className="relative overflow-hidden bg-[#071a2e] bg-[radial-gradient(125%_130%_at_88%_78%,#1a7ac6_0%,#0d4d88_26%,#0a2c4d_56%,#071a2e_100%)]"
+    >
+      <div
+        aria-hidden={"true"}
+        className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#1e9be0]/10 blur-[150px]"
+      />
+      <div
+        aria-hidden={"true"}
+        className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:64px_64px]"
+      />
+
+      <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-12 px-5 py-[clamp(3.5rem,7vw,6rem)] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+        <div className="max-w-[640px]">
+          <motion.span
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="block font-mono text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-[#5fb8ef]"
+            data-hi={"डीलर बनें"}
+          >
+            Become a dealer
+          </motion.span>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-5 text-[clamp(2rem,4.6vw,3.4rem)] font-extrabold leading-[1.08] tracking-[-0.03em] text-white"
+            data-hi={"पूरी पंप-स्टार्टर रेंज के साथ अपना कारोबार बढ़ाइए।"}
+          >
+            Build your business with a complete pump-starter range.
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-6 max-w-[560px] text-[clamp(1rem,1.15vw,1.15rem)] leading-relaxed text-white/70"
+            data-hi={"सिंगल-फेज़, थ्री-फेज़ और स्मार्ट प्लग एक ही नाम के तहत, ताकि एक रिश्ता हर ग्राहक को कवर करे। भरोसेमंद मार्जिन, पूरी रेंज की माँग और मार्केटिंग सहयोग।"}
+          >
+            Single-phase, three-phase and smart plugs under one name, so one
+            relationship covers every customer. Dependable margins, full-range
+            demand, and marketing support.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10"
+          >
+            <motion.a
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              href={"#contact"}
+              className="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-[0.95rem] font-bold text-[#0a2540] shadow-[0_18px_40px_rgba(3,17,32,0.35)] transition-colors hover:bg-[#eaf4fd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              Apply for dealership
+              <svg
+                viewBox={"0 0 24 24"}
+                aria-hidden={"true"}
+                className="h-4 w-4 fill-none stroke-current stroke-2"
+              >
+                <path
+                  d={"M5 12h14M13 6l6 6-6 6"}
+                  strokeLinecap={"round"}
+                  strokeLinejoin={"round"}
+                ></path>
+              </svg>
+            </motion.a>
+          </motion.div>
+        </div>
+
+        <div className="flex flex-wrap gap-x-[clamp(1.75rem,4vw,3.5rem)] gap-y-8 lg:flex-nowrap lg:pr-4">
+          {dealerStats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{
+                duration: 0.55,
+                delay: 0.3 + index * 0.1,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <div className="text-[clamp(1.9rem,3.2vw,2.6rem)] font-extrabold leading-none tracking-[-0.04em] text-white">
+                {stat.value}
+              </div>
+              <div
+                className="mt-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/55"
+                data-hi={stat.hi}
+              >
+                {stat.label}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function formatIndian(value: number) {
   const rounded = Math.round(value).toString();
   const lastThree = rounded.slice(-3);
@@ -1690,6 +1807,8 @@ export default function MrkHome() {
             ))}
           </div>
         </section>
+
+        <DealerCtaSection />
 
         {/* ── Curved Product Reel ── */}
 
