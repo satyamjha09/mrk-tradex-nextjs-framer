@@ -8,6 +8,7 @@ import {
   Control,
   FieldErrors,
   UseFormSetValue,
+  RegisterOptions,
   useWatch,
 } from "react-hook-form";
 import { useEffect, useState, useCallback } from "react";
@@ -20,6 +21,7 @@ interface ImageUploaderProps {
   name?: string;
   maxFiles?: number;
   disabled?: boolean;
+  rules?: RegisterOptions;
 }
 
 interface ImagePreview {
@@ -36,6 +38,7 @@ const ImageUploader = ({
   name = "images",
   maxFiles = 5,
   disabled = false,
+  rules,
 }: ImageUploaderProps) => {
   const [previews, setPreviews] = useState<ImagePreview[]>([]);
   const watchedImages = useWatch({ control, name }) || [];
@@ -160,6 +163,7 @@ const ImageUploader = ({
       <Controller
         name={name}
         control={control}
+        rules={rules}
         render={() => (
           <div className="relative">
             <input

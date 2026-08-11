@@ -60,6 +60,14 @@ const SKU_REGEX = /^[a-zA-Z0-9-]{3,50}$/;
 const parseBoolean = (value: unknown) =>
   value === true || value === "true" || value === "1";
 
+const buildGeneratedSku = (productName: string, index: number) => {
+  const base = slugify(productName)
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, "")
+    .slice(0, 36);
+  return `${base || "MRK-PRODUCT"}-${index + 1}-${Date.now().toString(36).toUpperCase()}`;
+};
+
 const parseOptionalNumber = (value: unknown) => {
   if (value === undefined || value === null || value === "") return undefined;
   const parsed = Number(value);
@@ -143,8 +151,11 @@ const validateProductPayload = (
   if (options.requireAll || body.description !== undefined) {
     requireText(body.description, "Product description");
   }
-  if (options.requireAll || body.categoryId !== undefined) {
-    requireText(body.categoryId, "Category");
+  if (options.requireAll || body.hp !== undefined) {
+    requireText(body.hp, "HP");
+  }
+  if (options.requireAll || body.capacitor !== undefined) {
+    requireText(body.capacitor, "Capacitor");
   }
 };
 
@@ -178,6 +189,7 @@ const parsePrice = (value: unknown, index: number) => {
 };
 
 const parseStock = (value: unknown, index: number) => {
+  if (value === undefined || value === null || value === "") return 0;
   const stock = Number(value);
   if (!Number.isInteger(stock) || stock < 0) {
     throw new AppError(
@@ -208,6 +220,11 @@ const validateSku = (sku: unknown, index: number) => {
     );
   }
   return sku.trim();
+};
+
+const resolveSku = (sku: unknown, productName: string, index: number) => {
+  if (typeof sku === "string" && sku.trim()) return validateSku(sku, index);
+  return validateSku(buildGeneratedSku(productName, index), index);
 };
 
 const validateVariantImageCount = (count: number, index: number) => {
@@ -435,11 +452,17 @@ export class ProductController {
           imageResults,
           index,
         );
+        if (imageUrls.length === 0) {
+          throw new AppError(
+            400,
+            `Variant at index ${index} must have at least one product image`,
+          );
+        }
 
         return {
           ...variant,
           ...parseVariantMrkFields(variant),
-          sku: validateSku(variant.sku, index),
+          sku: resolveSku(variant.sku, name, index),
           price: parsePrice(variant.price, index),
           stock: parseStock(variant.stock, index),
           lowStockThreshold: parseLowStockThreshold(
@@ -460,7 +483,7 @@ export class ProductController {
         isTrending: isTrending === "true",
         isBestSeller: isBestSeller === "true",
         isFeatured: isFeatured === "true",
-        categoryId,
+        ...(categoryId && { categoryId }),
         variants: processedVariants,
       });
 
@@ -546,8 +569,14 @@ export class ProductController {
                 ...bodyImages.filter((img: string) => img),
               ];
               validateVariantImageCount(imageUrls.length, index);
+              if (imageUrls.length === 0) {
+                throw new AppError(
+                  400,
+                  `Variant at index ${index} must have at least one product image`,
+                );
+              }
 
-              const sku = validateSku(variant.sku, index);
+              const sku = resolveSku(variant.sku, name || "MRK-PRODUCT", index);
               const price = parsePrice(variant.price, index);
               const stock = parseStock(variant.stock, index);
               const lowStockThreshold = parseLowStockThreshold(

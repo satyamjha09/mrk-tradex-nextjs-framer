@@ -11,9 +11,14 @@ import { formatMrkSpecValue } from "@/app/lib/format/mrkSpecs";
 interface ProductCardProps {
   product: Product;
   index?: number;
+  compact?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  index = 0,
+  compact = false,
+}) => {
   const { trackInteraction } = useTrackInteraction();
 
   useEffect(() => {
@@ -67,10 +72,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     <Link
       href={`/product/${product.slug}`}
       onClick={handleClick}
-      className="group relative flex h-full overflow-hidden rounded-[18px] border border-slate-200/80 bg-white text-[#0b1f33] shadow-[0_10px_28px_rgba(11,31,51,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(11,31,51,0.12)] max-[520px]:flex-col"
+      className={`group relative flex h-full overflow-hidden border border-slate-200/80 bg-white text-[#0b1f33] transition duration-300 hover:-translate-y-1 max-[520px]:flex-col ${
+        compact
+          ? "rounded-[14px] shadow-[0_8px_22px_rgba(11,31,51,0.05)] hover:shadow-[0_16px_34px_rgba(11,31,51,0.1)]"
+          : "rounded-[18px] shadow-[0_10px_28px_rgba(11,31,51,0.06)] hover:shadow-[0_20px_44px_rgba(11,31,51,0.12)]"
+      }`}
     >
       {/* Image tile, flush to the card's left edge */}
-      <div className="relative flex w-[42%] flex-none items-center justify-center overflow-hidden bg-[#f3f8fc] max-[520px]:aspect-[16/10] max-[520px]:w-full">
+      <div
+        className={`relative flex flex-none items-center justify-center overflow-hidden bg-[#f3f8fc] max-[520px]:aspect-[16/10] max-[520px]:w-full ${
+          compact ? "w-[39%]" : "w-[42%]"
+        }`}
+      >
         <Image
           src={productImage}
           alt={product.name}
@@ -78,9 +91,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           className={`transition-transform duration-500 group-hover:scale-105 ${
             shouldUseFallbackImage
               ? "object-cover object-right"
-              : "object-contain p-5"
+              : compact
+                ? "object-contain p-4"
+                : "object-contain p-5"
           }`}
-          sizes="(max-width: 520px) 92vw, (max-width: 1280px) 40vw, 260px"
+          sizes={
+            compact
+              ? "(max-width: 520px) 92vw, (max-width: 1280px) 32vw, 210px"
+              : "(max-width: 520px) 92vw, (max-width: 1280px) 40vw, 260px"
+          }
           onError={(e) => {
             e.currentTarget.src = HeroImage.src;
           }}
@@ -96,21 +115,37 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
       </div>
 
       {/* Details */}
-      <div className="flex min-w-0 flex-1 flex-col p-5">
-        <h3 className="line-clamp-2 text-[17px] font-bold leading-[1.25] tracking-[-0.01em] sm:text-[19px]">
+      <div className={`flex min-w-0 flex-1 flex-col ${compact ? "p-4" : "p-5"}`}>
+        <h3
+          className={`line-clamp-2 font-bold leading-[1.25] tracking-[-0.01em] ${
+            compact ? "text-[15px] sm:text-[16px]" : "text-[17px] sm:text-[19px]"
+          }`}
+        >
           {product.name}
         </h3>
 
-        <p className="mt-2 line-clamp-2 text-[13px] leading-[1.6] text-[#5d7488] sm:text-sm">
+        <p
+          className={`line-clamp-2 leading-[1.55] text-[#5d7488] ${
+            compact ? "mt-1.5 text-[12px] sm:text-[13px]" : "mt-2 text-[13px] sm:text-sm"
+          }`}
+        >
           {description}
         </p>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div
+          className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-2 ${
+            compact ? "mt-3" : "mt-4"
+          }`}
+        >
           <div className="flex items-baseline gap-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-[#91a1b2]">
               MRP
             </span>
-            <span className="text-[19px] font-extrabold leading-none text-[#1598df] sm:text-[21px]">
+            <span
+              className={`font-extrabold leading-none text-[#1598df] ${
+                compact ? "text-[18px] sm:text-[19px]" : "text-[19px] sm:text-[21px]"
+              }`}
+            >
               {lowestPrice !== null
                 ? `Rs. ${lowestPrice.toLocaleString("en-IN")}`
                 : "On enquiry"}
@@ -132,12 +167,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         </div>
 
         {specs.length > 0 && (
-          <p className="mt-3 line-clamp-1 text-[13px] font-semibold text-[#0b1f33] sm:text-sm">
+          <p
+            className={`mt-3 line-clamp-1 font-semibold text-[#0b1f33] ${
+              compact ? "text-[12px] sm:text-[13px]" : "text-[13px] sm:text-sm"
+            }`}
+          >
             {specs.join(" | ")}
           </p>
         )}
 
-        <span className="mt-auto block w-full rounded-lg border border-slate-200 px-4 py-2.5 text-center text-[13px] font-semibold text-[#0b1f33] transition-colors duration-300 group-hover:border-[#1598df] group-hover:bg-[#1598df] group-hover:text-white sm:text-sm">
+        <span
+          className={`mt-auto block w-full rounded-lg border border-slate-200 px-4 text-center font-semibold text-[#0b1f33] transition-colors duration-300 group-hover:border-[#1598df] group-hover:bg-[#1598df] group-hover:text-white ${
+            compact ? "py-2 text-[12px] sm:text-[13px]" : "py-2.5 text-[13px] sm:text-sm"
+          }`}
+        >
           View Details
         </span>
       </div>

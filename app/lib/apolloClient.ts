@@ -1,18 +1,20 @@
 // @ts-nocheck
 import { ApolloClient, InMemoryCache, HttpLink, from } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import { GRAPHQL_URL } from "./constants/config";
+import { API_BASE_URL, GRAPHQL_URL } from "./constants/config";
 import { isDemoMode } from "@/app/lib/demo";
 import { demoApolloLink } from "@/app/lib/demo/demoApolloLink";
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) console.error("GraphQL Error", graphQLErrors);
-  if (networkError) console.error("Network Error", networkError);
+  const log = process.env.NODE_ENV === "development" ? console.warn : console.error;
+  if (graphQLErrors) log("GraphQL Error", graphQLErrors);
+  if (networkError) log("Network Error", networkError);
 });
 export const initializeApollo = (initialState = null) => {
+  const isSameOriginApi = API_BASE_URL.startsWith("/");
   const httpLink = new HttpLink({
     uri: GRAPHQL_URL,
-    credentials: "include",
+    credentials: isSameOriginApi ? "include" : "same-origin",
   });
 
   const link = isDemoMode()

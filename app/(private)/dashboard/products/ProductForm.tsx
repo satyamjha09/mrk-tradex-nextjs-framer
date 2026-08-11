@@ -47,13 +47,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Product Name
+            Model Name <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <Controller
               name="name"
               control={control}
-              rules={{ required: "Name is required" }}
+              rules={{ required: "Model name is required" }}
               render={({ field }) => (
                 <input
                   {...field}
@@ -74,12 +74,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category
+            Category <span className="text-gray-400">(optional)</span>
           </label>
           <Controller
             name="categoryId"
             control={control}
-            rules={{ required: "Category is required" }}
             render={({ field }) => (
               <Dropdown
                 onChange={(value) => {
@@ -158,12 +157,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description <span className="text-red-500">*</span>
         </label>
         <Controller
           name="description"
           control={control}
+          rules={{ required: "Description is required" }}
           render={({ field }) => (
             <textarea
               {...field}
@@ -173,6 +173,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
             />
           )}
         />
+        {errors.description && (
+          <p className="text-red-500 text-xs mt-1">
+            {errors.description.message}
+          </p>
+        )}
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
@@ -192,12 +197,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
             ["productLine", "Product line", "Control Panel"],
             ["productSeries", "Product series", "Three Phase Panel"],
             ["tagline", "Tagline", "Three phase motor protection panel"],
-            ["hp", "HP / HP range", "5 HP"],
+            ["hp", "HP / HP range", "5 HP", true],
+            ["capacitor", "Capacitor", "As per model", true],
             ["boxType", "Box / body", "Powder coated metal enclosure"],
             ["meterType", "Meter", "Digital"],
             ["startCapacitor", "Start capacitor", "Optional"],
             ["runCapacitor", "Run capacitor", "Optional"],
-            ["capacitor", "Capacitor", "As per model"],
             ["maxLoad", "Maximum load", "15 A"],
             ["mcbRelayOlp", "MCB / Relay / OLP", "MCB + relay + OLP"],
             ["warranty", "Warranty", "12 months"],
@@ -209,14 +214,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
             ["featuredVideoUrl", "Featured video URL", "https://..."],
             ["seoTitle", "SEO title", "MRK Three Phase Control Panel"],
             ["seoDescription", "SEO description", "Three phase technical listing for dealer enquiries"],
-          ].map(([name, label, placeholder]) => (
+          ].map(([name, label, placeholder, required]) => (
             <div key={name}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {label}
+                {required && <span className="text-red-500"> *</span>}
               </label>
               <Controller
                 name={name as keyof ProductFormData}
                 control={control}
+                rules={
+                  required
+                    ? { required: `${label} is required` }
+                    : undefined
+                }
                 render={({ field }) => (
                   <input
                     value={(field.value as string | number | undefined) ?? ""}
@@ -227,6 +238,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 )}
               />
+              {errors[name as keyof ProductFormData] && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors[name as keyof ProductFormData]?.message as string}
+                </p>
+              )}
             </div>
           ))}
 

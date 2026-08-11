@@ -201,9 +201,10 @@ const ShopPage: React.FC = () => {
 
   return (
     <MainLayout isDemoCatalog={isDemoCatalog}>
-      <div className="min-h-screen">
-        <div className="sticky top-[60px] z-30 border-b border-slate-100 bg-white/95 backdrop-blur sm:top-[64px] lg:top-[68px]">
-          <div className="mx-auto w-full max-w-[1680px] px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+      <div className="min-h-screen bg-[#f6f9fc] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1640px] overflow-hidden rounded-xl border border-slate-100 bg-white shadow-[0_18px_50px_rgba(11,31,51,0.06)]">
+          <div className="border-b border-slate-100 bg-white">
+            <div className="px-5 py-5 sm:px-7 lg:px-9">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
@@ -232,11 +233,11 @@ const ShopPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[1680px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="px-5 py-5 sm:px-7 sm:py-6 lg:px-9">
           {/* Browse strip — panel type on the first row, and once one is
               picked, the lettered series inside it on the second. Mirrors the
               MRK product register; the taxonomy lives in data/catalog/series. */}
-          <div className="mb-4 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_10px_28px_rgba(11,31,51,0.05)] sm:p-4">
+          <div className="mb-4 rounded-xl border border-slate-100 bg-white p-3 shadow-[0_8px_22px_rgba(11,31,51,0.045)]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Category
@@ -244,7 +245,7 @@ const ShopPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleGroupSelect(undefined)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
                   !activeGroup
                     ? "border-[#1598df] bg-[#1598df] text-white"
                     : "border-slate-200 bg-white text-slate-600 hover:border-[#1598df] hover:text-[#1598df]"
@@ -257,7 +258,7 @@ const ShopPage: React.FC = () => {
                   key={group.key}
                   type="button"
                   onClick={() => handleGroupSelect(group.key)}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors ${
                     activeGroupKey === group.key
                       ? "border-[#1598df] bg-[#1598df] text-white"
                       : "border-slate-200 bg-white text-slate-600 hover:border-[#1598df] hover:text-[#1598df]"
@@ -277,7 +278,7 @@ const ShopPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleSeriesSelect(undefined)}
-                    className={`rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    className={`rounded-lg border px-3 py-1.5 text-[13px] font-semibold transition-colors ${
                       !activeSeries
                         ? "border-slate-900 bg-slate-900 text-white"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900"
@@ -290,7 +291,7 @@ const ShopPage: React.FC = () => {
                       key={series.code}
                       type="button"
                       onClick={() => handleSeriesSelect(series.code)}
-                      className={`inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors ${
+                      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[13px] font-semibold transition-colors ${
                         activeSeriesCode === series.code
                           ? "border-slate-900 bg-slate-900 text-white"
                           : "border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900"
@@ -324,7 +325,7 @@ const ShopPage: React.FC = () => {
 
           {/* Search / price / highlight bar. Replaces the left sidebar; the
               full filter set still opens in the drawer. */}
-          <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_10px_28px_rgba(11,31,51,0.05)] sm:p-4">
+          <div className="mb-5 rounded-xl border border-slate-100 bg-white p-3 shadow-[0_8px_22px_rgba(11,31,51,0.045)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <div className="relative min-w-0 flex-1">
                 <Search
@@ -344,7 +345,7 @@ const ShopPage: React.FC = () => {
                       updateFilters({ ...filters, search: searchDraft });
                   }}
                   placeholder="Search products, models, HP..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#1598df] focus:bg-white"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50/60 py-2.5 pl-11 pr-4 text-[13px] text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#1598df] focus:bg-white"
                 />
               </div>
 
@@ -358,7 +359,7 @@ const ShopPage: React.FC = () => {
                     maxPrice: band.max,
                   });
                 }}
-                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[180px]"
+                className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[160px]"
               >
                 {PRICE_BANDS.map((band, bandIndex) => (
                   <option key={band.label} value={bandIndex}>
@@ -382,7 +383,7 @@ const ShopPage: React.FC = () => {
                     ...(picked?.key ? { [picked.key]: true } : {}),
                   });
                 }}
-                className="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[180px]"
+                className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-slate-700 outline-none transition-colors focus:border-[#1598df] lg:w-[160px]"
               >
                 {HIGHLIGHTS.map((item) => (
                   <option key={item.label} value={item.label}>
@@ -393,7 +394,7 @@ const ShopPage: React.FC = () => {
 
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1598df]/40 px-5 py-3 text-sm font-semibold text-[#1598df] transition-colors hover:bg-[#1598df] hover:text-white"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-[#1598df]/40 px-4 py-2.5 text-[13px] font-semibold text-[#1598df] transition-colors hover:bg-[#1598df] hover:text-white"
               >
                 <SlidersHorizontal size={18} />
                 Filters
@@ -447,7 +448,7 @@ const ShopPage: React.FC = () => {
               }}
             >
               {loading && !displayedProducts.length && !groupCategoryMissing && (
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                   {[...Array(8)].map((_, index) => (
                     <div
                       key={index}
@@ -507,7 +508,7 @@ const ShopPage: React.FC = () => {
 
               {!noProductsFound && !loading && (
                 <>
-                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-2 sm:gap-6">
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                     {displayedProducts.map(
                       (product: Product, index: number) => (
                         <motion.div
@@ -516,7 +517,7 @@ const ShopPage: React.FC = () => {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
-                          <ProductCard product={product} index={index} />
+                          <ProductCard product={product} index={index} compact />
                         </motion.div>
                       ),
                     )}
@@ -545,6 +546,7 @@ const ShopPage: React.FC = () => {
                 </>
               )}
             </motion.div>
+          </div>
           </div>
         </div>
       </div>

@@ -140,7 +140,7 @@ export default function FaqAccordion() {
         <div className="border-t border-[#d8dade]">
           {FAQS.map((item, index) => {
             const isOpen = openIndex === index;
-
+             
             return (
               <div key={item.no} className="border-b border-[#d8dade]">
                 <h3>

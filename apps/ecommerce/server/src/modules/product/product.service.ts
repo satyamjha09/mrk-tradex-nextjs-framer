@@ -211,8 +211,11 @@ export class ProductService {
     if (!productData.description?.trim()) {
       throw new AppError(400, "Product description is required");
     }
-    if (!productData.categoryId?.trim()) {
-      throw new AppError(400, "Category is required");
+    if (!productData.hp?.trim()) {
+      throw new AppError(400, "HP is required");
+    }
+    if (!productData.capacitor?.trim()) {
+      throw new AppError(400, "Capacitor is required");
     }
     if (!variants || variants.length === 0) {
       throw new AppError(400, "At least one variant is required");
@@ -262,6 +265,12 @@ export class ProductService {
         throw new AppError(
           400,
           `Variant at index ${index} can have a maximum of ${MAX_VARIANT_IMAGES} images`,
+        );
+      }
+      if ((variant.images || []).length === 0) {
+        throw new AppError(
+          400,
+          `Variant at index ${index} must have at least one product image`,
         );
       }
     });
@@ -343,12 +352,14 @@ export class ProductService {
     }
 
     // Validate unique attribute combinations
-    const comboKeys = sanitizedVariants.map((variant) =>
-      variant.attributes
-        .map((attr) => `${attr.attributeId}:${attr.valueId}`)
-        .sort()
-        .join("|"),
-    );
+    const comboKeys = sanitizedVariants
+      .map((variant) =>
+        variant.attributes
+          .map((attr) => `${attr.attributeId}:${attr.valueId}`)
+          .sort()
+          .join("|"),
+      )
+      .filter(Boolean);
     if (new Set(comboKeys).size !== sanitizedVariants.length) {
       throw new AppError(400, "Duplicate attribute combinations detected");
     }
@@ -538,10 +549,16 @@ export class ProductService {
             `Variant at index ${index} must have a non-negative lowStockThreshold`,
           );
         }
-        if ((variant.images || []).length > MAX_VARIANT_IMAGES) {
+      if ((variant.images || []).length > MAX_VARIANT_IMAGES) {
           throw new AppError(
             400,
             `Variant at index ${index} can have a maximum of ${MAX_VARIANT_IMAGES} images`,
+          );
+        }
+        if ((variant.images || []).length === 0) {
+          throw new AppError(
+            400,
+            `Variant at index ${index} must have at least one product image`,
           );
         }
       });
@@ -579,12 +596,14 @@ export class ProductService {
         throw new AppError(400, "Duplicate SKUs detected");
       }
 
-      const comboKeys = sanitizedVariants.map((variant) =>
-        variant.attributes
-          .map((attr) => `${attr.attributeId}:${attr.valueId}`)
-          .sort()
-          .join("|"),
-      );
+      const comboKeys = sanitizedVariants
+        .map((variant) =>
+          variant.attributes
+            .map((attr) => `${attr.attributeId}:${attr.valueId}`)
+            .sort()
+            .join("|"),
+        )
+        .filter(Boolean);
       if (new Set(comboKeys).size !== sanitizedVariants.length) {
         throw new AppError(400, "Duplicate attribute combinations detected");
       }

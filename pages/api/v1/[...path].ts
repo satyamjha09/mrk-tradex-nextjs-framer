@@ -54,11 +54,98 @@ function stripNextCatchAllQuery(req: NextApiRequest) {
   }
 }
 
+function getProxyUrl(req: NextApiRequest, targetBaseUrl: string) {
+  const pathParam = req.query.path;
+  const segments = Array.isArray(pathParam)
+    ? pathParam
+    : pathParam
+      ? [pathParam]
+      : [];
+  const base = targetBaseUrl.endsWith("/") ? targetBaseUrl : `${targetBaseUrl}/`;
+  const url = new URL(segments.map(encodeURIComponent).join("/"), base);
+
+  Object.entries(req.query).forEach(([key, value]) => {
+    if (key === "path") return;
+    if (Array.isArray(value)) {
+      value.forEach((entry) => url.searchParams.append(key, entry));
+      return;
+    }
+    if (typeof value === "string") {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  return url;
+}
+
+async function readRawBody(req: NextApiRequest) {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}
+
+async function proxyToApi(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  targetBaseUrl: string,
+) {
+  const upstreamUrl = getProxyUrl(req, targetBaseUrl);
+  const headers = new Headers();
+
+  Object.entries(req.headers).forEach(([key, value]) => {
+    if (
+      ["host", "connection", "content-length", "accept-encoding"].includes(
+        key.toLowerCase(),
+      )
+    ) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((entry) => headers.append(key, entry));
+      return;
+    }
+    if (value) headers.set(key, value);
+  });
+
+  const method = req.method || "GET";
+  const body =
+    method === "GET" || method === "HEAD" ? undefined : await readRawBody(req);
+
+  const upstreamResponse = await fetch(upstreamUrl, {
+    method,
+    headers,
+    body,
+    redirect: "manual",
+  });
+
+  res.status(upstreamResponse.status);
+  upstreamResponse.headers.forEach((value, key) => {
+    if (
+      ["content-encoding", "content-length", "transfer-encoding"].includes(
+        key.toLowerCase(),
+      )
+    ) {
+      return;
+    }
+    res.setHeader(key, value);
+  });
+
+  const responseBody = Buffer.from(await upstreamResponse.arrayBuffer());
+  res.send(responseBody);
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   try {
+    const proxyTarget = process.env.LOCAL_API_PROXY_TARGET;
+    if (proxyTarget) {
+      return proxyToApi(req, res, proxyTarget);
+    }
+
     const app = await getExpressApp();
     stripNextCatchAllQuery(req);
     return app(req, res);

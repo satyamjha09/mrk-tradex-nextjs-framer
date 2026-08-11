@@ -107,15 +107,14 @@ const VariantForm: React.FC<VariantFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                SKU
+                SKU <span className="text-gray-400">(optional)</span>
               </label>
               <Controller
                 name={`variants.${index}.sku`}
                 control={control}
                 rules={{
-                  required: "SKU is required",
                   pattern: {
-                    value: /^[a-zA-Z0-9-]+$/,
+                    value: /^[a-zA-Z0-9-]*$/,
                     message: "SKU must be alphanumeric with dashes",
                   },
                 }}
@@ -124,7 +123,7 @@ const VariantForm: React.FC<VariantFormProps> = ({
                     {...field}
                     type="text"
                     className={inputStyles}
-                    placeholder="MRK-TP-CP-5HP"
+                    placeholder="Auto-generated if blank"
                   />
                 )}
               />
@@ -137,7 +136,7 @@ const VariantForm: React.FC<VariantFormProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                MRP / Price
+                MRP <span className="text-red-500">*</span>
               </label>
               <Controller
                 name={`variants.${index}.price`}
@@ -165,13 +164,12 @@ const VariantForm: React.FC<VariantFormProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stock
+                Stock <span className="text-gray-400">(optional)</span>
               </label>
               <Controller
                 name={`variants.${index}.stock`}
                 control={control}
                 rules={{
-                  required: "Stock is required",
                   min: { value: 0, message: "Stock cannot be negative" },
                 }}
                 render={({ field }) => (
@@ -544,6 +542,12 @@ const VariantForm: React.FC<VariantFormProps> = ({
                 label="Variant Images"
                 name={`variants.${index}.images`}
                 maxFiles={4}
+                rules={{
+                  validate: (images: unknown[]) =>
+                    Array.isArray(images) && images.length > 0
+                      ? true
+                      : "At least one product image is required",
+                }}
               />
               {errors.variants?.[index]?.images && (
                 <p className="text-red-500 text-xs mt-1">
