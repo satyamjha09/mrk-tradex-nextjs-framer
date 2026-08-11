@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Download, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { SITE_DOWNLOADS } from "@/app/lib/constants/downloads";
 
 const links = [
   { href: "/", label: "Home" },
@@ -14,26 +15,9 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-/**
- * Served straight out of public/, so the paths are the filenames — encoded
- * because both carry spaces. `fileName` is what the browser saves it as, which
- * is otherwise the raw basename ("MRK Phamplet.pdf" reads as a typo to whoever
- * receives it). Sizes are shown because these are large on a mobile connection.
- */
-const downloads = [
-  {
-    href: "/MRK%20PRICE%20LIST%202026.pdf",
-    fileName: "MRK Price List 2026.pdf",
-    label: "MRK Price List",
-    size: "3.4 MB PDF",
-  },
-  {
-    href: "/MRK%20Phamplet.pdf",
-    fileName: "MRK Catalog.pdf",
-    label: "MRK Catalog",
-    size: "11.3 MB PDF",
-  },
-];
+// Shared with the footer so both offer the same files. Sizes are shown because
+// these are large on a mobile connection.
+const downloads = SITE_DOWNLOADS;
 
 export default function SiteNavbar() {
   const pathname = usePathname();

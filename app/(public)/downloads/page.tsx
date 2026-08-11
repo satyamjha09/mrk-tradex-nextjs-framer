@@ -16,6 +16,7 @@ import {
   Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { SITE_DOWNLOADS } from "@/app/lib/constants/downloads";
 
 const DOWNLOAD_TYPE_LABELS: Record<MrkDownloadAsset["type"], string> = {
   CATALOG: "Catalogue",
@@ -27,13 +28,31 @@ const DOWNLOAD_TYPE_LABELS: Record<MrkDownloadAsset["type"], string> = {
   OTHER: "Other",
 };
 
+/**
+ * The two PDFs that ship in public/ — the same files the navbar and footer
+ * offer. They are prepended to whatever the API returns so this page is never
+ * empty: `downloadAssets` stays [] until someone publishes assets in the admin,
+ * and the price list and catalogue should not wait on that.
+ */
+const STATIC_ASSETS: MrkDownloadAsset[] = SITE_DOWNLOADS.map((item) => ({
+  id: `static-${item.fileName}`,
+  title: item.label,
+  description: `${item.description} (${item.size})`,
+  type: item.type,
+  language: "EN",
+  fileUrl: item.href,
+  product: null,
+  variant: null,
+  version: null,
+}));
+
 const DownloadsPage = () => {
   const { data, isLoading, isError } = useGetPublicDownloadAssetsQuery();
   const { urls } = useMrkSiteSettings();
   const [query, setQuery] = useState("");
   const [type, setType] = useState<MrkDownloadAsset["type"] | "ALL">("ALL");
 
-  const assets = data?.downloadAssets || [];
+  const assets = [...STATIC_ASSETS, ...(data?.downloadAssets || [])];
   const filteredAssets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -85,7 +104,7 @@ const DownloadsPage = () => {
               href={urls.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-sm bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+              className="inline-flex items-center gap-2 rounded-sm bg-aqua px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-marine"
             >
               <MessageCircle size={17} />
               WhatsApp
@@ -202,7 +221,7 @@ const DownloadsPage = () => {
                 href={asset.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-gray-950 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-aqua px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-marine"
               >
                 <Download size={17} />
                 Download
