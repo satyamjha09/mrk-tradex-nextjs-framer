@@ -104,16 +104,17 @@ export default function SiteNavbar() {
         </div>
 
         <div className="hidden min-w-0 items-center justify-end gap-3 lg:flex xl:min-w-[218px] xl:gap-3.5">
-          <button
+          {/* Language toggle parked until the Hindi copy is wired up. */}
+          {/* <button
             type="button"
             className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-bold text-[#0b1f33] shadow-sm transition-colors hover:border-[#1e9be0] hover:text-[#1e9be0] xl:h-10 xl:w-10 xl:text-base"
             aria-label="Switch language"
           >
             हिं
-          </button>
+          </button> */}
           <Link
             href="/dealer"
-            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full bg-[#0b1f33] px-5 text-sm font-extrabold text-white shadow-[0_10px_28px_rgba(11,31,51,0.18)] transition-colors hover:bg-[#12315e] xl:h-10 xl:px-6 xl:text-base"
+            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full bg-[#1e9be0] px-5 text-sm font-extrabold text-white shadow-[0_10px_28px_rgba(30,155,224,0.28)] transition-colors hover:bg-[#1583bd] xl:h-10 xl:px-6 xl:text-base"
           >
             Partner with us
           </Link>
@@ -175,16 +176,17 @@ export default function SiteNavbar() {
             </div>
 
             <div className="mt-2 flex items-center gap-3">
-              <button
+              {/* Language toggle parked until the Hindi copy is wired up. */}
+              {/* <button
                 type="button"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base font-bold text-[#0b1f33]"
                 aria-label="Switch language"
               >
                 हिं
-              </button>
+              </button> */}
               <Link
                 href="/dealer"
-                className="inline-flex h-10 flex-1 items-center justify-center rounded-full bg-[#0b1f33] px-5 text-sm font-extrabold text-white"
+                className="inline-flex h-10 flex-1 items-center justify-center rounded-full bg-[#1e9be0] px-5 text-sm font-extrabold text-white"
                 onClick={() => setOpen(false)}
               >
                 Partner with us

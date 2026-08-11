@@ -1015,14 +1015,16 @@ const tw: Record<string, string> = {
   // Matches the "THE RANGE" heading exactly — same mono face, clamp, weight,
   // leading, tracking and blue. Used by "The MRK standard" and "TESTIMONIALS".
   eyebrow:
-    "mb-4 inline-block font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.05] uppercase tracking-[0.05em] text-[#1598df]",
+    "mb-3 inline-block font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.05] uppercase tracking-[0.05em] text-[#1598df]",
   // Matches the "For every pump there is one MRK starter" heading: regular
   // weight, positive tracking, the same clamp and the same height-based
   // step-downs. The source scopes its clamp to `sm:` and so collapses to the
   // inherited 1rem on phones — deliberately not copied, the clamp here is
-  // unprefixed so the heading still scales below 640px.
+  // unprefixed so the heading still scales below 640px. The body's 1.65 leading
+  // is also dropped: at 3.6rem it left ~1.2rem of dead half-leading above and
+  // below the single line, which read as a gap to the eyebrow and the deck.
   title:
-    "font-sans text-[clamp(1.75rem,3.4vw,3.6rem)] font-normal normal-case leading-[1.65] tracking-[0.015em] text-ink [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)] [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]",
+    "font-sans text-[clamp(1.75rem,3.4vw,3.6rem)] font-normal normal-case leading-[1.15] tracking-[0.015em] text-ink [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)] [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]",
   "section-head": "mb-[clamp(2.4rem,5vw,3.6rem)] max-w-[60ch]",
 
 
