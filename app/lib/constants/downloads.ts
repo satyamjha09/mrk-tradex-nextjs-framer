@@ -24,11 +24,11 @@ export type SiteDownload = {
 
 export const SITE_DOWNLOADS: SiteDownload[] = [
   {
-    href: "/MRK%20PRICE%20LIST%202026.pdf",
-    fileName: "MRK Price List 2026.pdf",
+    href: "/USER%20MRK%20PRICE%20LIST.pdf",
+    fileName: "USER MRK PRICE LIST.pdf",
     label: "MRK Price List",
     hi: "मूल्य सूची",
-    size: "3.4 MB PDF",
+    size: "5.4 MB PDF",
     type: "PRICE_LIST",
     description:
       "Current MRK price register covering every starter panel series.",
