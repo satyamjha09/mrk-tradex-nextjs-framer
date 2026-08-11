@@ -6,12 +6,10 @@ import BreadCrumb from "@/app/components/feedback/BreadCrumb";
 import { useParams } from "next/navigation";
 import ProductImageGallery from "../ProductImageGallery";
 import ProductInfo from "../ProductInfo";
-import ProductReviews from "../ProductReviews";
 import { generateProductPlaceholder } from "@/app/utils/placeholderImage";
 import ProductDetailSkeletonLoader from "@/app/components/feedback/ProductDetailSkeletonLoader";
 import { Product } from "@/app/types/productTypes";
 import { useProductBySlug } from "@/app/hooks/catalog/useProductBySlug";
-import { mrkFeatures } from "@/app/lib/config/features";
 
 const ProductDetailsPage = () => {
   const { slug } = useParams();
@@ -147,14 +145,6 @@ const ProductDetailsPage = () => {
             </div>
           </div>
         </div>
-
-        {mrkFeatures.reviewsEnabled && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-              <ProductReviews reviews={product.reviews} productId={product.id} />
-            </div>
-          </div>
-        )}
       </div>
     </MainLayout>
   );

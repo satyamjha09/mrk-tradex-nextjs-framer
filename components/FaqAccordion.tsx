@@ -126,7 +126,7 @@ export default function FaqAccordion() {
     <section id="faq" className="bg-[#f4f5f6] py-[clamp(4rem,8vw,7rem)]">
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <span className="mb-10 inline-block font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold uppercase leading-[1.05] tracking-[0.05em] text-[#1598df]">
-          Common questions
+          FAQ
         </span>
 
         <div className="border-t border-[#d8dade]">

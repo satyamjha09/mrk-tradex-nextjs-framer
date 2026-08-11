@@ -35,8 +35,3 @@ Open `http://localhost:3000`.
 
 Replace the placeholder testimonial copy, GST number, catalog/price-list links, WhatsApp URL, YouTube URL, and any `#` links before launch.
 
-
-
-
-
-function PanelFuntion() 

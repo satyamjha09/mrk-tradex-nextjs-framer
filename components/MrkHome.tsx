@@ -861,7 +861,7 @@ const rangeProducts = [
     title: "III-Phase Starter Panels",
     description:
       "A complete range of III-phase starter panels in DOL and Star Delta models, suitable for motors up to 40 HP and designed for agriculture, industrial applications, and high-rise societies.",
-    image: "/images/three-phase-panel.png",
+    image: "/images/MRX-HD_F04_(3).png",
     alt: "MRK three-phase control panel",
     href: shopUrl("three-phase-panel"),
     dark: true,
@@ -874,7 +874,7 @@ const rangeProducts = [
     // This existing image will remain visible.
     // Change it to "/images/wlc-smart-plug.png"
     // only after adding that file inside public/images.
-    image: "/images/mrg-dpt-2-auto-timer.png",
+    image: "/images/wlc.png",
 
     alt: "MRK WLC smart plug",
     href: shopUrl("wlc-smart-plug"),
