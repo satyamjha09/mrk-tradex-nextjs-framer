@@ -4,9 +4,14 @@ import ClientProviders from "./ClientProviders";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MRK Tradex · Protection, engineered for every pump",
+  title: "MRK Tradex Pvt Ltd | DOL Starter",
   description:
-    "MRK Tradex pump starters, control panels, smart plugs, cables and accessories.",
+    "I Phase & III phase Submersible Pump Starters",
+  icons: {
+    icon: "/images/mrk-logo.png",
+    shortcut: "/images/mrk-logo.png",
+    apple: "/images/mrk-logo.png",
+  },
 };
 
 const themeVariables = {
