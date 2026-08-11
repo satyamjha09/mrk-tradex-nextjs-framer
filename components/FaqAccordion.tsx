@@ -6,7 +6,6 @@ import { useState, type ReactNode } from "react";
 type FaqItem = {
   no: string;
   question: string;
-  points: string[];
   // ReactNode rather than string: several answers carry emphasis or run to a
   // second paragraph.
   answer: ReactNode;
@@ -16,7 +15,6 @@ const FAQS: FaqItem[] = [
   {
     no: "01",
     question: "What are the main products of MRK?",
-    points: ["Starter panels", "WLC Smart Plugs", "Cables"],
     answer: (
       <>
         MRK manufactures{" "}
@@ -30,7 +28,6 @@ const FAQS: FaqItem[] = [
   {
     no: "02",
     question: "What is a WLC device?",
-    points: ["Water Level Controller", "Overflow cut-off"],
     answer: (
       <>
         A{" "}
@@ -45,13 +42,11 @@ const FAQS: FaqItem[] = [
   {
     no: "03",
     question: "Is any other company providing the same services?",
-    points: ["Market position"],
     answer: "No.",
   },
   {
     no: "04",
     question: "What is the difference between a Franchisee and a Distributor?",
-    points: ["Distributor", "Franchisee", "Service scope"],
     answer: (
       <>
         <span className="block">
@@ -74,7 +69,6 @@ const FAQS: FaqItem[] = [
   {
     no: "05",
     question: "What is the process of becoming a Dealer or Franchisee?",
-    points: ["Scan the QR code", "10 working days", "Registration"],
     answer: (
       <>
         Scan the{" "}
@@ -90,7 +84,6 @@ const FAQS: FaqItem[] = [
   {
     no: "06",
     question: "What warranty is offered on the WLC Smart Plug?",
-    points: ["Free replacement", "7 days from sale", "Manufacturing defect"],
     answer: (
       <>
         MRK provides a{" "}
@@ -104,7 +97,6 @@ const FAQS: FaqItem[] = [
   {
     no: "07",
     question: "What should I do if the device stops working after a few days?",
-    points: ["Scan the QR code", "YouTube walkthrough", "Live video support"],
     answer: (
       <>
         <span className="block">
@@ -133,7 +125,7 @@ export default function FaqAccordion() {
   return (
     <section id="faq" className="bg-[#f4f5f6] py-[clamp(4rem,8vw,7rem)]">
       <div className="mx-auto w-full max-w-[1200px] px-6">
-        <span className="mb-10 inline-block font-mono text-[0.7rem] uppercase tracking-[0.24em] text-marine">
+        <span className="mb-10 inline-block font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold uppercase leading-[1.05] tracking-[0.05em] text-[#1598df]">
           Common questions
         </span>
 
@@ -155,7 +147,7 @@ export default function FaqAccordion() {
                       {item.no}
                     </span>
 
-                    <span className="flex-1 text-[clamp(1.35rem,3.4vw,2.5rem)] font-medium uppercase leading-[1.1] tracking-[-0.015em] text-ink transition-colors group-hover:text-aqua">
+                    <span className="flex-1 text-[clamp(1.05rem,2.1vw,1.55rem)] font-medium uppercase leading-[1.2] tracking-[-0.015em] text-ink transition-colors group-hover:text-aqua">
                       {item.question}
                     </span>
 
@@ -184,16 +176,11 @@ export default function FaqAccordion() {
                       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="grid gap-4 pb-[clamp(1.4rem,2.6vw,2rem)] pl-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)] sm:gap-10 sm:pl-[3.25rem]">
-                        <ul className="flex flex-col gap-2">
-                          {item.points.map((point) => (
-                            <li key={point} className="text-[15px] text-ink">
-                              {point}
-                            </li>
-                          ))}
-                        </ul>
-
-                        <p className="max-w-[62ch] text-[15px] leading-[1.65] text-muted">
+                      {/* Answer only — the keyword list that used to sit in a
+                          left column repeated the answer's own wording, so the
+                          panel is a single measure now. */}
+                      <div className="pb-[clamp(1.4rem,2.6vw,2rem)] pl-0 sm:pl-[3.25rem]">
+                        <p className="max-w-[75ch] text-[15px] leading-[1.65] text-muted">
                           {item.answer}
                         </p>
                       </div>

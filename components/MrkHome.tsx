@@ -667,7 +667,7 @@ function DealerCtaSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="block font-mono text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-[#5fb8ef]"
+            className="block font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold uppercase leading-[1.05] tracking-[0.05em] text-[#1598df]"
             data-hi={"डीलर बनें"}
           >
             Become a dealer
@@ -1009,8 +1009,17 @@ const tw: Record<string, string> = {
   container: "mx-auto w-full max-w-[1200px] px-6",
   section: "py-[clamp(4.5rem,9vw,8rem)]",
   reveal: "translate-y-[26px] opacity-0 [&.in]:translate-y-0 [&.in]:opacity-100 motion-reduce:translate-y-0 motion-reduce:opacity-100",
-  eyebrow: "mb-4 inline-block font-mono text-[0.72rem] uppercase tracking-[0.24em] text-aqua",
-  title: "font-sans text-[clamp(2rem,4.6vw,3.4rem)] font-bold leading-[1.04] tracking-[-0.01em] text-ink",
+  // Matches the "THE RANGE" heading exactly — same mono face, clamp, weight,
+  // leading, tracking and blue. Used by "The MRK standard" and "TESTIMONIALS".
+  eyebrow:
+    "mb-4 inline-block font-mono text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.05] uppercase tracking-[0.05em] text-[#1598df]",
+  // Matches the "For every pump there is one MRK starter" heading: regular
+  // weight, positive tracking, the same clamp and the same height-based
+  // step-downs. The source scopes its clamp to `sm:` and so collapses to the
+  // inherited 1rem on phones — deliberately not copied, the clamp here is
+  // unprefixed so the heading still scales below 640px.
+  title:
+    "font-sans text-[clamp(1.75rem,3.4vw,3.6rem)] font-normal normal-case leading-[1.65] tracking-[0.015em] text-ink [@media(max-height:760px)]:text-[clamp(1.6rem,3vw,2.9rem)] [@media(max-height:650px)]:text-[clamp(1.45rem,2.6vw,2.4rem)]",
   "section-head": "mb-[clamp(2.4rem,5vw,3.6rem)] max-w-[60ch]",
 
 
@@ -1112,7 +1121,10 @@ const tw: Record<string, string> = {
   sdots: "col-span-full flex items-center justify-center gap-2",
   sdot: "h-2 w-2 rounded-full bg-line transition-all duration-300 [&.on]:w-5 [&.on]:bg-aqua",
 
-  tsec: "[&_.section-head]:mb-0 [&_.section-head]:max-w-none [&_h2.title]:uppercase [&_h2.title]:leading-[.95] [&_h2.title]:tracking-[-.02em]",
+  // The h2.title overrides that used to live here (uppercase, leading .95,
+  // tracking -.02em) are gone: they outranked tw.title and would have kept the
+  // testimonials heading out of step with the other two.
+  tsec: "[&_.section-head]:mb-0 [&_.section-head]:max-w-none",
   thead: "mb-10 flex items-end justify-between gap-8 max-[1000px]:mb-[2.4rem] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-6",
   // Three cards fill the row exactly; the rest of the reviews stay one
   // horizontal scroll away rather than stacking into a second and third row.
@@ -1988,7 +2000,9 @@ export default function MrkHome() {
             className="pointer-events-none absolute -right-48 bottom-0 h-[560px] w-[560px] rounded-full bg-[#cfe7fb]/60 blur-[150px]"
           />
 
-          <div className={cn("relative z-10 mx-auto w-full max-w-[1440px] px-6")}>
+          {/* Shares tw.container with the other content sections so the left
+              and right gutters line up; this used to be a one-off 1440px. */}
+          <div className={cn("relative z-10", tw['container'])}>
           <div className={cn('section-head', tw['section-head'])}>
             <span className={cn('eyebrow reveal', tw['eyebrow'], tw['reveal'])} data-hi={"MRK मानक"}>The MRK standard</span>
             <h2 className={cn('title reveal d1', tw['title'], tw['reveal'])}>Why India chooses MRK.</h2>

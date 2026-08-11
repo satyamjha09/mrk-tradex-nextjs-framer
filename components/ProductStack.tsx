@@ -398,7 +398,7 @@ export default function ProductStackSection() {
                   tracking-[0.015em]
                 "
               >
-                For every pump there is one MRK starter
+                What Customers Choose Most
               </h2>
             </motion.div>
 
