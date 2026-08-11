@@ -26,7 +26,6 @@ const productLinks = [
 const companyLinks = [
   { label: "Why MRK", hi: "MRK क्यों", href: "/#why" },
   { label: "Become a Dealer", hi: "डीलर बनें", href: "/dealer" },
-  { label: "Find a Dealer", hi: "डीलर खोजें", href: "/find-dealer" },
 ];
 
 const SiteFooter = () => {
@@ -126,11 +125,6 @@ const SiteFooter = () => {
               <li>
                 <Link href="/contact" data-hi="संपर्क">
                   Contact us
-                </Link>
-              </li>
-              <li>
-                <Link href="/find-dealer" data-hi="डीलर खोजें">
-                  Find a dealer
                 </Link>
               </li>
               <li>

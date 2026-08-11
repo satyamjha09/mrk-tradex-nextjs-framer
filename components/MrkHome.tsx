@@ -1955,32 +1955,6 @@ export default function MrkHome() {
               </div>
             </div>
 
-            {/* Mobile explore-all link */}
-            <a
-              href={SHOP_URL}
-              className="
-                mt-3 inline-flex shrink-0 items-center justify-center gap-2
-                text-sm font-semibold text-[#1598df]
-                sm:hidden
-              "
-            >
-              Explore all products
-
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-4 w-4"
-                fill="none"
-              >
-                <path
-                  d="M5 12h14M13 6l6 6-6 6"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
           </div>
         </section>
         <ProductStackSection />
