@@ -24,37 +24,62 @@ const productInclude = {
   },
 } as const;
 
-const buildVariantCreateData = (variant: any) => {
-  return {
+const productPhaseValues = new Set([
+  "SINGLE_PHASE",
+  "THREE_PHASE",
+  "NOT_APPLICABLE",
+]);
+
+const meterDisplayTypeValues = new Set(["ANALOG", "DIGITAL", "NOT_APPLICABLE"]);
+
+const cleanOptionalString = (value: unknown) => {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
+};
+
+const cleanOptionalNumber = (value: unknown) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const cleanOptionalInteger = (value: unknown) => {
+  const parsed = cleanOptionalNumber(value);
+  return parsed === undefined ? undefined : Math.trunc(parsed);
+};
+
+const cleanOptionalBoolean = (value: unknown) => {
+  if (value === true || value === "true" || value === "1") return true;
+  if (value === false || value === "false" || value === "0") return false;
+  return undefined;
+};
+
+const cleanOptionalStringArray = (value: unknown) => {
+  if (!Array.isArray(value)) return undefined;
+  const values = value.map(String).map((item) => item.trim()).filter(Boolean);
+  return values.length ? values : undefined;
+};
+
+const cleanOptionalJson = (value: unknown) => {
+  if (value === undefined || value === null || value === "") return undefined;
+  return value;
+};
+
+const cleanEnum = (value: unknown, allowedValues: Set<string>) => {
+  if (typeof value !== "string") return undefined;
+  return allowedValues.has(value) ? value : undefined;
+};
+
+const buildVariantCreateData = (variant: any): any => {
+  const data: Record<string, any> = {
     sku: variant.sku,
     price: variant.price,
     stock: variant.stock,
-    priceVisible: variant.priceVisible,
-    stockVisible: variant.stockVisible,
-    lowStockThreshold: variant.lowStockThreshold || 10,
-    barcode: variant.barcode,
-    warehouseLocation: variant.warehouseLocation,
-    hp: variant.hp,
-    hpMin: variant.hpMin,
-    hpMax: variant.hpMax,
-    phase: variant.phase,
-    variantType: variant.variantType,
-    maxLoadAmps: variant.maxLoadAmps,
-    boxType: variant.boxType,
-    bodyType: variant.bodyType,
-    meterType: variant.meterType,
-    meterDisplayType: variant.meterDisplayType,
-    meterSize: variant.meterSize,
-    startCapacitor: variant.startCapacitor,
-    runCapacitor: variant.runCapacitor,
-    mcbRelayOlp: variant.mcbRelayOlp,
-    warranty: variant.warranty,
-    protectionFeatures: variant.protectionFeatures,
-    installationInfo: variant.installationInfo,
-    manualUrl: variant.manualUrl,
-    videoUrl: variant.videoUrl,
-    isActive: variant.isActive,
-    sortOrder: variant.sortOrder,
+    priceVisible: cleanOptionalBoolean(variant.priceVisible) ?? true,
+    stockVisible: cleanOptionalBoolean(variant.stockVisible) ?? false,
+    lowStockThreshold: cleanOptionalInteger(variant.lowStockThreshold) ?? 10,
+    isActive: cleanOptionalBoolean(variant.isActive) ?? true,
     images: variant.images || [],
     attributes: {
       create: (variant.attributes || []).map((attr: any) => ({
@@ -63,6 +88,54 @@ const buildVariantCreateData = (variant: any) => {
       })),
     },
   };
+
+  const textFields = [
+    "barcode",
+    "warehouseLocation",
+    "hp",
+    "variantType",
+    "boxType",
+    "bodyType",
+    "meterType",
+    "meterSize",
+    "startCapacitor",
+    "runCapacitor",
+    "mcbRelayOlp",
+    "warranty",
+    "manualUrl",
+    "videoUrl",
+  ];
+  textFields.forEach((field) => {
+    const value = cleanOptionalString(variant[field]);
+    if (value !== undefined) data[field] = value;
+  });
+
+  ["hpMin", "hpMax", "maxLoadAmps"].forEach((field) => {
+    const value = cleanOptionalNumber(variant[field]);
+    if (value !== undefined) data[field] = value;
+  });
+
+  const sortOrder = cleanOptionalInteger(variant.sortOrder);
+  if (sortOrder !== undefined) data.sortOrder = sortOrder;
+
+  const phase = cleanEnum(variant.phase, productPhaseValues);
+  if (phase) data.phase = phase;
+
+  const meterDisplayType = cleanEnum(
+    variant.meterDisplayType,
+    meterDisplayTypeValues,
+  );
+  if (meterDisplayType) data.meterDisplayType = meterDisplayType;
+
+  const protectionFeatures = cleanOptionalStringArray(
+    variant.protectionFeatures,
+  );
+  if (protectionFeatures) data.protectionFeatures = protectionFeatures;
+
+  const installationInfo = cleanOptionalJson(variant.installationInfo);
+  if (installationInfo !== undefined) data.installationInfo = installationInfo;
+
+  return data;
 };
 
 const normalizeVariantAttributes = (
