@@ -13,7 +13,7 @@ import { isDemoCatalogForced, shouldUseDemoCatalog } from "@/app/lib/catalog/dem
 import { getDemoCatalogProducts } from "@/app/lib/demo/products";
 import type { FilterValues } from "@/app/(public)/shop/ProductFilters";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 100;
 
 /**
  * `pause` holds the query while the caller is still resolving a filter — the
