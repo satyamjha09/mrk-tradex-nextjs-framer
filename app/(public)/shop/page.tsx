@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Filter, Search, SlidersHorizontal } from "lucide-react";
+import { Package, Filter, Search } from "lucide-react";
 import { Product } from "@/app/types/productTypes";
 import ProductCard from "../product/ProductCard";
 import MainLayout from "@/app/components/templates/MainLayout";
@@ -275,7 +275,7 @@ const ShopPage: React.FC = () => {
                       : "border-slate-200 bg-white text-slate-600 hover:border-[#1598df] hover:text-[#1598df]"
                   }`}
                 >
-                  {group.label}
+                  {group.shortLabel}
                 </button>
               ))}
             </div>
@@ -404,18 +404,6 @@ const ShopPage: React.FC = () => {
                 ))}
               </select>
 
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-[#1598df]/40 px-4 py-2.5 text-[13px] font-semibold text-[#1598df] transition-colors hover:bg-[#1598df] hover:text-white"
-              >
-                <SlidersHorizontal size={18} />
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="rounded-full bg-[#1598df]/15 px-2 py-0.5 text-xs font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
             </div>
           </div>
 
