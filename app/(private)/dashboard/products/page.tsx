@@ -13,9 +13,10 @@ import { Trash2, Edit, Upload, X } from "lucide-react";
 import ConfirmModal from "@/app/components/organisms/ConfirmModal";
 import useToast from "@/app/hooks/ui/useToast";
 import ProductFileUpload from "./ProductFileUpload";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ProductFormData } from "./product.types";
 import { withAuth } from "@/app/components/HOC/WithAuth";
+import { useMemo } from "react";
 
 const productTextFields: (keyof ProductFormData)[] = [
   "shortDescription",
@@ -208,10 +209,29 @@ const ProductsDashboard = () => {
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamString = searchParams.toString();
   const shouldFetchProducts = pathname === "/dashboard/products";
+  const productsQuery = useMemo(() => {
+    const params = new URLSearchParams(searchParamString);
+    const query: Record<string, string | number> = {
+      page: Number(params.get("page") || 1),
+      limit: Number(params.get("limit") || 16),
+    };
+
+    const searchQuery = params.get("searchQuery")?.trim();
+    const sort = params.get("sort")?.trim();
+    const category = params.get("category")?.trim();
+
+    if (searchQuery) query.searchQuery = searchQuery;
+    if (sort) query.sort = sort;
+    if (category) query.category = category;
+
+    return query;
+  }, [searchParamString]);
 
   const { data, isLoading } = useGetAllProductsQuery(
-    { select: { variants: true } }, // Ensure variants are included
+    productsQuery,
     { skip: !shouldFetchProducts },
   );
   const products = data?.products || [];

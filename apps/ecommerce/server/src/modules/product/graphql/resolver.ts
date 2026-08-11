@@ -69,11 +69,41 @@ export const productResolvers = {
     ) => {
       const where: any = { ...publicProductWhere };
 
-      // Search filter
-      if (filters.search) {
-        where.OR = [
-          { name: { contains: filters.search, mode: "insensitive" } },
-          { description: { contains: filters.search, mode: "insensitive" } },
+      // Search filter. Keep it in AND so it narrows category/flag filters
+      // instead of widening them, and include the MRK technical fields users
+      // naturally search by on the shop page.
+      const searchTerm = filters.search?.trim();
+      if (searchTerm) {
+        where.AND = [
+          ...(where.AND || []),
+          {
+            OR: [
+              { name: { contains: searchTerm, mode: "insensitive" } },
+              { modelNumber: { contains: searchTerm, mode: "insensitive" } },
+              { productLine: { contains: searchTerm, mode: "insensitive" } },
+              { productSeries: { contains: searchTerm, mode: "insensitive" } },
+              { shortDescription: { contains: searchTerm, mode: "insensitive" } },
+              { description: { contains: searchTerm, mode: "insensitive" } },
+              { hp: { contains: searchTerm, mode: "insensitive" } },
+              { capacitor: { contains: searchTerm, mode: "insensitive" } },
+              { startCapacitor: { contains: searchTerm, mode: "insensitive" } },
+              { runCapacitor: { contains: searchTerm, mode: "insensitive" } },
+              {
+                variants: {
+                  some: {
+                    isActive: true,
+                    OR: [
+                      { sku: { contains: searchTerm, mode: "insensitive" } },
+                      { hp: { contains: searchTerm, mode: "insensitive" } },
+                      { startCapacitor: { contains: searchTerm, mode: "insensitive" } },
+                      { runCapacitor: { contains: searchTerm, mode: "insensitive" } },
+                      { variantType: { contains: searchTerm, mode: "insensitive" } },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
         ];
       }
 
@@ -100,14 +130,20 @@ export const productResolvers = {
 
       // Series filter. Goes through AND rather than where.OR, which search and
       // flags already claim — the series has to narrow those, not widen them.
+      //
+      // `startsWith`, not `contains`: the series code always leads the model
+      // code (AHD29A, MRG16A, MRX-HD F04), so anchoring to the front is enough
+      // to select the series and it stops a code mentioned later in a free-text
+      // name from claiming the product. Without the anchor a product named
+      // "MRG29A AHD" turns up under both the MRG and the AHD chip.
       if (filters.seriesMatch && filters.seriesMatch.length > 0) {
         where.AND = [
           ...(where.AND || []),
           {
             OR: filters.seriesMatch.flatMap((token) => [
-              { modelNumber: { contains: token, mode: "insensitive" } },
-              { productSeries: { contains: token, mode: "insensitive" } },
-              { name: { contains: token, mode: "insensitive" } },
+              { modelNumber: { startsWith: token, mode: "insensitive" } },
+              { productSeries: { startsWith: token, mode: "insensitive" } },
+              { name: { startsWith: token, mode: "insensitive" } },
             ]),
           },
         ];

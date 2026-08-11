@@ -219,7 +219,16 @@ export function shopUrl(groupKey?: string, seriesCode?: string): string {
     : `/shop?group=${group.key}`;
 }
 
-/** Client-side equivalent of the resolver's seriesMatch clause. */
+/**
+ * Client-side equivalent of the resolver's seriesMatch clause.
+ *
+ * Each field is tested on its own and anchored to the front, because the series
+ * code leads the model code (AHD29A, MRG16A, MRX-HD F04) and never trails it.
+ * Joining the fields into one haystack and asking for `includes` — which is what
+ * this used to do — let a product called "MRG29A AHD" answer to the AHD chip as
+ * well as its own. Punctuation is dropped from both sides so "STAR DELTA",
+ * "Star-Delta" and "star_delta" compare equal.
+ */
 export function productMatchesSeriesTokens(
   product: {
     name?: string | null;
@@ -230,15 +239,22 @@ export function productMatchesSeriesTokens(
   tokens?: string[],
 ): boolean {
   if (!tokens || !tokens.length) return true;
-  const haystack = [
+
+  const normalise = (value?: string | null) =>
+    (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  const fields = [
     product.modelNumber,
     product.productSeries,
     product.name,
     product.slug,
   ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+    .map(normalise)
+    .filter(Boolean);
 
-  return tokens.some((token) => haystack.includes(token.toLowerCase()));
+  return tokens.some((token) => {
+    const needle = normalise(token);
+    if (!needle) return false;
+    return fields.some((field) => field.startsWith(needle));
+  });
 }

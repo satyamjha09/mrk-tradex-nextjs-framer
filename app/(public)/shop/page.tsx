@@ -125,6 +125,17 @@ const ShopPage: React.FC = () => {
     HIGHLIGHTS.find((item) => item.key && initialFilters[item.key])?.label ||
     "All Products";
 
+  useEffect(() => {
+    const normalizedDraft = searchDraft.trim();
+    if ((filters.search || "") === normalizedDraft) return;
+
+    const timeout = window.setTimeout(() => {
+      updateFilters({ ...filters, search: normalizedDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchDraft, filters]);
+
   /**
    * `browse` is passed only by the category/series chips. Every other caller
    * leaves the current browse selection alone — except the drawer's category
@@ -194,10 +205,10 @@ const ShopPage: React.FC = () => {
     (hasLoaded && displayedProducts.length === 0 && !loading && !error);
   const catalogCountText =
     loading && displayedProducts.length === 0
-      ? "Loading catalog items..."
+      ? "Loading products..."
       : groupCategoryMissing
-        ? "No catalog items in this category yet"
-        : `${totalCount} catalog items available for enquiry`;
+        ? "No products in this category yet"
+        : `${totalCount} products available for enquiry`;
 
   return (
     <MainLayout isDemoCatalog={isDemoCatalog}>
@@ -208,7 +219,7 @@ const ShopPage: React.FC = () => {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
-                  Product Catalog
+                  Product
                 </h1>
                 <p className="mt-1 text-xs text-gray-600 sm:text-sm">
                   {catalogCountText}
@@ -338,11 +349,12 @@ const ShopPage: React.FC = () => {
                   onChange={(e) => setSearchDraft(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter")
-                      updateFilters({ ...filters, search: searchDraft });
+                      updateFilters({ ...filters, search: searchDraft.trim() });
                   }}
                   onBlur={() => {
-                    if ((filters.search || "") !== searchDraft)
-                      updateFilters({ ...filters, search: searchDraft });
+                    const normalizedDraft = searchDraft.trim();
+                    if ((filters.search || "") !== normalizedDraft)
+                      updateFilters({ ...filters, search: normalizedDraft });
                   }}
                   placeholder="Search products, models, HP..."
                   className="w-full rounded-lg border border-slate-200 bg-slate-50/60 py-2.5 pl-11 pr-4 text-[13px] text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#1598df] focus:bg-white"
@@ -529,7 +541,7 @@ const ShopPage: React.FC = () => {
                         <div className="flex items-center justify-center gap-3">
                           <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
                           <span className="text-gray-600">
-                            Loading more catalog items...
+                            Loading more products...
                           </span>
                         </div>
                       ) : (
@@ -538,7 +550,7 @@ const ShopPage: React.FC = () => {
                           disabled={isFetchingMore}
                           className="rounded-xl bg-black px-8 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-gray-800 hover:shadow-xl"
                         >
-                          Load More Catalog Items
+                          Load More Products
                         </button>
                       )}
                     </div>
