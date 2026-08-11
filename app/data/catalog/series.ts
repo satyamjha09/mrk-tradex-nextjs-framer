@@ -29,7 +29,10 @@ export type CatalogSeries = {
 export type CatalogGroup = {
   /** URL value, e.g. "single-phase-starter". */
   key: string;
+  /** Full register name, e.g. "I-Phase Starter Panel". */
   label: string;
+  /** What the browse chip on /shop shows — the register name minus any wording
+   *  the chip row already makes obvious. */
   shortLabel: string;
   /** Category slugs this group resolves to, most preferred first. */
   categorySlugs: string[];
@@ -110,7 +113,7 @@ export const CATALOG_GROUPS: CatalogGroup[] = [
   {
     key: "wlc-smart-plug",
     label: "WLC Smart Plug",
-    shortLabel: "WLC",
+    shortLabel: "WLC Smart Plug",
     categorySlugs: ["smart-controls"],
     seriesLabel: "Model",
     series: [
