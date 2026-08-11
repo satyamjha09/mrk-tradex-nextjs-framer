@@ -72,7 +72,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           {capacitor && (
             <div className="space-y-1 rounded-sm border border-gray-200 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
-                Capacitor
+                Capacitor/Range
               </p>
               <p className="text-lg font-semibold text-gray-900">
                 {capacitor}
