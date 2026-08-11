@@ -17,8 +17,8 @@ import { shopUrl } from "@/app/data/catalog/series";
  */
 
 const productLinks = [
-  { label: "Single-Phase Starters", hi: "सिंगल-फेज़ स्टार्टर", href: shopUrl("single-phase-starter") },
-  { label: "Three-Phase Panels", hi: "थ्री-फेज़ पैनल", href: shopUrl("three-phase-panel") },
+  { label: "I-Phase Starters", hi: "सिंगल-फेज़ स्टार्टर", href: shopUrl("single-phase-starter") },
+  { label: "III-Phase Panels", hi: "थ्री-फेज़ पैनल", href: shopUrl("three-phase-panel") },
   { label: "WLC Smart Plugs", hi: "WLC स्मार्ट प्लग", href: shopUrl("wlc-smart-plug") },
   { label: "Switch Gears", hi: "स्विच गियर", href: shopUrl("cables-accessories") },
 ];
@@ -68,10 +68,6 @@ const SiteFooter = () => {
               <br />
               <a href={urls.email}>{company.email}</a>
             </address>
-
-            <span className="mt-3 inline-block rounded-full border border-splash/40 px-3 py-1 text-[0.68rem] tracking-[0.06em] text-splash">
-              GST: {company.gstNumber}
-            </span>
           </div>
 
           <div>

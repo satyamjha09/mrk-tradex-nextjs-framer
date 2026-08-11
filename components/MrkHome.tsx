@@ -660,7 +660,10 @@ function DealerCtaSection() {
         className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:64px_64px]"
       />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] gap-12 px-5 py-[clamp(3.5rem,7vw,6rem)] sm:px-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
+      {/* max-w and px match tw.container (1200 / 24px) so the dealer copy and
+          the form line up with the sections above and below; this used to be
+          1280 with 32px padding, which pushed both edges 32px further out. */}
+      <div className="relative z-10 mx-auto grid w-full max-w-[1200px] gap-12 px-6 py-[clamp(3.5rem,7vw,6rem)] lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
         <div className="max-w-[640px]">
           <motion.span
             initial={{ opacity: 0, y: 14 }}

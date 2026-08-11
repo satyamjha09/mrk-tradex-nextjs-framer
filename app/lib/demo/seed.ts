@@ -310,7 +310,7 @@ const SAMPLE_MRK_SITE_SETTING: DemoMrkSiteSetting = {
   key: "global",
   phone: "+91 93197 19670",
   whatsapp: "919319719670",
-  email: "rajesh.mrktradex@gmail.com",
+  email: "mrktradex@gmail.com",
   address:
     "R/3A, Dooars Trp Compound, GT Road, Sahibabad, Ghaziabad, Uttar Pradesh 201005",
   gstNumber: null,
