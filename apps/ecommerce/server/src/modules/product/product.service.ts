@@ -360,7 +360,7 @@ export class ProductService {
           .join("|"),
       )
       .filter(Boolean);
-    if (new Set(comboKeys).size !== sanitizedVariants.length) {
+    if (new Set(comboKeys).size !== comboKeys.length) {
       throw new AppError(400, "Duplicate attribute combinations detected");
     }
 
@@ -604,7 +604,7 @@ export class ProductService {
             .join("|"),
         )
         .filter(Boolean);
-      if (new Set(comboKeys).size !== sanitizedVariants.length) {
+      if (new Set(comboKeys).size !== comboKeys.length) {
         throw new AppError(400, "Duplicate attribute combinations detected");
       }
 

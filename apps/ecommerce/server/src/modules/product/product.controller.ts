@@ -640,12 +640,14 @@ export class ProductController {
         }
 
         // Check for duplicate attribute combinations
-        const comboKeys = processedVariants.map((variant: any) =>
-          variant.attributes
-            .map((attr: any) => `${attr.attributeId}:${attr.valueId}`)
-            .sort()
-            .join("|"),
-        );
+        const comboKeys = processedVariants
+          .map((variant: any) =>
+            variant.attributes
+              .map((attr: any) => `${attr.attributeId}:${attr.valueId}`)
+              .sort()
+              .join("|"),
+          )
+          .filter(Boolean);
         if (new Set(comboKeys).size !== comboKeys.length) {
           throw new AppError(400, "Duplicate attribute combinations detected");
         }
