@@ -356,6 +356,8 @@ function StackingStage({
   );
 }
 
+
+
 export default function ProductStackSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const isDesktop = useIsDesktop();

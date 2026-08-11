@@ -4,7 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Download, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const links = [
@@ -12,6 +12,27 @@ const links = [
   { href: "/shop", label: "Products" },
   { href: "/#why", label: "Why MRK" },
   { href: "/contact", label: "Contact" },
+];
+
+/**
+ * Served straight out of public/, so the paths are the filenames — encoded
+ * because both carry spaces. `fileName` is what the browser saves it as, which
+ * is otherwise the raw basename ("MRK Phamplet.pdf" reads as a typo to whoever
+ * receives it). Sizes are shown because these are large on a mobile connection.
+ */
+const downloads = [
+  {
+    href: "/MRK%20PRICE%20LIST%202026.pdf",
+    fileName: "MRK Price List 2026.pdf",
+    label: "MRK Price List",
+    size: "3.4 MB PDF",
+  },
+  {
+    href: "/MRK%20Phamplet.pdf",
+    fileName: "MRK Catalog.pdf",
+    label: "MRK Catalog",
+    size: "11.3 MB PDF",
+  },
 ];
 
 export default function SiteNavbar() {
@@ -49,6 +70,53 @@ export default function SiteNavbar() {
               {link.label}
             </Link>
           ))}
+
+          {/* Opens on hover, and on keyboard focus too — a hover-only menu is
+              unreachable by tab. The panel's pt-3 is the bridge the pointer
+              crosses on its way down, so the menu does not close mid-travel. */}
+          <div className="group relative">
+            <button
+              type="button"
+              className="flex items-center gap-1 font-bold transition-colors hover:text-[#1e9be0] group-hover:text-[#1e9be0] group-focus-within:text-[#1e9be0]"
+              aria-haspopup="menu"
+            >
+              Download
+              <ChevronDown
+                size={16}
+                aria-hidden="true"
+                className="transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
+              />
+            </button>
+
+            <div className="invisible absolute left-1/2 top-full z-10 -translate-x-1/2 pt-3 opacity-0 transition-opacity duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div
+                className="min-w-[248px] rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,35,65,0.14)]"
+                role="menu"
+              >
+                {downloads.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    download={item.fileName}
+                    role="menuitem"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e9be0]"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eaf4fd] text-[#1e9be0]">
+                      <Download size={17} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-[#0b1f33]">
+                        {item.label}
+                      </span>
+                      <span className="block text-xs font-medium text-slate-500">
+                        {item.size}
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="hidden min-w-0 items-center justify-end gap-3 lg:flex xl:min-w-[218px] xl:gap-3.5">
@@ -91,6 +159,37 @@ export default function SiteNavbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* No hover on touch, so the dropdown's two items are listed flat. */}
+            <div className="mt-1 border-t border-slate-100 pt-3">
+              <span className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Download
+              </span>
+              <div className="mt-1 flex flex-col">
+                {downloads.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    download={item.fileName}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-50"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eaf4fd] text-[#1e9be0]">
+                      <Download size={17} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-[#0b1f33]">
+                        {item.label}
+                      </span>
+                      <span className="block text-xs font-medium text-slate-500">
+                        {item.size}
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
             <div className="mt-2 flex items-center gap-3">
               <button
                 type="button"
