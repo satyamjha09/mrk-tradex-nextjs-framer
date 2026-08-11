@@ -697,34 +697,6 @@ function DealerCtaSection() {
             demand, and marketing support.
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.6, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-10"
-          >
-            <motion.a
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              href={"#contact"}
-              className="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-[0.95rem] font-bold text-[#0a2540] shadow-[0_18px_40px_rgba(3,17,32,0.35)] transition-colors hover:bg-[#eaf4fd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-            >
-              Apply for dealership
-              <svg
-                viewBox={"0 0 24 24"}
-                aria-hidden={"true"}
-                className="h-4 w-4 fill-none stroke-current stroke-2"
-              >
-                <path
-                  d={"M5 12h14M13 6l6 6-6 6"}
-                  strokeLinecap={"round"}
-                  strokeLinejoin={"round"}
-                ></path>
-              </svg>
-            </motion.a>
-          </motion.div>
-
           {/* Stats sit under the copy now — the right column belongs to the form. */}
           <div className="mt-12 flex flex-wrap gap-x-[clamp(1.75rem,4vw,3.5rem)] gap-y-8 border-t border-white/10 pt-10">
             {dealerStats.map((stat, index) => (
@@ -1142,8 +1114,12 @@ const tw: Record<string, string> = {
 
   tsec: "[&_.section-head]:mb-0 [&_.section-head]:max-w-none [&_h2.title]:uppercase [&_h2.title]:leading-[.95] [&_h2.title]:tracking-[-.02em]",
   thead: "mb-10 flex items-end justify-between gap-8 max-[1000px]:mb-[2.4rem] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-6",
-  tgrid: "grid grid-cols-3 gap-4 max-[1000px]:grid-cols-2 max-[640px]:grid-cols-1",
-  tcard: "group relative flex min-h-[250px] flex-col rounded-xl bg-mist p-6 text-left text-ink no-underline transition duration-300 ease-in-out hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_42px_rgba(11,31,51,.10)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua [&>p]:mb-0 [&>p]:text-sm [&>p]:leading-[1.62] [&>p]:text-muted",
+  // Three cards fill the row exactly; the rest of the reviews stay one
+  // horizontal scroll away rather than stacking into a second and third row.
+  // auto-cols subtracts the gaps so the visible count is exact: 2 gaps at 1rem
+  // across three columns, 1 gap across two.
+  tgrid: "grid grid-flow-col auto-cols-[calc((100%-2rem)/3)] gap-4 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[1000px]:auto-cols-[calc((100%-1rem)/2)] max-[640px]:auto-cols-[88%]",
+  tcard: "group relative flex min-h-[250px] snap-start flex-col rounded-xl bg-mist p-6 text-left text-ink no-underline transition duration-300 ease-in-out hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_42px_rgba(11,31,51,.10)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua [&>p]:mb-0 [&>p]:text-sm [&>p]:leading-[1.62] [&>p]:text-muted",
   "tcard-top": "relative z-10 mb-6 flex items-center justify-between gap-2",
   stars5: "text-xs leading-none tracking-[0.2em] text-ink",
   tidx: "font-mono text-xs text-muted",

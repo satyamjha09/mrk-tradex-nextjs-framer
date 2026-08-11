@@ -15,41 +15,6 @@ type FaqItem = {
 const FAQS: FaqItem[] = [
   {
     no: "01",
-    question: "Choosing a starter",
-    points: ["Pump rating", "Phase & supply", "Panel type"],
-    answer:
-      "Match the starter to your pump's horsepower and to the supply at your site. Up to 7.5 HP on a single-phase line, a single-phase starter is enough; for three-phase supply or larger pumps, use a DOL or Star-Delta panel. Your dealer can confirm the right model from your pump's nameplate.",
-  },
-  {
-    no: "02",
-    question: "Dry-run protection",
-    points: ["Level sensing", "Auto cut-off", "Auto restart"],
-    answer:
-      "When the borewell runs dry the motor keeps spinning with no water to cool it, and that is what burns a pump out. MRK starters sense the loss and cut the supply before damage is done, then restore it automatically once water returns.",
-  },
-  {
-    no: "03",
-    question: "Installation",
-    points: ["Labelled terminals", "Wiring diagram", "Wall mounting"],
-    answer:
-      "Every unit ships with a wiring diagram in the box and clearly labelled terminals, with enough cable room to work comfortably. Most installations take a few minutes for an electrician: mount the unit, land the cables, set the rating, power on.",
-  },
-  {
-    no: "04",
-    question: "Warranty & service",
-    points: ["Coverage", "Dealer network", "Spare parts"],
-    answer:
-      "Every unit is bench-tested under load before it leaves the floor. Service, spares and replacements are handled through your dealer, and with 1000+ dealers across 500+ cities and towns there is likely one close to you.",
-  },
-  {
-    no: "05",
-    question: "Becoming a dealer",
-    points: ["Territory", "Margins", "Field support"],
-    answer:
-      "We have been building starters and panels since 2005 and work with dealers across 20+ states. Get in touch and we will talk through territory, pricing and the support we provide on the ground.",
-  },
-  {
-    no: "06",
     question: "What are the main products of MRK?",
     points: ["Starter panels", "WLC Smart Plugs", "Cables"],
     answer: (
@@ -63,7 +28,7 @@ const FAQS: FaqItem[] = [
     ),
   },
   {
-    no: "07",
+    no: "02",
     question: "What is a WLC device?",
     points: ["Water Level Controller", "Overflow cut-off"],
     answer: (
@@ -78,13 +43,13 @@ const FAQS: FaqItem[] = [
     ),
   },
   {
-    no: "08",
+    no: "03",
     question: "Is any other company providing the same services?",
     points: ["Market position"],
     answer: "No.",
   },
   {
-    no: "09",
+    no: "04",
     question: "What is the difference between a Franchisee and a Distributor?",
     points: ["Distributor", "Franchisee", "Service scope"],
     answer: (
@@ -107,7 +72,7 @@ const FAQS: FaqItem[] = [
     ),
   },
   {
-    no: "10",
+    no: "05",
     question: "What is the process of becoming a Dealer or Franchisee?",
     points: ["Scan the QR code", "10 working days", "Registration"],
     answer: (
@@ -123,7 +88,7 @@ const FAQS: FaqItem[] = [
     ),
   },
   {
-    no: "11",
+    no: "06",
     question: "What warranty is offered on the WLC Smart Plug?",
     points: ["Free replacement", "7 days from sale", "Manufacturing defect"],
     answer: (
@@ -137,7 +102,7 @@ const FAQS: FaqItem[] = [
     ),
   },
   {
-    no: "12",
+    no: "07",
     question: "What should I do if the device stops working after a few days?",
     points: ["Scan the QR code", "YouTube walkthrough", "Live video support"],
     answer: (

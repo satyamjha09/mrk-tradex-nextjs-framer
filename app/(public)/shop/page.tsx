@@ -203,7 +203,7 @@ const ShopPage: React.FC = () => {
     <MainLayout isDemoCatalog={isDemoCatalog}>
       <div className="min-h-screen">
         <div className="sticky top-[60px] z-30 border-b border-slate-100 bg-white/95 backdrop-blur sm:top-[64px] lg:top-[68px]">
-          <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+          <div className="mx-auto w-full max-w-[1680px] px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
@@ -232,7 +232,7 @@ const ShopPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1680px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           {/* Browse strip — panel type on the first row, and once one is
               picked, the lettered series inside it on the second. Mirrors the
               MRK product register; the taxonomy lives in data/catalog/series. */}
