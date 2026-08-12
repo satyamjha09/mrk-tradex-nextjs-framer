@@ -204,6 +204,34 @@ const MRK_VIDEOS: VideoItem[] = [
     conversionBoost: "Weatherproof",
     duration: "Enclosure",
   },
+  {
+    id: "wlc-tso-plug",
+    title: "WLC TSO Plug Setup Guide",
+    videoUrl: "",
+    youtubeId: "C-uPNgCf6fI", // "MRK WLC TSO Plug Setup Guide | Tullu Pump Automatic ON-OFF"
+    aspect: "16/9",
+    posterUrl: "https://i.ytimg.com/vi/C-uPNgCf6fI/hqdefault.jpg",
+    category: "Guide",
+    views: "How-To",
+    creatorName: "MRK Tradex",
+    creatorAvatar: "/images/mrk-logo.png",
+    conversionBoost: "Tullu pump",
+    duration: "Setup",
+  },
+  {
+    id: "wlc-sso-plug",
+    title: "WLC SSO Plug Setup Guide",
+    videoUrl: "",
+    youtubeId: "n4scNaVpHtY", // "MRK WLC SSO Plug Setup Guide | Submersible Pump Automatic ON-OFF"
+    aspect: "16/9",
+    posterUrl: "https://i.ytimg.com/vi/n4scNaVpHtY/hqdefault.jpg",
+    category: "Guide",
+    views: "How-To",
+    creatorName: "MRK Tradex",
+    creatorAvatar: "/images/mrk-logo.png",
+    conversionBoost: "Submersible",
+    duration: "Setup",
+  },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
