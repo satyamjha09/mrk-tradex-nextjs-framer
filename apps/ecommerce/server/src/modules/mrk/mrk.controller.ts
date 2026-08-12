@@ -62,31 +62,26 @@ export class MrkController {
     });
   });
 
-  private async notifyDealerApplication(application: Record<string, any>) {
+  // Every lead notification lands in the same inbox and reads the same way, so
+  // the recipient guard and the table markup live here rather than once per
+  // form. Callers only build the label/value pairs; blanks are dropped, so an
+  // optional field the visitor skipped never shows up as an empty row.
+  private async notifyOffice({
+    heading,
+    subject,
+    rows: allRows,
+  }: {
+    heading: string;
+    subject: string;
+    rows: [string, unknown][];
+  }) {
     const to = process.env.MRK_NOTIFY_EMAIL || process.env.EMAIL_USER;
     if (!to) {
       console.warn(
-        "[mrk] No MRK_NOTIFY_EMAIL or EMAIL_USER set — dealer application email skipped"
+        `[mrk] No MRK_NOTIFY_EMAIL or EMAIL_USER set — "${heading}" email skipped`
       );
       return;
     }
-
-    const allRows: [string, unknown][] = [
-      ["Name", application.name],
-      ["Business name", application.businessName],
-      ["Address", application.address],
-      ["Mobile", application.mobile],
-      ["WhatsApp", application.whatsapp],
-      ["Email", application.email],
-      ["City", application.city],
-      ["State", application.state],
-      ["Pincode", application.pincode],
-      ["GST number", application.gstNumber],
-      ["Current business", application.currentBusiness],
-      ["Experience", application.experience],
-      ["Message", application.message],
-      ["Source", application.metadata?.source],
-    ];
 
     const rows = allRows.filter(
       ([, value]) => value !== undefined && value !== null && value !== ""
@@ -94,7 +89,7 @@ export class MrkController {
 
     const text = rows.map(([label, value]) => `${label}: ${value}`).join("\n");
     const html = `
-      <h2 style="font-family:sans-serif;color:#0b1f33">New dealer application</h2>
+      <h2 style="font-family:sans-serif;color:#0b1f33">${escapeHtml(heading)}</h2>
       <table style="font-family:sans-serif;border-collapse:collapse">
         ${rows
           .map(
@@ -107,11 +102,52 @@ export class MrkController {
           .join("")}
       </table>`;
 
-    await sendEmail({
-      to,
+    await sendEmail({ to, subject, text, html });
+  }
+
+  private async notifyDealerApplication(application: Record<string, any>) {
+    await this.notifyOffice({
+      heading: "New dealer application",
       subject: `New dealer application — ${application.businessName || application.name || "MRK"}`,
-      text,
-      html,
+      rows: [
+        ["Name", application.name],
+        ["Business name", application.businessName],
+        ["Address", application.address],
+        ["Mobile", application.mobile],
+        ["WhatsApp", application.whatsapp],
+        ["Email", application.email],
+        ["City", application.city],
+        ["State", application.state],
+        ["Pincode", application.pincode],
+        ["GST number", application.gstNumber],
+        ["Current business", application.currentBusiness],
+        ["Experience", application.experience],
+        ["Message", application.message],
+        ["Source", application.metadata?.source],
+      ],
+    });
+  }
+
+  private async notifyContactSubmission(submission: Record<string, any>) {
+    // FEEDBACK and CONTACT share the form and the inbox; the subject line is
+    // what tells the two apart at a glance.
+    const label =
+      submission.type === "FEEDBACK" ? "feedback" : "contact request";
+
+    await this.notifyOffice({
+      heading: `New ${label}`,
+      subject: `New ${label} — ${submission.subject || submission.name || "MRK"}`,
+      rows: [
+        ["Name", submission.name],
+        ["Email", submission.email],
+        ["Phone", submission.phone || submission.mobile],
+        ["Subject", submission.subject],
+        ["City", submission.city],
+        ["State", submission.state],
+        ["Type", submission.type],
+        ["Message", submission.message],
+        ["Source", submission.metadata?.source],
+      ],
     });
   }
 
@@ -141,6 +177,11 @@ export class MrkController {
     const contactSubmission = await this.mrkService.createContactSubmission(
       req.body
     );
+
+    // Same rule as the dealer form: the row is already stored, so a mail
+    // outage must not turn a saved submission into a failed request.
+    void this.notifyContactSubmission(req.body);
+
     sendResponse(res, 201, {
       data: { contactSubmission },
       message: "Contact request submitted successfully",

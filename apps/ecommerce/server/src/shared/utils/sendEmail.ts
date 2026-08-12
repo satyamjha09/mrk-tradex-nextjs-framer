@@ -33,18 +33,30 @@ const sendEmail = async ({
   html,
 }: EmailOptions): Promise<boolean> => {
   try {
+    const emailUser = process.env.EMAIL_USER || process.env.GMAIL_USER;
+    const emailPass =
+      process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD || "";
+    const normalizedPassword = emailPass.replace(/\s+/g, "");
+
+    if (!emailUser || !normalizedPassword) {
+      console.warn(
+        "[email] EMAIL_USER and EMAIL_PASS are required before SMTP mail can be sent."
+      );
+      return false;
+    }
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER as string,
-        pass: process.env.EMAIL_PASS as string,
+        user: emailUser,
+        pass: normalizedPassword,
       },
     } as TransporterConfig);
 
     const mailOptions: MailOptions = {
       // Gmail rewrites From to the authenticated account anyway, so this only
       // controls the display name.
-      from: process.env.EMAIL_FROM || (process.env.EMAIL_USER as string),
+      from: process.env.EMAIL_FROM || `MRK Tradex <${emailUser}>`,
       to,
       subject,
       text,
