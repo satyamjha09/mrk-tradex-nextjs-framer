@@ -12,6 +12,7 @@ const FOOTER_LINKS = [
   { href: "/find-dealer", label: "Find Dealer" },
   { href: "/dealer", label: "Become Dealer" },
   { href: "/contact", label: "Contact" },
+  { href: "/privacy-policy", label: "Privacy Policy" },
 ] as const;
 
 const Footer = () => {

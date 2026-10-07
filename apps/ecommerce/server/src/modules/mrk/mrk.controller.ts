@@ -20,6 +20,78 @@ const escapeHtml = (value: unknown) =>
 const isValidEmail = (value: unknown) =>
   typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
+const cleanRows = (rows: [string, unknown][]) =>
+  rows.filter(([, value]) => value !== undefined && value !== null && value !== "");
+
+const renderConfirmationEmail = ({
+  eyebrow,
+  title,
+  intro,
+  rows,
+}: {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  rows: [string, unknown][];
+}) => {
+  const visibleRows = cleanRows(rows);
+  const text = [
+    title,
+    "",
+    intro,
+    "",
+    ...visibleRows.map(([label, value]) => `${label}: ${value}`),
+    "",
+    "Our team will review this and get back to you soon.",
+    "MRK Tradex Pvt Ltd",
+  ].join("\n");
+
+  const html = `
+    <div style="margin:0;padding:0;background:#f4f8fb;font-family:Arial,Helvetica,sans-serif;color:#0b1f33">
+      <div style="max-width:640px;margin:0 auto;padding:28px 16px">
+        <div style="overflow:hidden;border-radius:22px;background:#ffffff;border:1px solid #dce6f0;box-shadow:0 18px 45px rgba(11,31,51,0.10)">
+          <div style="background:#0b1f33;padding:26px 28px;color:#ffffff">
+            <div style="display:inline-block;border-radius:999px;background:#1e9be0;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase">
+              ${escapeHtml(eyebrow)}
+            </div>
+            <h1 style="margin:16px 0 0;font-size:26px;line-height:1.25;font-weight:800">
+              ${escapeHtml(title)}
+            </h1>
+          </div>
+          <div style="padding:28px">
+            <p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#334e68">
+              ${escapeHtml(intro)}
+            </p>
+            ${
+              visibleRows.length
+                ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:22px 0;border:1px solid #dce6f0;border-radius:14px;overflow:hidden">
+                    ${visibleRows
+                      .map(
+                        ([label, value], index) =>
+                          `<tr style="background:${index % 2 === 0 ? "#f7fbff" : "#ffffff"}">
+                            <td style="width:38%;padding:12px 14px;color:#5d7488;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #e7eef6">${escapeHtml(label)}</td>
+                            <td style="padding:12px 14px;color:#0b1f33;font-size:14px;font-weight:700;border-bottom:1px solid #e7eef6">${escapeHtml(value)}</td>
+                          </tr>`
+                      )
+                      .join("")}
+                  </table>`
+                : ""
+            }
+            <div style="border-left:4px solid #1e9be0;background:#eef8ff;padding:14px 16px;border-radius:12px;color:#334e68;font-size:14px;line-height:1.6">
+              Our team will review this and get back to you soon.
+            </div>
+            <p style="margin:24px 0 0;font-size:15px;line-height:1.6;color:#0b1f33">
+              Regards,<br />
+              <strong>MRK Tradex Pvt Ltd</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  return { text, html };
+};
+
 export class MrkController {
   constructor(private mrkService: MrkService) {}
 
@@ -87,9 +159,7 @@ export class MrkController {
       return;
     }
 
-    const rows = allRows.filter(
-      ([, value]) => value !== undefined && value !== null && value !== ""
-    );
+    const rows = cleanRows(allRows);
 
     const text = rows.map(([label, value]) => `${label}: ${value}`).join("\n");
     const html = `
@@ -139,23 +209,21 @@ export class MrkController {
     }
 
     const name = application.name || application.businessName || "there";
-    const text = [
-      `Dear ${name},`,
-      "",
-      "Thank you for applying to partner with MRK Tradex.",
-      "We have received your dealership application successfully. Our team will review your details and contact you soon.",
-      "",
-      "MRK Tradex Pvt Ltd",
-    ].join("\n");
-
-    const html = `
-      <div style="font-family:sans-serif;color:#0b1f33;line-height:1.6">
-        <h2 style="margin:0 0 12px">Dealer application received</h2>
-        <p>Dear ${escapeHtml(name)},</p>
-        <p>Thank you for applying to partner with <strong>MRK Tradex</strong>.</p>
-        <p>We have received your dealership application successfully. Our team will review your details and contact you soon.</p>
-        <p style="margin-top:24px">MRK Tradex Pvt Ltd</p>
-      </div>`;
+    const { text, html } = renderConfirmationEmail({
+      eyebrow: "Dealer application",
+      title: "Application received successfully",
+      intro: `Dear ${name}, thank you for applying to partner with MRK Tradex. We have received your dealership application successfully.`,
+      rows: [
+        ["Name", application.name],
+        ["Business name", application.businessName],
+        ["Mobile", application.mobile],
+        ["WhatsApp", application.whatsapp],
+        ["Email", application.email],
+        ["City", application.city],
+        ["State", application.state],
+        ["Pincode", application.pincode],
+      ],
+    });
 
     await sendEmail({
       to,
@@ -197,23 +265,20 @@ export class MrkController {
     const label =
       submission.type === "FEEDBACK" ? "feedback" : "contact request";
     const name = submission.name || "there";
-    const text = [
-      `Dear ${name},`,
-      "",
-      `Thank you for contacting MRK Tradex. We have received your ${label} successfully.`,
-      "Our team will review it and get back to you soon.",
-      "",
-      "MRK Tradex Pvt Ltd",
-    ].join("\n");
-
-    const html = `
-      <div style="font-family:sans-serif;color:#0b1f33;line-height:1.6">
-        <h2 style="margin:0 0 12px">Request received successfully</h2>
-        <p>Dear ${escapeHtml(name)},</p>
-        <p>Thank you for contacting <strong>MRK Tradex</strong>. We have received your ${escapeHtml(label)} successfully.</p>
-        <p>Our team will review it and get back to you soon.</p>
-        <p style="margin-top:24px">MRK Tradex Pvt Ltd</p>
-      </div>`;
+    const { text, html } = renderConfirmationEmail({
+      eyebrow: label,
+      title: "Request received successfully",
+      intro: `Dear ${name}, thank you for contacting MRK Tradex. We have received your ${label} successfully.`,
+      rows: [
+        ["Name", submission.name],
+        ["Email", submission.email],
+        ["Phone", submission.phone || submission.mobile],
+        ["Subject", submission.subject],
+        ["City", submission.city],
+        ["State", submission.state],
+        ["Message", submission.message],
+      ],
+    });
 
     await sendEmail({
       to,
