@@ -23,6 +23,15 @@ const isValidEmail = (value: unknown) =>
 const cleanRows = (rows: [string, unknown][]) =>
   rows.filter(([, value]) => value !== undefined && value !== null && value !== "");
 
+const publicAssetUrl = (path: string) => {
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.PUBLIC_SITE_URL ||
+    process.env.FRONTEND_URL ||
+    "https://www.mrktradex.com";
+  return `${siteUrl.replace(/\/$/, "")}${path}`;
+};
+
 const renderConfirmationEmail = ({
   eyebrow,
   title,
@@ -46,42 +55,58 @@ const renderConfirmationEmail = ({
     "MRK Tradex Pvt Ltd",
   ].join("\n");
 
+  const logoUrl = publicAssetUrl("/images/mrk-logo.png");
+  const heroUrl = publicAssetUrl("/images/mrk-hero-products-2026.png");
+
   const html = `
-    <div style="margin:0;padding:0;background:#f4f8fb;font-family:Arial,Helvetica,sans-serif;color:#0b1f33">
-      <div style="max-width:640px;margin:0 auto;padding:28px 16px">
-        <div style="overflow:hidden;border-radius:22px;background:#ffffff;border:1px solid #dce6f0;box-shadow:0 18px 45px rgba(11,31,51,0.10)">
-          <div style="background:#0b1f33;padding:26px 28px;color:#ffffff">
-            <div style="display:inline-block;border-radius:999px;background:#1e9be0;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase">
+    <div style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#111827">
+      <div style="max-width:760px;margin:0 auto;padding:34px 18px">
+        <div style="background:#ffffff;border:1px solid #e7edf5;border-radius:12px;overflow:hidden">
+          <div style="padding:34px 32px 22px">
+            <img src="${logoUrl}" width="124" alt="MRK Tradex" style="display:block;height:auto;border:0;outline:none;text-decoration:none" />
+          </div>
+
+          <div style="padding:0 32px">
+            <div style="border-radius:20px;overflow:hidden;background:#eef6fc;border:1px solid #e6eef7">
+              <img src="${heroUrl}" width="696" alt="MRK starter panels and pump protection products" style="display:block;width:100%;max-width:696px;height:auto;border:0;outline:none;text-decoration:none" />
+            </div>
+          </div>
+
+          <div style="padding:32px 32px 36px">
+            <div style="display:inline-block;margin:0 0 18px;border-radius:999px;background:#1e9be0;color:#ffffff;padding:8px 15px;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase">
               ${escapeHtml(eyebrow)}
             </div>
-            <h1 style="margin:16px 0 0;font-size:26px;line-height:1.25;font-weight:800">
+            <h1 style="margin:0 0 18px;font-size:29px;line-height:1.2;font-weight:800;color:#0b1f33">
               ${escapeHtml(title)}
             </h1>
-          </div>
-          <div style="padding:28px">
-            <p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#334e68">
+            <p style="margin:0 0 18px;font-size:17px;line-height:1.7;color:#4b5563">
               ${escapeHtml(intro)}
+            </p>
+            <p style="margin:0 0 26px;font-size:17px;line-height:1.7;color:#4b5563">
+              Your details are now with our team. We will review them and get back to you soon with the right support.
             </p>
             ${
               visibleRows.length
-                ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:22px 0;border:1px solid #dce6f0;border-radius:14px;overflow:hidden">
+                ? `<h2 style="margin:0 0 16px;font-size:22px;line-height:1.3;font-weight:800;color:#111827">Submission summary</h2>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 12px;margin:0 0 28px">
                     ${visibleRows
                       .map(
-                        ([label, value], index) =>
-                          `<tr style="background:${index % 2 === 0 ? "#f7fbff" : "#ffffff"}">
-                            <td style="width:38%;padding:12px 14px;color:#5d7488;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #e7eef6">${escapeHtml(label)}</td>
-                            <td style="padding:12px 14px;color:#0b1f33;font-size:14px;font-weight:700;border-bottom:1px solid #e7eef6">${escapeHtml(value)}</td>
+                        ([label, value]) =>
+                          `<tr>
+                            <td style="width:34%;padding:14px 16px;background:#f8fafc;border:1px solid #e5e7eb;border-right:0;border-radius:14px 0 0 14px;color:#6b7280;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em">${escapeHtml(label)}</td>
+                            <td style="padding:14px 16px;background:#f8fafc;border:1px solid #e5e7eb;border-left:0;border-radius:0 14px 14px 0;color:#111827;font-size:15px;font-weight:700">${escapeHtml(value)}</td>
                           </tr>`
                       )
                       .join("")}
                   </table>`
                 : ""
             }
-            <div style="border-left:4px solid #1e9be0;background:#eef8ff;padding:14px 16px;border-radius:12px;color:#334e68;font-size:14px;line-height:1.6">
-              Our team will review this and get back to you soon.
+            <div style="background:#eef8ff;border:1px solid #d7efff;border-radius:18px;padding:18px 20px;color:#334155;font-size:15px;line-height:1.7">
+              <strong style="color:#0b1f33">What happens next?</strong><br />
+              MRK Tradex will review your request and contact you using the phone or email you submitted.
             </div>
-            <p style="margin:24px 0 0;font-size:15px;line-height:1.6;color:#0b1f33">
-              Regards,<br />
+            <p style="margin:30px 0 0;font-size:16px;line-height:1.7;color:#4b5563">
+              Regards,<br/>
               <strong>MRK Tradex Pvt Ltd</strong>
             </p>
           </div>
@@ -212,7 +237,7 @@ export class MrkController {
     const { text, html } = renderConfirmationEmail({
       eyebrow: "Dealer application",
       title: "Application received successfully",
-      intro: `Dear ${name}, thank you for applying to partner with MRK Tradex. We have received your dealership application successfully.`,
+      intro: `Hey ${name}, thank you for applying to partner with MRK Tradex. We have received your dealership application successfully.`,
       rows: [
         ["Name", application.name],
         ["Business name", application.businessName],
@@ -268,7 +293,7 @@ export class MrkController {
     const { text, html } = renderConfirmationEmail({
       eyebrow: label,
       title: "Request received successfully",
-      intro: `Dear ${name}, thank you for contacting MRK Tradex. We have received your ${label} successfully.`,
+      intro: `Hey ${name}, thank you for contacting MRK Tradex. We have received your ${label} successfully.`,
       rows: [
         ["Name", submission.name],
         ["Email", submission.email],
