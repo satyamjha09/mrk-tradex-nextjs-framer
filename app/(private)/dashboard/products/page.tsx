@@ -7,13 +7,14 @@ import {
   useGetAllProductsQuery,
   useUpdateProductMutation,
 } from "@/app/store/apis/ProductApi";
+import { useGetAllCategoriesQuery } from "@/app/store/apis/CategoryApi";
 import { useState } from "react";
 import ProductModal from "./ProductModal";
 import { Trash2, Edit, Upload, X } from "lucide-react";
 import ConfirmModal from "@/app/components/organisms/ConfirmModal";
 import useToast from "@/app/hooks/ui/useToast";
 import ProductFileUpload from "./ProductFileUpload";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProductFormData } from "./product.types";
 import { withAuth } from "@/app/components/HOC/WithAuth";
 import { useMemo } from "react";
@@ -207,11 +208,16 @@ const ProductsDashboard = () => {
   const [updateProduct, { isLoading: isUpdating, error: updateError }] =
     useUpdateProductMutation();
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useGetAllCategoriesQuery({});
 
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamString = searchParams.toString();
   const shouldFetchProducts = pathname === "/dashboard/products";
+  const selectedCategory = searchParams.get("category") || "";
+  const categories = categoriesData?.categories || [];
   const productsQuery = useMemo(() => {
     const params = new URLSearchParams(searchParamString);
     const query: Record<string, string | number> = {
@@ -310,6 +316,19 @@ const ProductsDashboard = () => {
   };
 
   const handleFileUploadSuccess = () => {};
+
+  const handleCategoryFilterChange = (categorySlug: string) => {
+    const params = new URLSearchParams(searchParamString);
+    if (categorySlug) {
+      params.set("category", categorySlug);
+    } else {
+      params.delete("category");
+    }
+    params.delete("page");
+
+    const nextQuery = params.toString();
+    router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname);
+  };
 
   const columns = [
     {
@@ -464,6 +483,38 @@ const ProductsDashboard = () => {
           <ProductFileUpload onUploadSuccess={handleFileUploadSuccess} />
         </div>
       )}
+
+      <div className="mb-4 rounded-xl border border-blue-50 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <label
+              htmlFor="product-category-filter"
+              className="text-sm font-semibold text-slate-700"
+            >
+              Filter by category
+            </label>
+            <p className="mt-1 text-xs text-slate-500">
+              Show products from one category before editing or uploading.
+            </p>
+          </div>
+          <select
+            id="product-category-filter"
+            value={selectedCategory}
+            onChange={(event) =>
+              handleCategoryFilterChange(event.target.value)
+            }
+            disabled={isCategoriesLoading}
+            className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 sm:w-[280px]"
+          >
+            <option value="">All categories</option>
+            {categories.map((category: any) => (
+              <option key={category.id} value={category.slug}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       <Table
         data={products}
