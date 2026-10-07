@@ -28,7 +28,7 @@ export const SITE_DOWNLOADS: SiteDownload[] = [
     fileName: "USER MRK PRICE LIST.pdf",
     label: "MRK Price List",
     hi: "मूल्य सूची",
-    size: "5.4 MB PDF",
+    size: "733 KB PDF",
     type: "PRICE_LIST",
     description:
       "Current MRK price register covering every starter panel series.",
