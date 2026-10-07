@@ -17,6 +17,9 @@ const escapeHtml = (value: unknown) =>
       })[character] as string
   );
 
+const isValidEmail = (value: unknown) =>
+  typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
 export class MrkController {
   constructor(private mrkService: MrkService) {}
 
@@ -55,6 +58,7 @@ export class MrkController {
     // Notify the office. Deliberately not awaited into the response path: a
     // mail outage must not fail an application that is already stored.
     void this.notifyDealerApplication(req.body);
+    void this.notifyDealerApplicant(req.body);
 
     sendResponse(res, 201, {
       data: { dealerApplication },
@@ -128,6 +132,39 @@ export class MrkController {
     });
   }
 
+  private async notifyDealerApplicant(application: Record<string, any>) {
+    const to = String(application.email || "").trim();
+    if (!isValidEmail(to)) {
+      return;
+    }
+
+    const name = application.name || application.businessName || "there";
+    const text = [
+      `Dear ${name},`,
+      "",
+      "Thank you for applying to partner with MRK Tradex.",
+      "We have received your dealership application successfully. Our team will review your details and contact you soon.",
+      "",
+      "MRK Tradex Pvt Ltd",
+    ].join("\n");
+
+    const html = `
+      <div style="font-family:sans-serif;color:#0b1f33;line-height:1.6">
+        <h2 style="margin:0 0 12px">Dealer application received</h2>
+        <p>Dear ${escapeHtml(name)},</p>
+        <p>Thank you for applying to partner with <strong>MRK Tradex</strong>.</p>
+        <p>We have received your dealership application successfully. Our team will review your details and contact you soon.</p>
+        <p style="margin-top:24px">MRK Tradex Pvt Ltd</p>
+      </div>`;
+
+    await sendEmail({
+      to,
+      subject: "MRK Tradex - Dealer application received",
+      text,
+      html,
+    });
+  }
+
   private async notifyContactSubmission(submission: Record<string, any>) {
     // FEEDBACK and CONTACT share the form and the inbox; the subject line is
     // what tells the two apart at a glance.
@@ -148,6 +185,41 @@ export class MrkController {
         ["Message", submission.message],
         ["Source", submission.metadata?.source],
       ],
+    });
+  }
+
+  private async notifyContactSubmitter(submission: Record<string, any>) {
+    const to = String(submission.email || "").trim();
+    if (!isValidEmail(to)) {
+      return;
+    }
+
+    const label =
+      submission.type === "FEEDBACK" ? "feedback" : "contact request";
+    const name = submission.name || "there";
+    const text = [
+      `Dear ${name},`,
+      "",
+      `Thank you for contacting MRK Tradex. We have received your ${label} successfully.`,
+      "Our team will review it and get back to you soon.",
+      "",
+      "MRK Tradex Pvt Ltd",
+    ].join("\n");
+
+    const html = `
+      <div style="font-family:sans-serif;color:#0b1f33;line-height:1.6">
+        <h2 style="margin:0 0 12px">Request received successfully</h2>
+        <p>Dear ${escapeHtml(name)},</p>
+        <p>Thank you for contacting <strong>MRK Tradex</strong>. We have received your ${escapeHtml(label)} successfully.</p>
+        <p>Our team will review it and get back to you soon.</p>
+        <p style="margin-top:24px">MRK Tradex Pvt Ltd</p>
+      </div>`;
+
+    await sendEmail({
+      to,
+      subject: "MRK Tradex - We received your request",
+      text,
+      html,
     });
   }
 
@@ -181,6 +253,7 @@ export class MrkController {
     // Same rule as the dealer form: the row is already stored, so a mail
     // outage must not turn a saved submission into a failed request.
     void this.notifyContactSubmission(req.body);
+    void this.notifyContactSubmitter(req.body);
 
     sendResponse(res, 201, {
       data: { contactSubmission },
