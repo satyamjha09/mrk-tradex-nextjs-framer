@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { Metadata } from "next";
 import AnywhereTallyWidget from "./components/AnywhereTallyWidget";
+import FloatingWhatsAppButton from "./components/FloatingWhatsAppButton";
 import ClientProviders from "./ClientProviders";
 import "./globals.css";
 
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           product-stack stage on the home page. */}
       <body className="bg-paper font-sans leading-[1.65] text-ink antialiased">
         <ClientProviders>{children}</ClientProviders>
+        <FloatingWhatsAppButton />
         <AnywhereTallyWidget />
       </body>
     </html>
