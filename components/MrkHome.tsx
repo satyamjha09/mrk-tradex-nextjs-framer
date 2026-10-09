@@ -445,10 +445,15 @@ const dealerStats: { value: string; label: string; hi: string }[] = [
   { value: "20+", label: "States", hi: "राज्य" },
 ];
 
-// The short version of the /dealer application. These four are exactly the
+// The short version of the /dealer application. These four required fields are
 // fields that page treats as required, so a submission from here is a complete
 // record — the optional detail is collected later, not dropped.
-type DealerFormFieldName = "name" | "businessName" | "address" | "mobile";
+type DealerFormFieldName =
+  | "name"
+  | "businessName"
+  | "address"
+  | "mobile"
+  | "email";
 
 type DealerFormField = {
   name: DealerFormFieldName;
@@ -459,6 +464,7 @@ type DealerFormField = {
   type?: string;
   inputMode?: "numeric" | "tel" | "text";
   multiline?: boolean;
+  required?: boolean;
 };
 
 const dealerFormFields: DealerFormField[] = [
@@ -493,6 +499,14 @@ const dealerFormFields: DealerFormField[] = [
     type: "tel",
     inputMode: "numeric",
   },
+  {
+    name: "email",
+    label: "Email",
+    hi: "ईमेल",
+    placeholder: "you@example.com",
+    autoComplete: "email",
+    type: "email",
+  },
 ];
 
 const emptyDealerForm: Record<DealerFormFieldName, string> = {
@@ -500,6 +514,7 @@ const emptyDealerForm: Record<DealerFormFieldName, string> = {
   businessName: "",
   address: "",
   mobile: "",
+  email: "",
 };
 
 function DealerApplicationForm() {
@@ -515,10 +530,11 @@ function DealerApplicationForm() {
       !form.name.trim() ||
       !form.businessName.trim() ||
       !form.address.trim() ||
-      !form.mobile.trim()
+      !form.mobile.trim() ||
+      !form.email.trim()
     ) {
       showToast(
-        "Name, business name, address, and mobile are required",
+        "Name, business name, address, mobile, and email are required",
         "error",
       );
       return;
@@ -530,6 +546,7 @@ function DealerApplicationForm() {
         businessName: form.businessName,
         address: form.address,
         mobile: form.mobile,
+        email: form.email || undefined,
         // distinguishes these from the full /dealer submissions in the inbox
         metadata: { source: "home_dealer_cta" },
       }).unwrap();
@@ -584,7 +601,7 @@ function DealerApplicationForm() {
                 id={`dealer-${field.name}`}
                 name={field.name}
                 rows={2}
-                required
+                required={field.required ?? true}
                 value={form[field.name]}
                 onChange={(event) =>
                   setForm((prev) => ({
@@ -602,7 +619,7 @@ function DealerApplicationForm() {
                 name={field.name}
                 type={field.type ?? "text"}
                 inputMode={field.inputMode}
-                required
+                required={field.required ?? true}
                 value={form[field.name]}
                 onChange={(event) =>
                   setForm((prev) => ({
