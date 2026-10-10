@@ -5,68 +5,18 @@ import MainLayout from "@/app/components/templates/MainLayout";
 import useToast from "@/app/hooks/ui/useToast";
 import { useMrkSiteSettings } from "@/app/hooks/useMrkSiteSettings";
 import { useCreateContactSubmissionMutation } from "@/app/store/apis/MrkApi";
-import { motion } from "framer-motion";
-import { Mail, MapPin, MessageCircle, Phone, Send } from "lucide-react";
+import {
+  ArrowRight,
+  Headphones,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Send,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
-
-/**
- * Field config mirrors the dealer application form on the home page, so both
- * forms label, place and autocomplete their inputs the same way. `half` puts
- * the field in the two-up row; everything else spans the full width.
- */
-const contactFields = [
-  {
-    name: "name",
-    label: "Name",
-    hi: "नाम",
-    placeholder: "Your full name",
-    autoComplete: "name",
-    required: true,
-    half: true,
-  },
-  {
-    name: "phone",
-    label: "Phone number",
-    hi: "मोबाइल नंबर",
-    placeholder: "10-digit mobile number",
-    autoComplete: "tel",
-    type: "tel",
-    inputMode: "numeric",
-    required: true,
-    half: true,
-  },
-  {
-    name: "email",
-    label: "Email",
-    hi: "ईमेल",
-    placeholder: "you@example.com",
-    autoComplete: "email",
-    type: "email",
-    half: true,
-  },
-  {
-    name: "city",
-    label: "City",
-    hi: "शहर",
-    placeholder: "Your city",
-    autoComplete: "address-level2",
-    half: true,
-  },
-  {
-    name: "subject",
-    label: "Subject",
-    hi: "विषय",
-    placeholder: "What is this about?",
-  },
-  {
-    name: "message",
-    label: "Requirement details",
-    hi: "आपकी ज़रूरत",
-    placeholder: "Pump HP, phase, and what you need",
-    multiline: true,
-    required: true,
-  },
-];
 
 const emptyForm = {
   name: "",
@@ -77,18 +27,64 @@ const emptyForm = {
   message: "",
 };
 
+const enquiryTopics = [
+  "Product enquiry",
+  "Dealer support",
+  "Service support",
+  "Price list",
+  "Warranty",
+  "Other",
+];
+
+const fieldClass =
+  "w-full rounded-xl border-[1.5px] border-slate-300 bg-white px-3.5 py-3 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-700 focus:shadow-[0_0_0_4px_rgba(29,78,216,0.12)]";
+const labelClass = "mb-2 block text-sm font-semibold text-slate-700";
+
+function SectionLegend({ number, children }: { number: string; children: string }) {
+  return (
+    <legend className="mb-5 flex items-center gap-3 text-[13px] font-bold uppercase tracking-[0.08em] text-slate-500">
+      <span className="grid h-6 w-6 place-items-center rounded-full bg-slate-900 text-xs text-white">
+        {number}
+      </span>
+      {children}
+    </legend>
+  );
+}
+
+function RequiredMark() {
+  return <span className="text-red-600">*</span>;
+}
+
+function OptionalMark() {
+  return <span className="text-xs font-normal text-slate-500">(optional)</span>;
+}
+
 const ContactPage = () => {
   const { showToast } = useToast();
   const { company, urls } = useMrkSiteSettings();
   const [createContactSubmission, { isLoading }] =
     useCreateContactSubmissionMutation();
+  const [consent, setConsent] = useState(false);
   const [form, setForm] = useState(emptyForm);
+
+  const setField = (key: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const setPhone = (value: string) => {
+    setField("phone", value.replace(/\D/g, "").slice(0, 10));
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!form.name.trim() || !form.phone.trim() || !form.message.trim()) {
-      showToast("Name, phone, and message are required", "error");
+      showToast("Name, phone, and requirement details are required", "error");
+      return;
+    }
+
+    if (!consent) {
+      showToast("Please agree to be contacted by MRK", "error");
       return;
     }
 
@@ -105,6 +101,7 @@ const ContactPage = () => {
       }).unwrap();
 
       setForm(emptyForm);
+      setConsent(false);
       showToast("Contact request submitted successfully", "success");
     } catch (error: any) {
       showToast(
@@ -118,14 +115,12 @@ const ContactPage = () => {
     {
       icon: Phone,
       label: "Call us",
-      hi: "कॉल करें",
       value: company.phone,
       href: urls.phone,
     },
     {
       icon: MessageCircle,
       label: "WhatsApp",
-      hi: "व्हाट्सएप",
       value: "Send an enquiry",
       href: urls.whatsapp,
       external: true,
@@ -133,224 +128,259 @@ const ContactPage = () => {
     {
       icon: Mail,
       label: "Email",
-      hi: "ईमेल",
       value: company.email,
       href: urls.email,
     },
     {
       icon: MapPin,
       label: "Visit us",
-      hi: "पता",
       value: company.address,
     },
   ];
 
-  const fieldClass =
-    "w-full min-w-0 rounded-xl border border-[#e4ecf4] bg-white px-4 py-3.5 text-[0.95rem] text-ink outline-none transition-colors placeholder:text-[#9aa8b8] focus:border-aqua";
-
-  const labelClass =
-    "mb-2 block font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-ink";
-
   return (
     <MainLayout>
-      {/* Same gradient-and-blur treatment as the "Why India chooses MRK"
-          section, so the page reads as part of the site rather than a form
-          bolted onto the end of it. */}
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#F2F8FC_100%)] py-[clamp(4.5rem,9vw,8rem)]">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-44 top-16 h-[520px] w-[520px] rounded-full bg-[#dceefe]/70 blur-[130px]"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-48 bottom-0 h-[560px] w-[560px] rounded-full bg-[#cfe7fb]/60 blur-[150px]"
-        />
+      <section
+        id="contact"
+        className="bg-slate-50 px-5 py-12 text-slate-900 sm:px-6 lg:py-18"
+      >
+        <div className="mx-auto grid w-full max-w-[1240px] gap-10 lg:grid-cols-[5fr_7fr] lg:gap-14">
+          <aside className="min-w-0 lg:sticky lg:top-8 lg:self-start">
+            <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-blue-700">
+              Contact MRK
+            </span>
 
-        <div className="relative z-10 mx-auto w-full max-w-[1200px] px-6">
-          <div className="grid min-w-0 gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
-            <div className="min-w-0">
-              <motion.span
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="mb-5 inline-block font-mono text-[0.9rem] font-bold uppercase leading-none tracking-[0.3em] text-[#1598df]"
-                data-hi="संपर्क करें"
-              >
-                Contact MRK
-              </motion.span>
+            <h1 className="mt-5 max-w-[520px] text-[clamp(2rem,4vw,2.875rem)] font-extrabold leading-[1.1] tracking-[-0.02em]">
+              Tell us what <span className="text-blue-700">you need</span>
+            </h1>
+            <p className="mt-4 max-w-[460px] text-[17px] leading-relaxed text-slate-700">
+              Share your pump starter, panel, cable, or smart plug requirement.
+              The MRK team will respond with the right product guidance.
+            </p>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="font-sans text-[clamp(2.25rem,4.6vw,3.75rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-ink"
-                data-hi="बताइए आपको क्या चाहिए"
-              >
-                Tell us what you need
-              </motion.h1>
+            <ul className="my-8 grid gap-5">
+              {[
+                {
+                  icon: Headphones,
+                  title: "Quick sales response",
+                  text: "Get help choosing the right MRK product for your requirement.",
+                },
+                {
+                  icon: Wrench,
+                  title: "Technical support",
+                  text: "Share HP, phase, load, or installation details for guidance.",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Service follow-up",
+                  text: "Contact us for warranty, replacement, and dealer support.",
+                },
+              ].map(({ icon: Icon, title, text }) => (
+                <li key={title} className="flex items-start gap-4">
+                  <span className="grid h-10 w-10 flex-none place-items-center rounded-[10px] border border-slate-200 bg-white text-blue-700">
+                    <Icon size={20} />
+                  </span>
+                  <span>
+                    <strong className="block text-[15px] font-bold text-slate-900">
+                      {title}
+                    </strong>
+                    <small className="text-sm text-slate-500">{text}</small>
+                  </span>
+                </li>
+              ))}
+            </ul>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.6, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-                className="mt-4 max-w-[52ch] text-[1.02rem] leading-[1.8] text-muted"
-                data-hi="अपने पंप स्टार्टर, पैनल, केबल या स्मार्ट प्लग की ज़रूरत बताइए, MRK टीम जवाब देगी।"
-              >
-                Share your pump starter, panel, cable, or smart plug requirement
-                and the MRK team will respond.
-              </motion.p>
-
-              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {channels.map((channel, index) => {
-                  const Icon = channel.icon;
-
-                  const body = (
-                    <>
-                      <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-mist text-aqua transition-colors group-hover:bg-aqua group-hover:text-white">
-                        <Icon size={22} strokeWidth={1.6} aria-hidden="true" />
+            <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {channels.map((channel) => {
+                const Icon = channel.icon;
+                const body = (
+                  <>
+                    <span className="grid h-10 w-10 flex-none place-items-center rounded-[10px] border border-slate-200 bg-white text-blue-700">
+                      <Icon size={20} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[13px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                        {channel.label}
                       </span>
-                      <span className="min-w-0">
-                        <span
-                          className="block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted"
-                          data-hi={channel.hi}
-                        >
-                          {channel.label}
-                        </span>
-                        <span className="mt-1 block break-words text-[0.95rem] font-semibold leading-[1.5] text-ink">
-                          {channel.value}
-                        </span>
+                      <span className="mt-1 block break-words text-sm font-semibold text-slate-900">
+                        {channel.value}
                       </span>
-                    </>
-                  );
+                    </span>
+                  </>
+                );
 
-                  const cardClass =
-                    "group flex items-start gap-4 rounded-xl bg-mist p-5 text-left no-underline transition duration-300 ease-in-out";
+                const className =
+                  "flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 no-underline transition hover:border-blue-200 hover:shadow-[0_12px_28px_-18px_rgba(15,23,42,0.28)]";
 
-                  return (
-                    <motion.div
-                      key={channel.label}
-                      initial={{ opacity: 0, y: 22 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{
-                        duration: 0.55,
-                        delay: 0.24 + index * 0.08,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                    >
-                      {channel.href ? (
-                        <a
-                          href={channel.href}
-                          {...(channel.external
-                            ? { target: "_blank", rel: "noopener noreferrer" }
-                            : {})}
-                          className={`${cardClass} hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_42px_rgba(11,31,51,.10)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua`}
-                        >
-                          {body}
-                        </a>
-                      ) : (
-                        <div className={cardClass}>{body}</div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <motion.form
-              onSubmit={handleSubmit}
-              initial={{ opacity: 0, y: 26 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="min-w-0 rounded-[24px] border border-line bg-white p-6 shadow-[0_24px_60px_rgba(11,31,51,0.08)] sm:p-8"
-            >
-              <h2
-                className="text-[1.35rem] font-extrabold tracking-[-0.02em] text-ink"
-                data-hi="पूछताछ भेजें"
-              >
-                Send an enquiry
-              </h2>
-              <p
-                className="mt-2 text-[0.9rem] leading-relaxed text-muted"
-                data-hi="तारांकित फ़ील्ड ज़रूरी हैं।"
-              >
-                Fields marked with an asterisk are required.
-              </p>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {contactFields.map((field) => (
-                  <div
-                    key={field.name}
-                    className={field.half ? "min-w-0" : "min-w-0 sm:col-span-2"}
+                return channel.href ? (
+                  <a
+                    key={channel.label}
+                    href={channel.href}
+                    {...(channel.external
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                    className={className}
                   >
-                    <label
-                      htmlFor={`contact-${field.name}`}
-                      className={labelClass}
-                      data-hi={field.hi}
-                    >
-                      {field.label}
-                      {field.required && (
-                        <span className="ml-1 text-aqua" aria-hidden="true">
-                          *
-                        </span>
-                      )}
-                    </label>
-
-                    {field.multiline ? (
-                      <textarea
-                        id={`contact-${field.name}`}
-                        name={field.name}
-                        rows={5}
-                        required={field.required}
-                        value={form[field.name]}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            [field.name]: event.target.value,
-                          }))
-                        }
-                        placeholder={field.placeholder}
-                        className={`${fieldClass} resize-none`}
-                      />
-                    ) : (
-                      <input
-                        id={`contact-${field.name}`}
-                        name={field.name}
-                        type={field.type ?? "text"}
-                        inputMode={field.inputMode}
-                        required={field.required}
-                        value={form[field.name]}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            [field.name]: event.target.value,
-                          }))
-                        }
-                        autoComplete={field.autoComplete}
-                        placeholder={field.placeholder}
-                        className={fieldClass}
-                      />
-                    )}
+                    {body}
+                  </a>
+                ) : (
+                  <div key={channel.label} className={className}>
+                    {body}
                   </div>
-                ))}
+                );
+              })}
+            </div>
+          </aside>
+
+          <div className="rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] sm:p-8 lg:p-10">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-7">
+                <h2 className="text-[22px] font-extrabold tracking-[-0.01em] text-slate-900">
+                  Send an enquiry
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Takes about 1 minute. Fields marked <RequiredMark /> are
+                  required.
+                </p>
               </div>
 
-              <motion.button
+              <fieldset className="border-0 pb-6">
+                <SectionLegend number="1">About you</SectionLegend>
+                <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="contact-name" className={labelClass}>
+                      Name <RequiredMark />
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      required
+                      value={form.name}
+                      onChange={(e) => setField("name", e.target.value)}
+                      placeholder="Full name"
+                      autoComplete="name"
+                      className={fieldClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-email" className={labelClass}>
+                      Email <OptionalMark />
+                    </label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setField("email", e.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      className={fieldClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-phone" className={labelClass}>
+                      Phone number <RequiredMark />
+                    </label>
+                    <div className="flex overflow-hidden rounded-xl border-[1.5px] border-slate-300 bg-white transition focus-within:border-blue-700 focus-within:shadow-[0_0_0_4px_rgba(29,78,216,0.12)]">
+                      <span className="border-r border-slate-200 bg-slate-50 px-3.5 py-3 text-[15px] font-semibold text-slate-700">
+                        +91
+                      </span>
+                      <input
+                        id="contact-phone"
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
+                        pattern="[6-9][0-9]{9}"
+                        required
+                        value={form.phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="98765 43210"
+                        autoComplete="tel-national"
+                        className="w-full border-0 px-3.5 py-3 text-[15px] outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-city" className={labelClass}>
+                      City <OptionalMark />
+                    </label>
+                    <input
+                      id="contact-city"
+                      type="text"
+                      value={form.city}
+                      onChange={(e) => setField("city", e.target.value)}
+                      placeholder="City / town"
+                      autoComplete="address-level2"
+                      className={fieldClass}
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset className="border-0 border-t border-slate-200 py-6">
+                <SectionLegend number="2">Requirement</SectionLegend>
+                <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label htmlFor="contact-subject" className={labelClass}>
+                      Subject <OptionalMark />
+                    </label>
+                    <select
+                      id="contact-subject"
+                      value={form.subject}
+                      onChange={(e) => setField("subject", e.target.value)}
+                      className={fieldClass}
+                    >
+                      <option value="">Select one</option>
+                      {enquiryTopics.map((topic) => (
+                        <option key={topic}>{topic}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="contact-message" className={labelClass}>
+                      Requirement details <RequiredMark />
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      required
+                      value={form.message}
+                      onChange={(e) => setField("message", e.target.value)}
+                      placeholder="Pump HP, phase, model, quantity, or what you need"
+                      rows={5}
+                      className={`${fieldClass} min-h-32 resize-y`}
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <label className="mb-6 flex items-start gap-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  required
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5 h-[17px] w-[17px] flex-none accent-blue-700"
+                />
+                I agree to be contacted by MRK on call, WhatsApp, or email
+                about this enquiry.
+              </label>
+
+              <button
                 type="submit"
                 disabled={isLoading}
-                whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                className="mt-7 inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#0b1f33] px-8 py-4 text-[0.95rem] font-bold text-white shadow-[0_10px_28px_rgba(11,31,51,0.18)] transition-colors hover:bg-[#12315e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua disabled:cursor-not-allowed disabled:opacity-60"
-                data-hi="पूछताछ भेजें"
+                className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-slate-900 px-6 py-4 text-base font-bold text-white transition hover:bg-blue-700 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Send size={18} aria-hidden="true" />
+                <Send size={18} />
                 {isLoading ? "Submitting..." : "Submit enquiry"}
-              </motion.button>
-            </motion.form>
+                {!isLoading && <ArrowRight size={18} strokeWidth={2.5} />}
+              </button>
+              <p className="mt-3.5 text-center text-[13px] text-slate-500">
+                Our team usually responds within 24 hours.
+              </p>
+            </form>
           </div>
         </div>
       </section>
