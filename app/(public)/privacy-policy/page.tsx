@@ -3,11 +3,11 @@ import Link from "next/link";
 const sections = [
   {
     title: "Information we process",
-    body: "metawhat processes account details, workspace details, contacts, consent records, WhatsApp templates, messages, delivery events, campaign data, automation logs, billing records, support records, security logs, and integration credentials needed to provide the service.",
+    body: "MRK Tradex processes account details, contact details, enquiry records, dealer application details, consent records, messages, delivery events, support records, security logs, and integration details needed to provide the service.",
   },
   {
     title: "How we use information",
-    body: "We use this information to operate the WhatsApp Business SaaS platform, send and receive messages through connected providers, manage templates and webhooks, provide support, secure accounts, process billing, detect abuse, maintain audit records, and meet legal obligations.",
+    body: "We use this information to respond to enquiries, process dealer applications, send and receive business messages through connected providers, provide support, secure accounts, detect abuse, maintain records, and meet legal obligations.",
   },
   {
     title: "Sharing and subprocessors",
@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
       <section className="mx-auto max-w-4xl rounded-[1.5rem] border border-line bg-white p-6 shadow-[0_24px_60px_rgba(11,31,51,0.08)] sm:p-10">
         <div className="mb-10 border-b border-line pb-8">
           <p className="mb-3 font-mono text-xs uppercase tracking-[0.22em] text-aqua">
-            metawhat
+            MRK Tradex
           </p>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
             Privacy Policy
@@ -34,8 +34,9 @@ export default function PrivacyPolicyPage() {
             Last updated: 1 September 2026
           </p>
           <p className="mt-6 text-lg leading-8 text-muted">
-            This policy explains how metawhat handles information when
-            businesses use our WhatsApp Business workflow platform.
+            This policy explains how MRK Tradex handles information when
+            customers, dealers, and businesses use our website, enquiry forms,
+            dealer application flow, and WhatsApp Business communication.
           </p>
         </div>
 
