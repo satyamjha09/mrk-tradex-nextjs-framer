@@ -2,6 +2,7 @@
 "use client";
 
 import MainLayout from "@/app/components/templates/MainLayout";
+import FormSuccessDialog from "@/app/components/feedback/FormSuccessDialog";
 import FormConsentText from "@/app/components/legal/FormConsentText";
 import useToast from "@/app/hooks/ui/useToast";
 import { useMrkSiteSettings } from "@/app/hooks/useMrkSiteSettings";
@@ -123,6 +124,7 @@ const DealerPage = () => {
   const [sameAsMobile, setSameAsMobile] = useState(false);
   const [consent, setConsent] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   const setField = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({
@@ -199,6 +201,7 @@ const DealerPage = () => {
       setSameAsMobile(false);
       setConsent(false);
       showToast("Dealer application submitted successfully", "success");
+      setSuccessOpen(true);
     } catch (error: any) {
       showToast(
         error.data?.message || "Failed to submit dealer application",
@@ -209,6 +212,12 @@ const DealerPage = () => {
 
   return (
     <MainLayout>
+      <FormSuccessDialog
+        open={successOpen}
+        title="Application submitted successfully"
+        message="Thank you for applying to become an MRK dealer. Our team has received your details and will contact you soon."
+        onClose={() => setSuccessOpen(false)}
+      />
       <section
         id="dealer-application"
         className="bg-slate-50 px-5 py-12 text-slate-900 sm:px-6 lg:py-18"

@@ -104,13 +104,6 @@ const sections: TermsSection[] = [
   },
 ];
 
-const summaryItems = [
-  "Website information is for general product and business reference.",
-  "Product specifications, pricing and availability may change without prior notice.",
-  "Dealership applications are subject to MRK Tradex review and approval.",
-  "MRK name, logo, product images and website content are protected assets.",
-];
-
 export const metadata: Metadata = {
   title: "Terms & Conditions | MRK Tradex Pvt Ltd",
   description:
@@ -146,9 +139,6 @@ export default function TermsAndConditionsPage() {
             <span className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-[#dbe6f7]">
               Last updated: 12 October 2026
             </span>
-            <span className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-[#dbe6f7]">
-              5 min read
-            </span>
           </div>
         </div>
       </section>
@@ -182,22 +172,6 @@ export default function TermsAndConditionsPage() {
             or contacting us through this website, you agree to the following
             Terms & Conditions.
           </p>
-
-          <div className="mt-8 rounded-[14px] border-l-4 border-[#1e9be9] bg-[#e8f4fd] p-6">
-            <h2 className="mb-3 text-base font-bold text-[#1f3a6e]">
-              Quick summary
-            </h2>
-            <ul className="grid gap-2">
-              {summaryItems.map((item) => (
-                <li
-                  key={item}
-                  className="relative pl-7 text-[15px] leading-7 text-[#334155] before:absolute before:left-0 before:top-[0.55rem] before:h-2 before:w-2 before:rounded-full before:bg-[#1e9be9] before:content-['']"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
 
           <div className="mt-2">
             {sections.map((section) => (

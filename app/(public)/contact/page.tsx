@@ -2,6 +2,7 @@
 "use client";
 
 import MainLayout from "@/app/components/templates/MainLayout";
+import FormSuccessDialog from "@/app/components/feedback/FormSuccessDialog";
 import FormConsentText from "@/app/components/legal/FormConsentText";
 import useToast from "@/app/hooks/ui/useToast";
 import { useMrkSiteSettings } from "@/app/hooks/useMrkSiteSettings";
@@ -67,6 +68,7 @@ const ContactPage = () => {
     useCreateContactSubmissionMutation();
   const [consent, setConsent] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   const setField = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -104,6 +106,7 @@ const ContactPage = () => {
       setForm(emptyForm);
       setConsent(false);
       showToast("Contact request submitted successfully", "success");
+      setSuccessOpen(true);
     } catch (error: any) {
       showToast(
         error.data?.message || "Failed to submit contact request",
@@ -141,6 +144,12 @@ const ContactPage = () => {
 
   return (
     <MainLayout>
+      <FormSuccessDialog
+        open={successOpen}
+        title="Enquiry submitted successfully"
+        message="Thank you for contacting MRK Tradex. Our team has received your request and will get back to you soon."
+        onClose={() => setSuccessOpen(false)}
+      />
       <section
         id="contact"
         className="bg-slate-50 px-5 py-12 text-slate-900 sm:px-6 lg:py-18"
