@@ -8,7 +8,8 @@ export function generateAccessToken(id: string) {
 }
 
 export function generateRefreshToken(id: string, absExp?: number) {
-  const absoluteExpiration = absExp || Math.floor(Date.now() / 1000) + 86400;
+  const absoluteExpiration =
+    absExp || Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
   const ttl = absoluteExpiration - Math.floor(Date.now() / 1000);
 
   return jwt.sign(

@@ -35,11 +35,10 @@ export default function AuthProvider({
         }
       } catch (error: unknown) {
         const err = error as { status?: number | string };
-        if (err?.status === 401 || err?.status === "FETCH_ERROR") {
+        if (err?.status === 401) {
           dispatch(logout());
         } else {
-          console.error("Unexpected error during auth", error);
-          dispatch(logout());
+          console.warn("Auth check failed without invalidating session", error);
         }
       }
     })();

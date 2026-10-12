@@ -108,7 +108,7 @@ router.put(
   "/:id",
   protect,
   authorizeRole("ADMIN", "SUPERADMIN"),
-  upload.array("images", 4),
+  upload.array("images", 16),
   productController.updateProduct
 );
 
@@ -152,7 +152,7 @@ router.post(
   "/",
   protect,
   authorizeRole("ADMIN", "SUPERADMIN"),
-  upload.array("images", 4),
+  upload.array("images", 16),
   productController.createProduct
 );
 

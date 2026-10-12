@@ -11,16 +11,30 @@ const baseQuery = fetchBaseQuery({
   timeout: 30000,
 });
 
+let refreshPromise: Promise<any> | null = null;
+
+const refreshSession = (api, extraOptions) => {
+  if (!refreshPromise) {
+    refreshPromise = baseQuery(
+      { url: "/auth/refresh-token", method: "POST" },
+      api,
+      extraOptions,
+    ).finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+};
+
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error?.status === 401) {
+  const requestUrl = typeof args === "string" ? args : args?.url;
+  const isRefreshRequest = requestUrl === "/auth/refresh-token";
+
+  if (result.error?.status === 401 && !isRefreshRequest) {
     // Try refresh the token
-    const refreshResult = await baseQuery(
-      { url: "/auth/refresh-token", method: "POST" },
-      api,
-      extraOptions
-    );
+    const refreshResult = await refreshSession(api, extraOptions);
 
     if (refreshResult.data) {
       // If there's data, retry the original req with the new token

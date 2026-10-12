@@ -30,6 +30,69 @@ interface ImagePreview {
   isNew: boolean;
 }
 
+const MAX_SOURCE_FILE_SIZE = 10 * 1024 * 1024;
+const COMPRESS_ABOVE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
+const IMAGE_QUALITY = 0.82;
+
+const getCompressedFileName = (fileName: string) => {
+  const baseName = fileName.replace(/\.[^.]+$/, "") || "image";
+  return `${baseName}.webp`;
+};
+
+const loadImage = (url: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Failed to read selected image"));
+    image.src = url;
+  });
+
+const compressImageFile = async (file: File): Promise<File> => {
+  if (!file.type.startsWith("image/")) {
+    throw new Error(`${file.name} is not a supported image file.`);
+  }
+
+  if (file.size > MAX_SOURCE_FILE_SIZE) {
+    throw new Error(`${file.name} is larger than 10MB.`);
+  }
+
+  if (file.type === "image/gif" || file.size <= COMPRESS_ABOVE_SIZE) {
+    return file;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await loadImage(objectUrl);
+    const scale = Math.min(
+      1,
+      MAX_IMAGE_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight),
+    );
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+    context.drawImage(image, 0, 0, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, "image/webp", IMAGE_QUALITY);
+    });
+
+    if (!blob || blob.size >= file.size) return file;
+
+    return new File([blob], getCompressedFileName(file.name), {
+      type: "image/webp",
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+};
+
 const ImageUploader = ({
   control,
   errors,
@@ -65,7 +128,7 @@ const ImageUploader = ({
   }, [watchedImages]);
 
   const handleFileUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
 
       if (!files.length) return;
@@ -85,7 +148,20 @@ const ImageUploader = ({
         );
       }
 
-      setValue(name, [...currentImages, ...filesToAdd], {
+      let preparedFiles: File[];
+      try {
+        preparedFiles = await Promise.all(filesToAdd.map(compressImageFile));
+      } catch (error) {
+        alert(
+          error instanceof Error
+            ? error.message
+            : "One or more selected images could not be prepared.",
+        );
+        e.target.value = "";
+        return;
+      }
+
+      setValue(name, [...currentImages, ...preparedFiles], {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -202,7 +278,8 @@ const ImageUploader = ({
                   : "Click to upload images or drag and drop"}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, GIF up to 10MB each
+                PNG, JPG, GIF, WEBP up to 10MB each. Large images are optimized
+                before upload.
               </p>
             </label>
           </div>
