@@ -1,31 +1,58 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 const sections = [
   {
-    title: "Use of this website",
-    body: "This website is provided for MRK Tradex product information, catalogue browsing, enquiries, downloads, contact requests, and dealer applications. You agree to use it only for lawful business or personal enquiry purposes.",
+    title: "1. Website Information",
+    body: "The information provided on this website is for general product and business information purposes. We try to keep product descriptions, specifications, pricing, availability and other information accurate and updated. However, details may change from time to time without prior notice. Final product specifications, price, availability, warranty and commercial terms should be confirmed with MRK Tradex or an authorised dealer before purchase.",
   },
   {
-    title: "Product information",
-    body: "Product details, prices, specifications, images, availability, and catalogue information are provided for guidance and may change without notice. Final pricing, warranty, suitability, and supply terms should be confirmed with MRK Tradex before purchase or dealership decisions.",
+    title: "2. Products and Availability",
+    body: "Product images shown on the website are for representation purposes. Actual products may vary slightly in appearance, packaging, colour, components or specifications depending on the model or production update. Availability may vary by location and dealer.",
   },
   {
-    title: "Enquiries and dealer applications",
-    body: "When you submit an enquiry or dealer application, you confirm that the information provided is accurate. Submission does not guarantee approval, dealership appointment, product supply, or any commercial commitment from MRK Tradex.",
+    title: "3. Pricing",
+    body: "Any prices displayed on the website, catalogue, advertisement or promotional material may be revised without prior notice. Final pricing, taxes, transportation charges, installation charges or other applicable costs should be confirmed at the time of purchase.",
   },
   {
-    title: "Communication",
-    body: "By submitting forms on this website, you agree that MRK Tradex may contact you by phone, WhatsApp, email, or other suitable channels regarding your enquiry, service request, product interest, or dealer application.",
+    title: "4. Enquiries and Dealership Applications",
+    body: "Submitting an enquiry, dealership form or partnership request does not create a binding agreement between you and MRK Tradex. All dealership or partnership applications are subject to review, approval, commercial discussion and applicable terms decided by MRK Tradex.",
   },
   {
-    title: "Intellectual property",
-    body: "The MRK name, logo, product images, website content, catalogue material, and related assets belong to MRK Tradex or its licensors. They may not be copied, reused, or represented as your own without written permission.",
+    title: "5. Warranty and Service",
+    body: "Warranty, service and replacement terms may differ depending on the product. Customers should refer to the product invoice, warranty card, authorised dealer or MRK Tradex representative for the applicable warranty terms. Damage caused by improper installation, misuse, unauthorised modification, overloading or use outside recommended specifications may not be covered.",
   },
   {
-    title: "Limitation of liability",
-    body: "MRK Tradex aims to keep website information accurate and available, but does not guarantee uninterrupted access or error-free content. To the maximum extent permitted by law, MRK Tradex is not liable for losses arising from use of this website or reliance on website information alone.",
+    title: "6. Intellectual Property",
+    body: "All website content, including the MRK name, logo, product images, text, graphics, designs and other materials, is owned by or licensed to MRK Tradex Pvt Ltd unless otherwise stated. Such content may not be copied, reproduced, modified or used for commercial purposes without prior written permission.",
+  },
+  {
+    title: "7. Third-Party Links",
+    body: "Our website may contain links to third-party websites or services such as WhatsApp, Google Maps, YouTube, Facebook or Instagram. MRK Tradex is not responsible for the content, availability, security or privacy practices of third-party services.",
+  },
+  {
+    title: "8. Limitation of Liability",
+    body: "MRK Tradex will not be responsible for any indirect, incidental or consequential loss arising solely from reliance on information displayed on this website. Users should always follow product instructions and obtain appropriate professional or technical assistance where required for installation or electrical work.",
+  },
+  {
+    title: "9. Privacy",
+    body: "Use of personal information submitted through this website is governed by our Privacy Policy.",
+  },
+  {
+    title: "10. Changes to These Terms",
+    body: "MRK Tradex may update these Terms & Conditions from time to time. The latest version will be published on this page along with the updated date.",
   },
 ];
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions | MRK Tradex Pvt Ltd",
+  description:
+    "Terms and Conditions for using the MRK Tradex Pvt Ltd website, product information, enquiries and dealership applications.",
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function TermsAndConditionsPage() {
   return (
@@ -39,12 +66,13 @@ export default function TermsAndConditionsPage() {
             Terms & Conditions
           </h1>
           <p className="mt-4 text-sm font-semibold text-muted">
-            Last updated: 1 September 2026
+            Last updated: 12 October 2026
           </p>
           <p className="mt-6 text-lg leading-8 text-muted">
-            These terms explain the basic conditions for using the MRK Tradex
-            website, product information, enquiry forms, downloads, and dealer
-            application flow.
+            Welcome to MRK Tradex Pvt Ltd. By accessing or using this website,
+            submitting an enquiry, applying for dealership, or contacting us
+            through this website, you agree to the following Terms &
+            Conditions.
           </p>
         </div>
 
@@ -61,14 +89,25 @@ export default function TermsAndConditionsPage() {
         </div>
 
         <div className="mt-8 rounded-2xl bg-ink p-5 text-white">
-          <h2 className="mb-2 text-xl font-bold">Questions</h2>
+          <h2 className="mb-2 text-xl font-bold">11. Contact Us</h2>
           <p className="text-white/75">
-            For terms, business, or account questions, contact us at{" "}
+            For any questions regarding these Terms & Conditions, please
+            contact MRK Tradex Pvt Ltd, R/3A, Dooars Trp Compound, GT Road,
+            Sahibabad, Ghaziabad, Uttar Pradesh - 201005, India.
+            <br />
+            Phone:{" "}
             <a
-              href="mailto:rajesh.mrktradex@gmail.com"
+              href="tel:+919319719670"
               className="font-semibold text-white underline decoration-aqua underline-offset-4"
             >
-              rajesh.mrktradex@gmail.com
+              +91 93197 19670
+            </a>{" "}
+            | Email:{" "}
+            <a
+              href="mailto:mrktradex@gmail.com"
+              className="font-semibold text-white underline decoration-aqua underline-offset-4"
+            >
+              mrktradex@gmail.com
             </a>
             .
           </p>

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useGetMeQuery } from "@/app/store/apis/UserApi";
+import FormConsentText from "@/app/components/legal/FormConsentText";
 
 interface ProductReviewsProps {
   reviews: {
@@ -250,6 +251,9 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
                 placeholder="Share your experience with this product..."
               />
             </div>
+            <p className="mb-4 text-xs leading-relaxed text-gray-500">
+              <FormConsentText />
+            </p>
             <div className="flex justify-end">
               <button
                 type="submit"

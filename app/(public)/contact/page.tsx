@@ -2,6 +2,7 @@
 "use client";
 
 import MainLayout from "@/app/components/templates/MainLayout";
+import FormConsentText from "@/app/components/legal/FormConsentText";
 import useToast from "@/app/hooks/ui/useToast";
 import { useMrkSiteSettings } from "@/app/hooks/useMrkSiteSettings";
 import { useCreateContactSubmissionMutation } from "@/app/store/apis/MrkApi";
@@ -364,8 +365,7 @@ const ContactPage = () => {
                   onChange={(e) => setConsent(e.target.checked)}
                   className="mt-0.5 h-[17px] w-[17px] flex-none accent-blue-700"
                 />
-                I agree to be contacted by MRK on call, WhatsApp, or email
-                about this enquiry.
+                <FormConsentText />
               </label>
 
               <button

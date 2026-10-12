@@ -2,6 +2,7 @@
 "use client";
 
 import MainLayout from "@/app/components/templates/MainLayout";
+import FormConsentText from "@/app/components/legal/FormConsentText";
 import useToast from "@/app/hooks/ui/useToast";
 import { useMrkSiteSettings } from "@/app/hooks/useMrkSiteSettings";
 import { useCreateDealerApplicationMutation } from "@/app/store/apis/MrkApi";
@@ -590,8 +591,7 @@ const DealerPage = () => {
                   onChange={(e) => setConsent(e.target.checked)}
                   className="mt-0.5 h-[17px] w-[17px] flex-none accent-blue-700"
                 />
-                I agree to be contacted by MRK on call or WhatsApp about this
-                application.
+                <FormConsentText />
               </label>
 
               <button

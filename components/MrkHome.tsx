@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import FormConsentText from "@/app/components/legal/FormConsentText";
 import SiteFooter from "@/app/components/layout/SiteFooter";
 import { shopUrl } from "@/app/data/catalog/series";
 import useToast from "@/app/hooks/ui/useToast";
@@ -635,6 +636,10 @@ function DealerApplicationForm() {
           </div>
         ))}
       </div>
+
+      <p className="mt-5 text-xs leading-relaxed text-white/55">
+        <FormConsentText linkClassName="font-semibold text-white underline underline-offset-2" />
+      </p>
 
       <motion.button
         type={"submit"}
